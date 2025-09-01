@@ -1,0 +1,1 @@
+SELECT datname AS "DB", relid::regclass AS "Table", command, phase, heap_tuples_scanned AS "Tuples scanned", trunc((heap_blks_scanned*100/heap_blks_total),1) AS "% scanned", index_rebuild_count FROM  pg_stat_progress_cluster;

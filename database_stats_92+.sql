@@ -1,0 +1,20 @@
+SELECT
+    d.datname AS "Database",
+    pg_size_pretty(pg_database_size(d.datname)) AS "Size",
+    trim(to_char(100 * xact_rollback::NUMERIC / (xact_rollback + xact_commit),'000D99') || ' %') AS "Rollback",
+    trim(to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'000D99') || ' %') AS "Cache hit",
+    trim(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                             ,'000D99') || ' %') AS "Rows feth/retun",
+    trim(to_char(100* tup_returned::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows SELECT",
+    trim(to_char(100* tup_inserted::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows INSERT",
+    trim(to_char(100* tup_updated::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows UPDATE",
+    trim(to_char(100* tup_deleted::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows DELETE",
+    CASE deadlocks  WHEN 0 THEN NULL ELSE trim(to_char(deadlocks::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'999G990D9')) END AS "Deadlocks  / Day",
+    CASE temp_files WHEN 0 THEN NULL ELSE trim(to_char(temp_files::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'999G990D9')) END AS "Temp file  / Day",
+    CASE temp_files WHEN 0 THEN NULL ELSE trim(pg_size_pretty(temp_bytes   / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24))::BIGINT))     END AS "Temp bytes / Day",
+    date_trunc('second', blk_read_time   /  (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND') AS "Read time  / Day",
+    date_trunc('second', blk_write_time  /  (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND') AS "Write time / Day",
+    '------------' AS "Reset",
+    to_char(stats_reset, 'YYYY-MM-DD HH24:MI:SS') AS "Date",
+    date_trunc('second', current_timestamp - stats_reset) AS "Age" 
+FROM pg_stat_database d
+WHERE d.datname = current_database();

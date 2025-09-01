@@ -1,0 +1,20 @@
+-- Adjust the query, them run it. 
+
+-- CREATE ROLE read_only LOGIN PASSWORD 'foo'
+--       
+-- GRANT CONNECT ON DATABASE foo TO   read_only ;
+--
+-- GRANT USAGE
+--    ON SCHEMA foo
+--    TO readonly;
+--       
+-- GRANT USAGE
+--    ON ALL SEQUENCES 
+--    IN SCHEMA foo
+--    TO read_only;
+--       
+-- GRANT SELECT
+--    ON ALL TABLES 
+--    IN SCHEMA foo
+--    TO read_only;
+--       
