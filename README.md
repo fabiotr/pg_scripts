@@ -3,28 +3,70 @@
 
 ### List
 - analyze.sql
-  - List ANALYZE and autovacum ANALYZE stats from pg_stat_user_tables
+  - List ANALYZE and autovacum ANALYZE stats
+  - Based on pg_stat_user_tables
 - analyze_adjust.sql
   - Recomend autovacuum_analyze_scale_factor adjust based on number of rows on table
-- archives.sql (PG >= 9.4)
-
+  - Based on pg_stat_user_tables
+- archives.sql
+  - Works on PG >= 9.4
+  - Show amount of archives generated
+  - Based on pg_stat_archiver
 - autovacuum_queue.sql
-- backup.sql (PG >= 9.2)
-- bgwriter.sql (PG >= 17)
+  - Shows next tables where autovacuum will work
+  - Based on pg_stat_user_tables
+- backup.sql
+  - Works on PG >= 9.2
+  - Look for a .backup file with physical backup summary at pg_wal or pg_xlog
+  - Based on pg_pg_read_file and pg_ls_dir  
+- bgwriter.sql
+  - Works on PG >= 17
+  - Show Background Workers stats
+  - Based on pg_stat_bgwriter
 - checkpoints.sql
+  - Show checkpoint stats
+  - Based on pg_stat_checkpointer
 - conf_directories.sql
+  - Show parameteres about file and directories location
+  - Based on pg_settings
 - conf_logs.sql
+  - Show parameters about logs configurations and other that could be collected
+  - Based on pg_settings
 - conf_master.sql
+  - Show parameters abous master server replication
+  - Based on pg_settings
 - conf_others.sql
+  - Show other parameters with non default values
+  - Based on pg_settings
 - conf_recovery.sql
+  - Show parameters about backup recovery
+  - Based on pg_settings
 - conf_replica.sql
+  - Show parameters about slave server replication
+  - Based on pg_settings
 - conf_resource.sql
-- connections_gss.sql (PG >= 12)
+  - Show parameters about resource configuration
+  - Based on pg_settings
+- connections_gss.sql
+  - Works on PG >= 12
+  - Show total connections stats runing now using GSS
+  - Based on pg_stat_gssapi
 - connections_runing.sql
+  - Show active connections stats runing now
+  - Based on pg_stat_activity
 - connections_runing_detais.sql
-- connections_runing_ssl.sql (PG >= 9.5)
-- connections_tot.sql (PG >= 9.2)
+  - Show active detailed connections stats runing now
+  - Based on pg_stat_activity
+- connections_runing_ssl.sql
+  - Works on PG >= 9.5
+  - Show total connections stats running now using SSL
+  - Based on pg_stat_ssl
+- connections_tot.sql
+  - Works on PG >= 9.2
+  - Show total active connections stats running now
+  - Based on pg_stat_activity
 - database_size.sql
+  - 
 - database_standby_conflicts.sql (PG >= 9.1)
 - database_stats.sql
 - fillfactor.sql (PG >= 8.3)
