@@ -3,8 +3,11 @@
 
 ### List
 - analyze.sql
+List ANALYZE and autovacum ANALYZE stats from pg_stat_user_tables
 - analyze_adjust.sql
+Recomend autovacuum_analyze_scale_factor adjust based on number of rows on table
 - archives.sql (PG >= 9.4)
+
 - autovacuum_queue.sql
 - backup.sql (PG >= 9.2)
 - bgwriter.sql (PG >= 17)
