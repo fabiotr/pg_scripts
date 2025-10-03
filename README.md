@@ -65,28 +65,75 @@
 - Show total active connections stats running now
 - Based on pg_stat_activity
 ### database_size.sql
-  - 
-### database_standby_conflicts.sql (PG >= 9.1)
+- Show all databases on cluster, size and options
+- Based on pg_database
+### database_standby_conflicts.sql
+- Works on PG >= 9.1
+- Show database queries canceled on standby due to conflicts with master
+- Based on pg_database_conflicts
 ### database_stats.sql
-### fillfactor.sql (PG >= 8.3)
-### functions.sql (PG >= 8.4)
+- Show current database stats
+- Based on pg_stat_database
+### fillfactor.sql 
+- Works on PG >= 8.3
+- Show tables on current database that have more updates and bad hot update percent
+- Based on pg_stat_user_tables
+### functions.sql 
+- Works on PG >= 8.4
+- Show functions on current database that consume more execution time
+- Based on pg_stat_user_functions
 ### index_big.sql
-### index_check_integrity.sql
+- Show indexes on current database greater than 800KB and greater than 50% of table size
+- Based on pg_index
+### index_check_btree_integrity.sql
+- Works on PG >= 10
+- Run bt_index_check(oid) function on every BTREE index on current database
+- Based on amcheck extension
+### index_check_gin_integrity.sql
+- Works on PG >= 18
+- Run bt_index_check(oid) function on every GIN index on current database
+- Based on amcheck extension
 ### index_dup.sql
+- Show duplicated indexes on current database that have same columns. We recommend check manually other differences before drop any index.
+- Based on pg_index
 ### index_functions.sql
+- Show indexes on current database that have expressions on columns
+- Based on pg_index
 ### index_invalid.sql
+- Show indexes on current database that are marked as invalid
+- Based on pg_index
 ### index_missing_in_fk.sql
+- Show Foreign Keys on current database that don't have an associated index on same columns
+- Based on pg_constraint and pg_index 
 ### index_missing_in_fk_create.sql
+- Show a CREATE INDEX command for every Foreign Keys on current database that don't have an associated index on same columns
+- Based on pg_constraint and pg_index 
 ### index_non_btree.sql
+- Show indexes non BTREE used on current database
+- Based on pg_index and pg_am
 ### index_non_default_collation.sql
+- Show indexes on current database that don't use default collation
+- Based on pg_index and pg_collation
 ### index_partial.sql
+- Show partial indexes on current database
+- Based on pg_index
 ### index_poor_drop.sql
+- Show a DROP INDEX command for every index on current database with bad performance based on some criterias. We advise that this list don'd include other replicas that may use this indexes
+- Based on pg_stat_user_indexes
 ### index_poor.sql
+- Show indexes on current database with bad performance based on some criterias. We advise that this list don'd include other replicas that may use this indexes
+- Based on pg_stat_user_indexes
 ### index_size.sql
-### index_table_missing.sql
+- Show indexes size on current database
+- Based on pg_class
 ### internal.sql
-### io_cluster.sql (PG >= 16)
+- Show some cluster parameters
+### io_cluster.sql
+- Works on PG >= 16
+- Show I/O stats
+- Based on pg_stat_io
 ### io_index.sql
+
 ### io_sequence.sql
 ### io_table_heap.sql
 ### io_table_index.sql
@@ -152,6 +199,8 @@
 ### tables_delete.sql
 ### tables_fks.sql
 ### tables_foreign.sql (PG >= 9.2)
+### tables_index_missing.sql
+-
 ### tables_insert.sql
 ### tables_not_used.sql
 ### tables_not_used_drop.sql
