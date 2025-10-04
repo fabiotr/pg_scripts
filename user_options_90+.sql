@@ -1,8 +1,10 @@
- SELECT 
-	rolname AS "User", 
-	setconfig AS "Config"
-FROM 
-	pg_roles r 
-	JOIN pg_db_role_setting drs ON r.oid = drs.setrole 
-WHERE rolname != 'rdsadmin'
-ORDER BY rolname;
+SELECT
+        rolname AS "User",
+        datname AS "Database",
+        unnest(setconfig) AS "Config"
+FROM
+        pg_db_role_setting drs 
+        JOIN pg_roles r ON r.oid = drs.setrole
+        LEFT JOIN pg_database d ON d.oid = drs.setdatabase
+WHERE r.rolname != 'rdsadmin'
+ORDER BY rolname, "Config";

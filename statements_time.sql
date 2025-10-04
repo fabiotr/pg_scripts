@@ -16,6 +16,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 140000  AS pg_14
        	,current_setting('server_version_num')::int >= 150000  AS pg_15
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
+       	,current_setting('server_version_num')::int >= 170000  AS pg_17
+       	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
@@ -24,7 +26,9 @@ SELECT
 \set QUIET on
 \timing off
 
-\if :svp_pg_14
+\if :svp_pg_17
+  \i statements_time_17+.sql
+\elif :svp_pg_14
   \i statements_time_14+.sql
 \elif :svp_pg_13
   \i statements_time_13+.sql

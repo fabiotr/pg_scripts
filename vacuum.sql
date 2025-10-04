@@ -31,5 +31,5 @@ WHERE
     n_dead_tup >  1000 
     OR e.enabled = FALSE
 ORDER BY e.enabled, CASE n_live_tup WHEN 0 then 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
-LIMIT 40;
+LIMIT 20;
 

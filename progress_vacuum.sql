@@ -17,12 +17,15 @@ SELECT
         ,current_setting('server_version_num')::int >= 150000  AS pg_15
         ,current_setting('server_version_num')::int >= 160000  AS pg_16
         ,current_setting('server_version_num')::int >= 170000  AS pg_17
+        ,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
 \set QUIET on
 \timing off
-\if :svp_pg_17
+\if :svp_pg_18
+  \i progress_vacuum_18+.sql
+\elif :svp_pg_17
   \i progress_vacuum_17+.sql
 \elif :svp_pg_96
   \i progress_vacuum_96+.sql
