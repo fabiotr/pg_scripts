@@ -300,7 +300,7 @@
 - Works on PG >= 9.2
 - Show top 10 statements statistics on current database order by local memmory used
 - Based on pg_stat_statements extension
-### statements_plan.sql (PG >= 14)
+### statements_plan.sql
 - Works on PG >= 14
 - Show top 10 statements statistics on current database order by planing time
 - Based on pg_stat_statements extension
@@ -330,29 +330,64 @@
 - Based on pg_stat_statements extension
 ### statements_top5.sql
 - Works on PG >= 8.4
-- Show top 5 statements statistics on current database with full query statement order by execution and planing time
+- Show top 5 full query statements statistics on current database order by execution and planing time
 - Based on pg_stat_statements extension
 ### statements_total.sql
 - Works on PG >= 14
 - Show total statements summary statistics on current database
 - Based on pg_stat_statements extension
-### statements_wal.sql (PG >= 13)
+### statements_wal.sql
+- Works on PG >= 13
+- Show top 10 statements statistics on current database order by execution and WAL generation
+- Based on pg_stat_statements extension
 ### subscription_rel_stats.sql
+- Works on PG >= 10
+- Show tables logical replication stats from subscription
+- Based on pg_subscripton_rel
 ### subscription_stats.sql
+- Works on PG >= 10
+- Show logical replication stats from subscriptions
+- Based on pg_stat_subscription and pg_stat_subscription_stats
 ### tables_alignment_padding.sql
+- Suggested Columns Reorder
 ### tables_bloat_approx.sql
+- Works on PG >= 8.3
+- Show top 10 tables with more free size that may need maintenance
+- Based on pgstattuple_aprrox() function on pgstattuple extension
 ### tables_changes.sql
+- Show top 10 tables with more INSERTs, UPDATEs and DELETEs
+- Based on pg_stat_user_tables
 ### tables_delete.sql
+- Show top 10 tables with more DELETEs
 ### tables_fks.sql
-### tables_foreign.sql (PG >= 9.2)
+- Show tables precedence based on FK inheritance
+- Based on pg_class and pg_constraint
+### tables_foreign.sql 
+- Works on PG >= 9.2
+- Show Foreign Tables usind FDW
+- Based on pg_foreign_table
 ### tables_index_missing.sql
--
+- Show tables with poor or few indexes and its reasons
+- Based on pg_stat_user_tables
 ### tables_insert.sql
+- Show top 10 tables with more INSERTs
+- Based on pg_stat_user_tables
 ### tables_not_used.sql
+- Show Tables with low usage
+- Based on pg_stat_user_tables
 ### tables_not_used_drop.sql
-### tables_partition.sql (PG >= 12)
+- Show DROP TABLE commant for tables with low usage
+- Based on pg_stat_user_tables
+### tables_partition.sql 
+- Works on PG >= 12
+- Show partitined objects (tables and indexes)
+- Based on pg_class and pg_inherits
 ### tables_pk_default_values.sql
+- Show tables with their Primary Keys (PKs) and its default values
+- Based on pg_class, pg_constraint and pg_atrribute
 ### tables_rule.sql
+- Show tables with rules
+- Based on pg_rules
 ### tables_size.sql
 ### tables_uk_default_values.sql
 ### tables_unlogged.sql
