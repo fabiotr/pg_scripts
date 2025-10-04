@@ -1,7 +1,8 @@
 SELECT
     row_number() over(order by total_exec_time desc) "N",
 trim(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'99D99') || '%') AS "load_%",
-    datname db, userid::regrole,
+    --datname db, 
+    userid::regrole,
     queryid,
     to_char(calls,'999G999G999G999') AS calls,
     to_char(min_exec_time        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,
@@ -11,9 +12,9 @@ trim(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'99D99') || '%') A
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
-    pg_stat_statements s
-    JOIN pg_database d ON d.oid = s.dbid
---WHERE datname = current_database()
+    pg_stat_statements AS s
+    JOIN pg_database   AS d ON d.oid = s.dbid
+WHERE datname = current_database()
 ORDER BY total_exec_time DESC
 LIMIT 20;
 

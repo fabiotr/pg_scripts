@@ -17,6 +17,7 @@ SELECT
         ,current_setting('server_version_num')::int >= 150000  AS pg_15
         ,current_setting('server_version_num')::int >= 160000  AS pg_16
         ,current_setting('server_version_num')::int >= 170000  AS pg_17
+        ,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
@@ -24,6 +25,8 @@ SELECT
 \timing off
 \if :svp_pg_13
   \i progress_analyze_13+.sql 
+\elif :svp_pg_18
+  \i progress_analyze_18+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

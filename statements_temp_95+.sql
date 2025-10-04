@@ -8,7 +8,7 @@ SELECT
     pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN (blk_read_time + blk_write_time) * INTERVAL '1 millisecond'
-        ELSE NULL END tot_temp_time,
+        ELSE NULL END AS "I/O Time",
     trunc(total_time/1000) total_time_s,
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query

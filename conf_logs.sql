@@ -36,25 +36,33 @@ SELECT
 	WHEN name = 'log_statement'                 	AND source IN ('default', 'configuration file') AND setting = 'ddl'                             THEN 'OK'
 	WHEN name = 'log_replication_commands'          AND source IN ('default', 'configuration file')                                                 THEN '--'
 	WHEN name = 'log_temp_files'                	AND source IN ('default', 'configuration file') AND setting = '0'                               THEN 'OK'
+
 	WHEN name = 'TimeZone'                      	AND source IN ('default', 'configuration file')                                                 THEN '--'
         WHEN name = 'log_timezone'                  	AND source IN ('default', 'configuration file') AND setting = current_setting('TimeZone')       THEN 'OK'
-
         WHEN name = 'lc_messages'                   	AND source IN ('default', 'configuration file') AND setting IN ('C', 'C.UTF-8', 'en_US.UTF-8')  THEN 'OK'
-        WHEN name = 'track_activities'              	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
+
+	WHEN name = 'track_activities'              	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'track_activity_query_size'     	AND source IN ('default', 'configuration file') AND to_number(setting, '99999') >= 1024         THEN 'OK'
 	WHEN name = 'track_counts'                  	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'track_io_timing'               	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'track_wal_io_timing'               AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
+	WHEN name = 'track_cost_delay_timing'           AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'track_functions'               	AND source IN ('default', 'configuration file') AND setting = 'all'                             THEN 'OK'
 	WHEN name = 'stats_fetch_consistency'           AND source IN ('default', 'configuration file') AND setting = 'cache'                           THEN 'OK'
        
-	WHEN name = 'compute_query_id'                  AND source IN ('default', 'configuration file') AND setting = 'auto'                            THEN 'OK'
+	WHEN name = 'compute_query_id'                  AND source IN ('default', 'configuration file') AND setting IN ('auto', 'on')                   THEN 'OK'
 	WHEN name = 'log_statement_stats'               AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
 	WHEN name = 'log_parser_stats'                  AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
 	WHEN name = 'log_planner_stats'                 AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK' 
 	WHEN name = 'log_executor_stats'                AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
-        WHEN name = 'shared_preload_libraries'          AND source IN ('default', 'configuration file') AND setting LIKE '%pg_stat_statements%'         THEN 'OK'
-        ELSE '<!!>'
+	
+	WHEN name = 'shared_preload_libraries'          AND source IN ('default', 'configuration file') AND setting LIKE '%pg_stat_statements%'         THEN 'OK'
+	WHEN name = 'pg_stat_statements.max'		AND source IN ('default', 'configuration file')							THEN '--'
+	WHEN name = 'pg_stat_statements.track'		AND source IN ('default', 'configuration file') AND setting = 'ALL'				THEN 'OK'
+	WHEN name = 'pg_stat_statements.track_utility'  AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
+	WHEN name = 'pg_stat_statements.track_planning' AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
+	WHEN name = 'pg_stat_statements.save'		AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
+	ELSE '<!!>'
     END AS "OK",
     name AS "conf",
     setting AS "value",
@@ -66,8 +74,8 @@ WHERE name IN (
 	'log_startup_progress_interval', 'debug_print_parse', 'debug_print_rewritten', 'debug_print_plan', 'debug_pretty_print', 'log_autovacuum_min_duration', 
 	'log_checkpoints', 'log_connections', 'log_disconnections', 'log_duration', 'log_error_verbosity', 'log_hostname', 'log_line_prefix', 'log_lock_waits',
 	'log_recovery_conflict_waits', 'log_parameter_max_length', 'log_parameter_max_length_on_error', 'log_statement', 'log_replication_commands', 'log_temp_files',
-	'TimeZone',  'log_timezone', 'lc_messages', 'track_activities', 'track_counts', 'track_functions',  'track_io_timing', 'track_activity_query_size',
+	'TimeZone',  'log_timezone', 'lc_messages', 'track_activities', 'track_counts', 'track_functions',  'track_io_timing', 'track_cost_delay_timing', 'track_activity_query_size',
 	'track_wal_io_timing', 'stats_fetch_consistency', 
 	'compute_query_id', 'log_statement_stats', 'log_parser_stats', 'log_planner_stats', 'log_executor_stats', 
-	'shared_preload_libraries')
+	'shared_preload_libraries', 'pg_stat_statements.track', 'pg_stat_statements.track_planning', 'pg_stat_statements.track_utility', 'pg_stat_statements.save', 'pg_stat_statements.max')
 ORDER BY category, name;
