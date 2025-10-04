@@ -1,5 +1,6 @@
 # DBA PostgreSQL SQL scripts
-## Scripts tested from PostgreSQL 8.2 to PostgreSQL 18
+- Scripts tested from PostgreSQL 8.2 to PostgreSQL 18
+- The scripts detects your current PostgreSQL version and call the correct script automatically 
 
 ### analyze.sql
 - List ANALYZE and autovacum ANALYZE stats
