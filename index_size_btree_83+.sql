@@ -12,7 +12,7 @@ SELECT
         WHEN 't' THEN 'temporary'
     END AS persistence,
     pg_get_userbyid(c.relowner) AS "Owner",
-    --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
+    pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
     pg_size_pretty(index_size) AS "Index Size",
     ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
     tree_level AS "Tree Level",
@@ -25,13 +25,14 @@ SELECT
 FROM 
          pg_class c
     JOIN pg_index i ON c.oid = i.indexrelid
-    JOIN pg_opclass op ON i.indclass[0] = op.oid
-    JOIN pg_am am ON op.opcmethod = am.oid
+    --JOIN pg_opclass op ON i.indclass[0] = op.oid
+    --JOIN pg_am am ON op.opcmethod = am.oid
+    JOIN pg_am am ON c.relam = am.oid
     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
     LATERAL (SELECT * FROM pgstatindex(c.oid)) l
 WHERE 
-        c.relkind IN ('i','I')
+        (c.relkind = 'i' OR c.relkind = 'I' AND c.relispartition = TRUE)
     AND am.amname = 'btree'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
