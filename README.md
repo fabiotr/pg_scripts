@@ -383,39 +383,107 @@
 - Show partitined objects (tables and indexes)
 - Based on pg_class and pg_inherits
 ### tables_pk_default_values.sql
-- Show tables with their Primary Keys (PKs) and its default values
+- Show tables with their Primary Keys (PKs) and it's default values
 - Based on pg_class, pg_constraint and pg_atrribute
 ### tables_rule.sql
 - Show tables with rules
 - Based on pg_rules
 ### tables_size.sql
+- Show top 20 tables by size and it's free space
+- Based on pgstattuple_aprrox() function on pgstattuple extension
 ### tables_uk_default_values.sql
+- Show tables with Unique Key (UK) and it's default values
+- Based on pg_class, pg_constraint and pg_atrribute
 ### tables_unlogged.sql
+- Works on PG >= 9.1
+- Show unlogged tables
+- Based on pg_class
 ### tables_update.sql
-### tables_with_oid.sql (PG < 12)
+- Show top 10 tables with more UPDATEs
+- Based on pg_stat_user_tables
+### tables_with_oid.sql 
+- Works on PG < 12
+- Show user tables with OIDs that become deprecated on PG 12
+- Based on pg_class
 ### tables_with_seq_scan.sql
+- Show top 20 tables with more seq scan
+- Based on pg_stat_user_tables
 ### tables_without_index.sql
+- Show tables without any index
+- Based on pg_class
 ### tables_without_pk.sql
-### tablespace_objects.sql (PG >= 9.4)
+- Show tables without any Primary Key (PK)
+- Based on pg_class and pg_constraint
+### tablespace_objects.sql 
+- Works on PG >= 9.4
+- Show the number of objects by type for each tablespace
+- Based on pg_class and pg_tablespace
 ### tablespaces.sql
-### trigger_events.sql (PG >= 9.3)
+- Show current tablespaces
+- Based on pg_tablespace
+### trigger_events.sql 
+- Works on PG >= 9.3
+- Show existing Event Triggers
+- Based on pg_event_trigger
 ### trigger_tables.sql
-### user_default_privileges.sql (PG >= 9.0)
-### user_granted_parameters.sql (PG >= 15)
+- Show Table Triggers
+- Based on pg_trigger, pg_class and pg_proc
+### user_default_privileges.sql
+- Works on PG >= 9.0
+- Show Default privileges on current database
+- Based on pg_default_acl
+### user_granted_parameters.sql 
+- Works on PG >= 15
+- Show privileges on parameters
+- Based on pg_parameter_acl
 ### user_granted_roles.sql
-### user_options.sql (PG >= 9.0)
+- Show granted roles to other roles
+- Based on pg_auth_members
+### user_options.sql 
+- Works on PG >= 9.0
+- Show roles with parameter options set
+- Based on pg_db_role_setting
 ### user_owners_x_connections.sql
+- Show the current number of connections and objets owned by each role.
+- Based on pg_stat_activity and pg_class
 ### user_priv.sql
+- Show users with hight privileges like superusers
+- Based on pg_roles
 ### vacuum.sql
+- Show current top 20 tables with more percentage of dead rows
+- Based on pg_stat_all_tables
 ### vacuum_+.sql
+- Show current top 20 tables with more percentage of dead rows with separate values for toast tables (experimental)
+- Based on pg_stat_all_tables
 ### vacuum_adjust.sql
+- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size
+- Based on pg_stat_all_tables
 ### vacuum_adjust_+.sql
+- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables (experimental)
+- Based on pg_stat_all_tables
 ### vacuum_full_or_cluster.sql
-### vacuum_wraparound.sql
+- Show VACUUM FULL or CLUSTER commands for tables with more than 20% of free space
+- Based on pgstattuple_aprrox() function on pgstattuple extension
 ### vacuum_wraparound_database.sql
+- Show databases near a vacuum wraparound order by age
+- Based on pg_database
 ### vacuum_wraparound_table.sql
+- Show tables near a vacuum wraparound order by age
+- Based on pg_class
 ### vacuum_wraparound_table_clean.sql
+- Show VACUUM comands to prevent a vacuum wraparound
+- Based on pg_class
 ### vacuum_wraparound_table_multixact.sql
+- Show tables near a vacuum wraparound due to multixact age
+- Base on pg_class
 ### views.sql
-- wal.sql (PG >= 14)
-- wal_reciever.sql (PG >= 9.6)
+- Show views on current database
+- Based on pg_views
+### wal.sql 
+- Works on PG >= 14
+- Show current transaction logs (WAL) statistics
+- Based on pg_stat_wal
+### wal_reciever.sql 
+- Works on PG >= 9.6
+- Show current wal receiver status on a replica
+- Based on pg_stat_wal_receiver
