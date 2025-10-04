@@ -175,6 +175,9 @@
 ### materialized_views.sql
 - Show materialized views on current database
 - Based on pg_class
+### object_options.sql
+- List objects with options set
+- Based on pg_class
 ### object_privileges_grant.sql
 - Show GRANT command for every privilege on objects on current database
 - Based on pg_class and pg_roles
@@ -236,9 +239,6 @@
 ### reindex_on_new_glibc.sql
 - Create REINDEX commands to recreate index when make a migration from a Linux server with GLIBC < 2.28 to a Linux server with GLIBC >= 2.28
 - Based on pg_index and pg_collation
-### reloptions.sql
-- List objects with options set
-- Based on pg_class
 ### replication_origin.sql 
 - Works on PG >= 9.5
 - Show replication origins created and associated status if exists
