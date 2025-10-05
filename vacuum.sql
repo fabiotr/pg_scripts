@@ -24,7 +24,7 @@ SELECT
 \if :svp_pg_91
   \i vacuum_91+.sql 
 \elif :svp_pg_84
-  \i vacuum_91+.sql
+  \i vacuum_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
