@@ -22,7 +22,7 @@ SELECT
 \gset svp_
 
 \set QUIET on
-\pset xheader_width 1
+--\pset xheader_width 1
 \timing off
 \x on
 \if :svp_pg_17 
@@ -30,8 +30,8 @@ SELECT
 \elif :svp_pg_14
   \i statements_total_14+.sql
 \else
-  \qecho - pg_stat_statements_info is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \x off
-\pset xheader_width full
+--\pset xheader_width full
 \set QUIET off

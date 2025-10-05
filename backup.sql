@@ -33,6 +33,6 @@ SELECT
 \elif :svp_pg_91
   \i backup_91+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \set QUIET off

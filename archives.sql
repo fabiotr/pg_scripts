@@ -27,9 +27,9 @@ SELECT
 \if :svp_pg_96
   \i archives_96+.sql
 \elif :svp_pg_94
-  \i internal_94+.sql
+  \i archives_94+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
-\set QUIET off
 \x off
+\set QUIET off

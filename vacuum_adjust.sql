@@ -1,50 +1,31 @@
--- AUTOVACUUM VACUUM adjust goals:
---  10 MB local mechanical disk
---  20 MB storage mechanical disk
---  50 MB SSD 
--- 100 MB SSD write intensive 
-SET lc_numeric = 'C';
 SELECT
-    'ALTER TABLE ' 
-        || n.nspname || '.' || c.relname 
-        || ' SET(autovacuum_vacuum_scale_factor = ' 
-        || CASE 
-                WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'0D99999')
-                WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'0D9999')
-                WHEN c.scale < '0.01'   THEN to_char(round(c.scale,3),'0D999')
-                WHEN c.scale < '0.1'    THEN to_char(round(c.scale,2),'0D99')
-                ELSE                         to_char(round(c.scale,1),'0D9')
-           END 
-        || '); --' AS "Command", 
-    coalesce(t.scale,s.scale) AS current,
-    --round(c.scale,6) AS new,
-    pg_size_pretty(pg_table_size(c.oid))  AS size
-FROM 
-    (SELECT 
-            (100*1024*1024) / pg_table_size(oid)::NUMERIC scale, -- 100*1024*1024 = 100MB goal
-            relname, relnamespace, relkind, relpages, oid 
-        FROM pg_class) c
-    JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN (
-        SELECT to_number(trim('autovacuum_vacuum_scale_factor=' FROM reloptions),'99.99999') scale, oid
-            FROM (
-                SELECT unnest(reloptions) reloptions, oid 
-                    FROM pg_class 
-                    WHERE reloptions IS NOT NULL) i
-            WHERE reloptions LIKE 'autovacuum_vacuum_scale_factor=%') AS t ON t.oid = c.oid,
-    (SELECT to_number(current_setting('autovacuum_vacuum_scale_factor'),'99.999') AS scale) AS s
-WHERE
-    c.relkind IN ('r', 'm', 'p') AND  -- Only tables
-    c.relpages > 0               AND  -- Avoid division by zero
-    c.scale < s.scale            AND  -- Only adjust WHERE new value < default value
-    coalesce(t.scale,s.scale) !=      -- Only adjust WHERE new value != current value
-        CASE 
-            WHEN c.scale < '0.0001' THEN round(c.scale,5)
-            WHEN c.scale < '0.001'  THEN round(c.scale,4)
-            WHEN c.scale < '0.01'   THEN round(c.scale,3)
-            WHEN c.scale < '0.1'    THEN round(c.scale,2)
-            ELSE                     round(c.scale,1)
-        END
-ORDER BY c.relpages DESC
-;
-RESET lc_numeric ;
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+\set QUIET on
+\timing off
+\if :svp_pg_90
+  \i vacuum_adjust_90+.sql 
+\elif :svp_pg_84
+  \i vacuum_adjust_84+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off

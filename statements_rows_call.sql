@@ -38,6 +38,6 @@ SELECT
 \elif :svp_pg_84
   \i statements_rows_call_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \set QUIET off
