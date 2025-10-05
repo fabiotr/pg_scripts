@@ -1,53 +1,32 @@
 SELECT
-    n.nspname AS "Esquema", 
-    c.relname AS "Tabela",
-    trim(to_char(mxid_age(c.relminmxid),'999G999G999G999')) ||
-        CASE 
-            WHEN t.relfrozenxid IS NOT NULL 
-                THEN ' (T ' || trim(to_char(mxid_age(t.relminmxid),'999G999G999G999')) || ')'
-            ELSE '' END AS "Current Age",
-    trim(to_char(LEAST (to_number(COALESCE(fmi.option_value, current_setting('vacuum_multixact_freeze_min_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') /2),'999G999G999G999')) || 
-            CASE WHEN 
-                tfmi.option_value IS NOT NULL AND 
-                to_number(tfmi.option_value, '999999999999') < to_number(current_setting('autovacuum_multixact_freeze_max_age'),'999999999999')/2
-                THEN ' (T ' || trim(to_char(to_number(tfmi.option_value ,'999999999999'),'999G999G999G999')) || ')' 
-            ELSE '' END AS "Min Age", 
-    trim(to_char(LEAST (to_number(COALESCE(ftb.option_value, current_setting('vacuum_multixact_freeze_table_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_multixact_freeze_max_age')),'999999999999') * '0.95'),'999G999G999G999')) || 
-            CASE WHEN 
-                tftb.option_value IS NOT NULL  AND 
-                to_number(tftb.option_value ,'999999999999') < to_number(current_setting('autovacuum_multixact_freeze_max_age'),'999999999999')*'0.95'
-                THEN ' (T ' || trim(to_char(to_number(tftb.option_value ,'999999999999'),'999G999G999G999')) || ')' 
-            ELSE '' END AS "Table Age", 
-    trim(to_char(to_number(COALESCE(fma.option_value, current_setting('autovacuum_multixact_freeze_max_age')), '999999999999'),'999G999G999G999')) ||
-            CASE WHEN 
-                tfma.option_value IS NOT NULL AND
-                to_number(tfma.option_value ,'999999999999') < to_number(current_setting('autovacuum_multixact_freeze_max_age'),'999999999999')
-                THEN ' (T ' || trim(to_char(to_number(tfma.option_value ,'999999999999'),'999G999G999G999')) || ')' 
-            ELSE '' END AS "Max Age", 
-    trim(to_char(to_number(current_setting('vacuum_multixact_failsafe_age'),'999999999999'),'999G999G999G999')) AS "Failsafe Age", 
-    pg_size_pretty(pg_table_size(c.oid)) AS "Tamanho"
-FROM 
-    pg_class c 
-    JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN pg_class t ON t.oid = c.reltoastrelid
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  fmi ON  fmi.option_name = 'autovacuum_multixact_freeze_min_age' 
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  ftb ON  ftb.option_name = 'autovacuum_multixact_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  fma ON  fma.option_name = 'autovacuum_multixact_freeze_max_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tfmi ON tfmi.option_name = 'autovacuum_multixact_freeze_min_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tftb ON tftb.option_name = 'autovacuum_multixact_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tfma ON tfma.option_name = 'autovacuum_multixact_freeze_max_age' 
-WHERE
-    c.relkind IN ('r', 'm') AND
-    --n.nspname NOT IN ('information_schema', 'pg_catalog') AND
-    pg_table_size(c.oid) > 67108864 AND -- > 64MB
-    (
-        mxid_age(c.relminmxid) >= LEAST (to_number(COALESCE(fmi.option_value,current_setting('vacuum_multixact_freeze_min_age')),'999999999999'),
-            to_number(COALESCE(fma.option_value, current_setting('autovacuum_multixact_freeze_max_age')),'999999999999') /2)
-    OR
-        mxid_age(t.relminmxid) >= LEAST (COALESCE(to_number(tfmi.option_value,'999999999999'), to_number(current_setting('vacuum_freeze_min_age'),'999999999999')),
-            to_number(COALESCE(tfma.option_value, current_setting('autovacuum_multixact_freeze_max_age')),'999999999999') /2)
-    )
-ORDER BY greatest(mxid_age(c.relminmxid), mxid_age(t.relminmxid)) DESC
-LIMIT 40;
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+       	,current_setting('server_version_num')::int >=  80300  AS pg_83
+       	,current_setting('server_version_num')::int >=  80400  AS pg_84
+       	,current_setting('server_version_num')::int >=  90000  AS pg_90
+       	,current_setting('server_version_num')::int >=  90100  AS pg_91
+       	,current_setting('server_version_num')::int >=  90200  AS pg_92
+       	,current_setting('server_version_num')::int >=  90300  AS pg_93
+       	,current_setting('server_version_num')::int >=  90400  AS pg_94
+       	,current_setting('server_version_num')::int >=  90500  AS pg_95
+       	,current_setting('server_version_num')::int >=  90600  AS pg_96
+       	,current_setting('server_version_num')::int >= 100000  AS pg_10
+       	,current_setting('server_version_num')::int >= 110000  AS pg_11
+       	,current_setting('server_version_num')::int >= 120000  AS pg_12
+       	,current_setting('server_version_num')::int >= 130000  AS pg_13
+       	,current_setting('server_version_num')::int >= 140000  AS pg_14
+       	,current_setting('server_version_num')::int >= 150000  AS pg_15
+       	,current_setting('server_version_num')::int >= 160000  AS pg_16
+	,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\set QUIET on
+\timing off
+
+\if :svp_pg_95
+  \i vacuum_wraparound_table_95+.sql 
+\else
+  \qecho - vacuum_wraparound_table is not supported on version :svp_server_version
+\endif
+\set QUIET off

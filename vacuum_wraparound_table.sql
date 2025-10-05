@@ -26,8 +26,8 @@ SELECT
 
 \if :svp_pg_14
   \i vacuum_wraparound_table_14+.sql 
-\elif :svp_pg_82
-  \i vacuum_wraparound_table_82+.sql
+\elif :svp_pg_93
+  \i vacuum_wraparound_table_93+.sql
 \else
   \qecho - vacuum_wraparound_table is not supported on version :svp_server_version
 \endif
