@@ -11,6 +11,5 @@ FROM pg_index x
 WHERE
     x.indpred IS NOT NULL AND
     c.relkind IN ('r', 'm', 'p') AND
-    i.relkind IN('i', 'I') AND
-    NOT EXISTS (SELECT 1 FROM pg_stat_progress_create_index pi WHERE pi.relid = x.indrelid)
+    i.relkind IN('i', 'I')
 ORDER BY 1,2,3,4;

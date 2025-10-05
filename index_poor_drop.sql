@@ -1,15 +1,32 @@
-SELECT '/*** SIZE: ' || pg_size_pretty(pg_relation_size(indexrelid::regclass)) || '  ***/ DROP INDEX CONCURRENTLY IF EXISTS ' || indexes.schemaname || '.' || idx_stat.indexrelname || ';'
-FROM pg_stat_user_indexes as idx_stat
-	JOIN pg_index
-		USING (indexrelid)
-	JOIN pg_indexes as indexes
-		ON idx_stat.schemaname = indexes.schemaname
-			AND idx_stat.relname = indexes.tablename
-			AND idx_stat.indexrelname = indexes.indexname
-WHERE 
-	pg_index.indisunique = FALSE AND
-	pg_index.indisprimary = FALSE AND
-	idx_scan = 0 AND
-	indexdef ~* 'USING btree'
-	--AND pg_relation_size(indexrelid::regclass) > 1000000 -- > indices com mais de 1 MB
-	;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\set QUIET on
+\timing off
+\if :svp_pg_84
+  \i index_poor_drop_84+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off

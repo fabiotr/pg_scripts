@@ -1,17 +1,32 @@
-SELECT 
-    n.nspname AS schemaname,
-    c.relname AS tablename,
-    i.relname AS indexname,
-    string_agg(collname::varchar, ', ') collations,
-    --t.spcname AS tablespace,
-    pg_get_indexdef(i.oid) AS indexdef
-FROM 
-    (SELECT indrelid, indexrelid, unnest(indkey) AS key, unnest(indcollation) AS collation FROM pg_index) x
-    JOIN pg_class c ON c.oid = x.indrelid
-    JOIN pg_class i ON i.oid = x.indexrelid
-    LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
-    LEFT JOIN pg_tablespace t ON t.oid = i.reltablespace
-    JOIN pg_collation co ON co.oid = x.collation
-WHERE co.collname NOT IN  ('default', 'C', 'POSIX')
-GROUP BY n.nspname, c.relname, i.relname, t.spcname, i.oid
-ORDER BY 1,2,3,4;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\set QUIET on
+\timing off
+\if :svp_pg_91
+  \i index_non_default_collation_91+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off

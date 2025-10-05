@@ -30,5 +30,5 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
-\set QUIET off
 \x off
+\set QUIET off

@@ -37,6 +37,6 @@ SELECT
 \elif :svp_pg_92
   \i statements_temp_92+.sql
 \else
-  \qecho - pg_stat_statements with temp data is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \set QUIET off

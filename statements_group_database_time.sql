@@ -33,6 +33,6 @@ SELECT
 \elif :svp_pg_94
   \i statements_group_database_time_94+.sql
 \else
-  \qecho - not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \set QUIET off

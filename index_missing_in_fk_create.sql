@@ -1,19 +1,32 @@
-SELECT 'CREATE INDEX CONCURRENTLY ON ' || 
-       n.nspname || '.' || c.conrelid::regclass || 
-       ' (' || string_agg(a.attname, ',' ORDER BY x.n) || ');' AS command
-FROM
-    pg_constraint c
-    JOIN pg_namespace n ON n.oid = c.connamespace 
-   CROSS JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS x(attnum, n)
-   JOIN pg_attribute a ON a.attnum = x.attnum AND a.attrelid = c.conrelid
-WHERE
-    pg_relation_size(c.conrelid) > 10*1024*1024 AND
-    NOT EXISTS (
-        SELECT 1
-        FROM pg_index i
-        WHERE
-            i.indrelid = c.conrelid AND
-            (i.indkey::smallint[])[0:cardinality(c.conkey)-1] @> c.conkey)
-        AND c.contype = 'f'
-GROUP BY n.nspname, c.conrelid, c.conname, c.confrelid
-ORDER BY pg_relation_size(c.conrelid) DESC;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\set QUIET on
+\timing off
+\if :svp_pg_94
+  \i index_missing_in_fk_create_94+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off

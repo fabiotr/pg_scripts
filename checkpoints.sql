@@ -29,10 +29,10 @@ SELECT
   \i checkpoints_17+.sql
 \elif :svp_pg_91
   \i checkpoints_91+.sql
-\elif :svp_pg_82
-  \i checkpoints_82+.sql
+\elif :svp_pg_83
+  \i checkpoints_83+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
-\set QUIET off
 \x off
+\set QUIET off

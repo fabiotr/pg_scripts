@@ -26,7 +26,7 @@ SELECT
 \x off
 \if :svp_pg_91
   \i user_priv_91+.sql 
-\elif
+\elif :svp_pg_82
   \i user_priv_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
