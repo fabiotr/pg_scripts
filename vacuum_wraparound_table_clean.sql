@@ -1,48 +1,32 @@
-SELECT 
-    'VACUUM ' || n.nspname || '.' || c.relname || '; --' AS command,
-    greatest(age(c.relfrozenxid), age(t.relfrozenxid)) AS "Current Age",
-    pg_size_pretty(pg_table_size(c.oid)) AS "Size"
-FROM 
-    pg_class c 
-    JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN pg_class t ON t.oid = c.reltoastrelid
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  ftb ON  ftb.option_name = 'autovacuum_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  fma ON  fma.option_name = 'autovacuum_freeze_max_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tftb ON tftb.option_name = 'autovacuum_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tfma ON tfma.option_name = 'autovacuum_freeze_max_age' 
-WHERE
-    c.relkind IN ('r', 'm') AND
-    --n.nspname NOT IN ('information_schema', 'pg_catalog') AND
-    pg_table_size(c.oid) > 67108864 AND -- > 64MB
-    (
-        age(c.relfrozenxid) >= LEAST (to_number(COALESCE(ftb.option_value,current_setting('vacuum_freeze_table_age')),'999999999999'),
-            to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95')
-    OR
-        age(t.relfrozenxid) >= LEAST (to_number(COALESCE(tftb.option_value, current_setting('vacuum_freeze_table_age')),'999999999999'),
-            to_number(COALESCE(tfma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95')
-    )
-UNION
-SELECT 
-    'VACUUM ' || n.nspname || '.' || c.relname || '; --' AS command,
-    greatest(mxid_age(c.relminmxid), mxid_age(t.relminmxid)) AS "Current Age",
-    pg_size_pretty(pg_table_size(c.oid)) AS "Size"
-FROM 
-    pg_class c 
-    JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN pg_class t ON t.oid = c.reltoastrelid
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  ftb ON  ftb.option_name = 'autovacuum_multixact_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS  fma ON  fma.option_name = 'autovacuum_multixact_freeze_max_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tftb ON tftb.option_name = 'autovacuum_multixact_freeze_table_age' 
-    LEFT JOIN pg_options_to_table(t.reloptions)  AS tfma ON tfma.option_name = 'autovacuum_multixact_freeze_max_age' 
-WHERE
-    c.relkind IN ('r', 'm') AND
-    --n.nspname NOT IN ('information_schema', 'pg_catalog') AND
-    pg_table_size(c.oid) > 67108864 AND -- > 64MB
-    (
-        mxid_age(c.relminmxid) >= LEAST (to_number(COALESCE(ftb.option_value,current_setting('vacuum_multixact_freeze_table_age')),'999999999999'),
-            to_number(COALESCE(fma.option_value, current_setting('autovacuum_multixact_freeze_max_age')),'999999999999') * '0.95')
-    OR
-        mxid_age(t.relminmxid) >= LEAST (to_number(COALESCE(tftb.option_value,current_setting('vacuum_multixact_freeze_table_age')),'999999999999'),
-            to_number(COALESCE(tfma.option_value, current_setting('autovacuum_multixact_freeze_max_age')),'999999999999') * '0.95')
-    )
-ORDER BY 2 DESC;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+       	,current_setting('server_version_num')::int >=  80300  AS pg_83
+       	,current_setting('server_version_num')::int >=  80400  AS pg_84
+       	,current_setting('server_version_num')::int >=  90000  AS pg_90
+       	,current_setting('server_version_num')::int >=  90100  AS pg_91
+       	,current_setting('server_version_num')::int >=  90200  AS pg_92
+       	,current_setting('server_version_num')::int >=  90300  AS pg_93
+       	,current_setting('server_version_num')::int >=  90400  AS pg_94
+       	,current_setting('server_version_num')::int >=  90500  AS pg_95
+       	,current_setting('server_version_num')::int >=  90600  AS pg_96
+       	,current_setting('server_version_num')::int >= 100000  AS pg_10
+       	,current_setting('server_version_num')::int >= 110000  AS pg_11
+       	,current_setting('server_version_num')::int >= 120000  AS pg_12
+       	,current_setting('server_version_num')::int >= 130000  AS pg_13
+       	,current_setting('server_version_num')::int >= 140000  AS pg_14
+       	,current_setting('server_version_num')::int >= 150000  AS pg_15
+       	,current_setting('server_version_num')::int >= 160000  AS pg_16
+	,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\set QUIET on
+\timing off
+
+\if :svp_pg_95
+  \i vacuum_wraparound_table_clean_95+.sql
+\else
+  \qecho - vacuum_wraparound_table is not supported on version :svp_server_version
+\endif
+\set QUIET off
