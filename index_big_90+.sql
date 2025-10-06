@@ -4,6 +4,7 @@ SELECT n.nspname AS schemaname,
     pg_size_pretty(pg_table_size(x.indrelid)) AS table_size,
     pg_size_pretty(pg_relation_size(x.indexrelid)) AS index_size,
     --t.spcname AS tablespace,
+    trunc(100 * pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid),1) AS "Ind/Table %",
     pg_get_indexdef(i.oid) AS indexdef
 FROM pg_index x
      JOIN pg_class c ON c.oid = x.indrelid
@@ -15,4 +16,4 @@ WHERE
     pg_relation_size(x.indexrelid) > pg_table_size(x.indrelid) * 0.5 AND
     c.relkind IN ('r', 'm', 'p') AND
     i.relkind IN('i', 'I')
-ORDER BY 1,2,3,4;
+ORDER BY pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid) DESC;
