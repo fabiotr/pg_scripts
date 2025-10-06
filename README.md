@@ -142,14 +142,17 @@
 - Works on PG >= 8.3
 - Show top 20 BTREE indexes that may need a REINDEX (having avg_leaf_density <= 70 OR leaf_fragmentation >= 20) ordered by index size
 - Based on pg_class and pgstatindex(oid) function on pgstattuble extension
+- Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O
 ### index_stat_gin.sql
 - Works on PG >= 9.3
 - Show statistics about top 20 GIN indexes size on current database
-- Based on pg_class and pgstatindex(oid) function on pgstattuble extension
+- Based on pg_class and pgstginatindex(oid) function on pgstattuble extension
+- - Notice that  pgstatginindex(oid) may take a wile to run and overhead your I/O
 ### index_stat_hash.sql
 - Works on PG >= 10
 - Show statistics about top 20 HASH indexes size on current database
-- Based on pg_class and pgstatindex(oid) function on pgstattuble extension
+- Based on pg_class and pgstathashindex(oid) function on pgstattuble extension
+- - Notice that  pgstathashindex(oid) may take a wile to run and overhead your I/O
 ### internal.sql
 - Show some cluster parameters
 ### io_cluster.sql
@@ -380,6 +383,7 @@
 - Works on PG >= 8.3
 - Show top 10 tables with more free size that may need maintenance
 - Based on pgstattuple_aprrox() function on pgstattuple extension
+- - Notice that  pgstattuple(oid) may take a wile to run and overhead your I/O
 ### tables_changes.sql
 - Show top 10 tables with more INSERTs, UPDATEs and DELETEs
 - Based on pg_stat_user_tables
@@ -421,7 +425,8 @@
 ### tables_size.sql
 - Works on PG >= 9.5
 - Show top 20 tables by size and it's free space
-- Based on pgstattuple_aprrox() function on pgstattuple extension
+- Based on pgstattuple_approx() function on pgstattuple extension
+- Notice that  pgstatituple_approx(oid) may take a wile to run and overhead your I/O
 ### tables_uk_default_values.sql
 - Works on PG >= 9.0
 - Show tables with Unique Key (UK) and it's default values
@@ -500,7 +505,8 @@
 ### vacuum_full_or_cluster.sql
 - Works on PG >= 9.5
 - Show VACUUM FULL or CLUSTER commands for tables with more than 20% of free space
-- Based on pgstattuple_aprrox() function on pgstattuple extension
+- Based on pgstattuple_approx() function on pgstattuple extension
+- Notice that  pgstattuple_approx(oid) may take a wile to run and overhead your I/O
 ### vacuum_wraparound_database.sql
 - Show databases near a vacuum wraparound order by age
 - Based on pg_database
