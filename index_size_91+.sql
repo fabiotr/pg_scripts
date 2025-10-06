@@ -12,30 +12,22 @@ SELECT
         WHEN 't' THEN 'temporary'
     END AS persistence,
     pg_get_userbyid(c.relowner) AS "Owner",
-    pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
-    pg_size_pretty(index_size) AS "Index Size",
     ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
-    tree_level AS "Tree Level",
-    internal_pages, 
-    leaf_pages,
-    empty_pages, 
-    deleted_pages, 
-    avg_leaf_density, 
-    leaf_fragmentation
+    pg_size_pretty(pg_relation_size(i.indrelid)) AS "Table Size",
+    pg_size_pretty(pg_relation_size(i.indexrelid)) AS "Index Size",
+    trunc(100 * pg_relation_size(i.indexrelid) / nullif(pg_relation_size(i.indrelid),0),1) AS "Ind/Table %"
 FROM 
          pg_class c
     JOIN pg_index i ON c.oid = i.indexrelid
-    --JOIN pg_opclass op ON i.indclass[0] = op.oid
-    --JOIN pg_am am ON op.opcmethod = am.oid
     JOIN pg_am am ON c.relam = am.oid
     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
-    LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
-    LATERAL (SELECT * FROM pgstatindex(c.oid)) l
+    LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE 
-        (c.relkind = 'i' OR c.relkind = 'I' AND c.relispartition = TRUE)
+        c.relkind IN ('i','I')
+    AND c.relpages > 0
     AND am.amname = 'btree'
-    AND n.nspname <> 'information_schema'
+    AND n.nspname != 'information_schema'
     AND n.nspname !~ '^pg_toast'
     AND pg_catalog.pg_table_is_visible(c.oid)
-ORDER BY index_size DESC
+ORDER BY c.relpages DESC
 LIMIT 20;

@@ -23,8 +23,14 @@ SELECT
 
 \set QUIET on
 \timing off
-\if :svp_pg_83
-  \i index_size_btree_83+.sql
+\if :svp_pg_10
+  \i index_stat_btree_10+.sql
+\elif :svp_pg_94
+  \i index_stat_btree_94+.sql
+\elif :svp_pg_93
+  \i index_stat_btree_93+.sql
+\elif :svp_pg_83
+  \i index_stat_btree_83+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

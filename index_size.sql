@@ -1,34 +1,33 @@
-SELECT 
-    t.spcname AS "Tbs",
-    n.nspname as "Schema",
-    c.relname as "Name",
-    CASE c.relkind 
-        WHEN 'i' THEN 'index' 
-        WHEN 'I' THEN 'partitioned index' 
-        END AS "Type",
-    CASE c.relpersistence
-        WHEN 'p' THEN 'permanent'
-        WHEN 'u' THEN 'unlogged'
-        WHEN 't' THEN 'temporary'
-    END AS persistence,
-    pg_get_userbyid(c.relowner) AS "Owner",
-    --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
-    pg_size_pretty(index_size) AS "Index Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
-    tree_level AS "Tree Level",
-    internal_pages, 
-    leaf_pages,
-    empty_pages, 
-    deleted_pages, 
-    avg_leaf_density, 
-    leaf_fragmentation
-FROM pg_class c
-     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
-     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
-     LATERAL (SELECT * FROM pgstatindex(c.oid)) l
-WHERE c.relkind IN ('i','I')
-      AND n.nspname <> 'information_schema'
-      AND n.nspname !~ '^pg_toast'
-      --AND pg_catalog.pg_table_is_visible(c.oid)
-ORDER BY index_size DESC
-LIMIT 20;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version_num')::int >= 170000  AS pg_17
+        ,current_setting('server_version_num')::int >= 180000  AS pg_18
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+--\set QUIET on
+\timing off
+\if :svp_pg_91
+  \i index_size_91+.sql
+\elif :svp_pg_83
+  \i index_size_83+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off
