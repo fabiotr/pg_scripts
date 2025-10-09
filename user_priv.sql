@@ -25,9 +25,9 @@ SELECT
 \timing off
 \x off
 \if :svp_pg_91
-  \i user_priv_91+.sql 
+  \ir user_priv_91+.sql 
 \elif :svp_pg_82
-  \i user_priv_82+.sql
+  \ir user_priv_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

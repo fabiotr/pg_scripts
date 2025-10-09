@@ -26,11 +26,11 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_17
-  \i checkpoints_17+.sql
+  \ir checkpoints_17+.sql
 \elif :svp_pg_91
-  \i checkpoints_91+.sql
+  \ir checkpoints_91+.sql
 \elif :svp_pg_83
-  \i checkpoints_83+.sql
+  \ir checkpoints_83+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

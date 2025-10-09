@@ -25,19 +25,19 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_18
-  \i database_stats_18+.sql
+  \ir database_stats_18+.sql
 \elif :svp_pg_14
-  \i database_stats_14+.sql
+  \ir database_stats_14+.sql
 \elif :svp_pg_12
-  \i database_stats_12+.sql
+  \ir database_stats_12+.sql
 \elif :svp_pg_92
-  \i database_stats_92+.sql
+  \ir database_stats_92+.sql
 \elif :svp_pg_91
-  \i database_stats_91+.sql
+  \ir database_stats_91+.sql
 \elif :svp_pg_83
-  \i database_stats_83+.sql
+  \ir database_stats_83+.sql
 \elif :svp_pg_82
-  \i database_stats_82+.sql
+  \ir database_stats_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

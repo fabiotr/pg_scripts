@@ -24,9 +24,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_18
-  \i io_cluster_18+.sql
+  \ir io_cluster_18+.sql
 \elif :svp_pg_16
-  \i io_cluster_16+.sql
+  \ir io_cluster_16+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

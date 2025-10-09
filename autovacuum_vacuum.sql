@@ -19,15 +19,13 @@ SELECT
         ,current_setting('server_version') AS server_version
 \gset svp_
 
-
-
 \set QUIET on
 \timing off
-\x on
-\if :svp_pg_10
-  \i log_size_10+.sql 
+\if :svp_pg_91
+  \ir autovacuum_vacuum_91+.sql 
+\elif :svp_pg_84
+  \ir autovacuum_vacuum_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
 \set QUIET off
-\x off

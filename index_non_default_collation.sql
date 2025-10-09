@@ -25,7 +25,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_91
-  \i index_non_default_collation_91+.sql
+  \ir index_non_default_collation_91+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

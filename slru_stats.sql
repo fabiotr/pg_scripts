@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_13
-  \i slru_stats_13+.sql
+  \ir slru_stats_13+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

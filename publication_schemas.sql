@@ -25,7 +25,7 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_15
-  \i publication_schemas_15+.sql
+  \ir publication_schemas_15+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -25,13 +25,13 @@ SELECT
 \timing off
 
 \if :svp_pg_15
-  \i backup_15+.sql
+  \ir backup_15+.sql
 \elif :svp_pg_93
-  \i backup_93+.sql
+  \ir backup_93+.sql
 \elif :svp_pg_92
-  \i backup_92+.sql
+  \ir backup_92+.sql
 \elif :svp_pg_91
-  \i backup_91+.sql
+  \ir backup_91+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

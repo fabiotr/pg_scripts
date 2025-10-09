@@ -22,9 +22,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_12
-  \i connections_ssl_12+.sql
+  \ir connections_ssl_12+.sql
 \elif :svp_pg_95
-  \i connections_ssl_95+.sql
+  \ir connections_ssl_95+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

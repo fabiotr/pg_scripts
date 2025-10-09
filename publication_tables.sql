@@ -24,9 +24,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_15
-  \i publication_tables_15+.sql
+  \ir publication_tables_15+.sql
 \elif :svp_pg_12
-  \i publication_tables_12+.sql
+  \ir publication_tables_12+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -25,7 +25,7 @@ SELECT
 \timing off
 
 \if :svp_pg_95
-  \i vacuum_wraparound_table_95+.sql 
+  \ir vacuum_wraparound_table_95+.sql 
 \else
   \qecho - vacuum_wraparound_table is not supported on version :svp_server_version
 \endif

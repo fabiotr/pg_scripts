@@ -26,11 +26,11 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_93
-  \i fillfactor_93+.sql
+  \ir fillfactor_93+.sql
 \elif :svp_pg_91
-  \i fillfactor_91+.sql
+  \ir fillfactor_91+.sql
 \elif :svp_pg_84
-  \i fillfactor_84+.sql
+  \ir fillfactor_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

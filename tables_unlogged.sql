@@ -1,29 +1,29 @@
-SELECT 
-    t.spcname AS "Tbs",
-    n.nspname AS "Schema",
-    c.relname AS "Name",
-    CASE c.relkind 
-        WHEN 'r' THEN 'table' 
-        WHEN 'm' THEN 'materialized view' 
-        WHEN 'p' THEN 'partition table' 
-        END AS "Type",
-    pg_get_userbyid(c.relowner) AS "Owner",
-    pg_size_pretty(pg_total_relation_size(c.oid)) AS "Total Size",
-    pg_size_pretty(pg_table_size(c.oid)) AS "Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
-    pg_size_pretty(trunc(pg_table_size(c.oid) / c.reltuples)::numeric) AS "Avg Row Size",
-    pg_size_pretty(approx_free_space) AS "Free Size",
-    round(approx_free_percent::numeric,2) AS "% Free"
-FROM pg_class c
-     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
-     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
-     LATERAL (SELECT * FROM pgstattuple_approx(c.oid)) l
-WHERE c.relkind IN ('r','p', 'm','')
-      AND c.relpersistence = 'u'
-      AND n.nspname <> 'information_schema'
-      AND n.nspname !~ '^pg_toast'
-      --AND pg_catalog.pg_table_is_visible(c.oid)
---ORDER BY approx_free_space DESC
-ORDER BY c.relpages DESC
-LIMIT 20;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version') AS server_version
+\gset svp_
 
+\set QUIET on
+\timing off
+\if :svp_pg_93
+  \ir tables_unlogged_93+.sql 
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off

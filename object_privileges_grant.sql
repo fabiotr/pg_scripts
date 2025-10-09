@@ -24,7 +24,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_93
-  \i object_privileges_grant_93+.sql
+  \ir object_privileges_grant_93+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

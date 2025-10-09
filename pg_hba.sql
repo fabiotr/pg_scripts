@@ -25,7 +25,7 @@ SELECT
 \timing off
 \x off
 \if :svp_pg_10
-  \i pg_hba_10+.sql 
+  \ir pg_hba_10+.sql 
 \else
   \qecho - Not supported on version :svp_server_version (BUT YOU SHOULD COLLECT THIS INFORMATION ON pg_hba.conf )
 \endif

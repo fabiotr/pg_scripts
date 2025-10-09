@@ -25,11 +25,11 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_13
-  \i replication_slots_13+.sql
+  \ir replication_slots_13+.sql
 \elif :svp_pg_12
-  \i replication_slots_12+.sql
+  \ir replication_slots_12+.sql
 \elif :svp_pg_95
-  \i replication_slots_95+.sql
+  \ir replication_slots_95+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

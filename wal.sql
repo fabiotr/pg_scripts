@@ -26,7 +26,7 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_14
-  \i wal_14+.sql
+  \ir wal_14+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

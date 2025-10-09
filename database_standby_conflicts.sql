@@ -25,7 +25,7 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_91
-  \i database_standby_conflicts_91+.sql 
+  \ir database_standby_conflicts_91+.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

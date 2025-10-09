@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_93
-  \i sequence_setval_93+.sql
+  \ir sequence_setval_93+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -24,7 +24,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_18
-  \i index_check_gin_integrity_18+.sql
+  \ir index_check_gin_integrity_18+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

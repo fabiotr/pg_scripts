@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_95
-  \i replication_origin_95+.sql
+  \ir replication_origin_95+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
