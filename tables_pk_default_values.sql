@@ -1,20 +1,29 @@
-SELECT 
-    n.nspname AS schema, 
-    c.relname   AS table,
-    string_agg(a.attname,       ', ') AS column, 
-    string_agg(a.attnum::text,  ', ') AS order,
-    string_agg(t.typname,       ', ') AS data_type, 
-    string_agg(pg_get_expr(at.adbin, at.adrelid), ', ') AS default_value
-FROM 
-    pg_class c 
-    JOIN pg_namespace n   ON c.relnamespace = n.oid  
-    JOIN pg_constraint co ON co.connamespace = n.oid AND co.conrelid = c.oid
-    JOIN pg_attribute a   ON a.attrelid = c.oid AND a.attnum = ANY (co.conkey)
-    JOIN pg_type t        ON t.oid = a.atttypid
-    LEFT JOIN pg_attrdef at    ON at.adrelid = c.oid AND at.adnum = a.attnum
-WHERE 
-    c.relkind = 'r' AND
-    n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast') AND 
-    co.contype = 'p'
-GROUP BY n.nspname, c.relname
-ORDER BY 1,2,4;
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+\set QUIET on
+\timing off
+\if :svp_pg_90
+  \ir tables_pk_default_values_90+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\set QUIET off
