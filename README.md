@@ -2,19 +2,35 @@
 - Scripts tested from PostgreSQL 8.2 to PostgreSQL 18
 - The scripts detects your current PostgreSQL version and call the correct script automatically 
 
-### analyze.sql
-- List ANALYZE and autovacum ANALYZE stats
-- Based on pg_stat_user_tables
-### analyze_adjust.sql
-- Recomend autovacuum_analyze_scale_factor adjust based on number of rows on table
-- Based on pg_stat_user_tables
 ### archives.sql
 - Works on PG >= 9.4 
 - Show amount of archives generated
 - Based on pg_stat_archiver
+### autovacuum_analyze.sql
+- List ANALYZE and autovacum ANALYZE stats
+- Based on pg_stat_user_tables
+### autovacuum_analyze_adjust.sql
+- Recomend autovacuum_analyze_scale_factor adjust based on number of rows on table
+- Based on pg_stat_user_tables
 ### autovacuum_queue.sql
 - Shows next tables where autovacuum will work
 - Based on pg_stat_user_tables
+### autovacuum_vacuum.sql
+- Works on PG >= 8.4
+- Show current top 20 tables with more percentage of dead rows
+- Based on pg_stat_all_tables
+### autovacuum_vacuum_+.sql
+- Works on  PG >= 9.2
+- Show current top 20 tables with more percentage of dead rows with separate values for toast tables (experimental)
+- Based on pg_stat_all_tables
+### autovacuum_vacuum_adjust.sql
+- Works on PG >= 8.4
+- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size
+- Based on pg_stat_all_tables
+### vacuum_adjust_+.sql
+- Works on PG >= 8.4
+- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables (experimental)
+- Based on pg_stat_all_tables****
 ### backup.sql
 - Works on PG >= 9.1
 - Look for a .backup file with physical backup summary at pg_wal or pg_xlog
@@ -486,22 +502,6 @@
 ### user_priv.sql
 - Show users with hight privileges like superusers
 - Based on pg_roles
-### vacuum.sql
-- Works on PG >= 8.4
-- Show current top 20 tables with more percentage of dead rows
-- Based on pg_stat_all_tables
-### vacuum_+.sql
-- Works on  PG >= 9.2
-- Show current top 20 tables with more percentage of dead rows with separate values for toast tables (experimental)
-- Based on pg_stat_all_tables
-### vacuum_adjust.sql
-- Works on PG >= 8.4
-- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size
-- Based on pg_stat_all_tables
-### vacuum_adjust_+.sql
-- Works on PG >= 8.4
-- Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables (experimental)
-- Based on pg_stat_all_tables
 ### vacuum_full_or_cluster.sql
 - Works on PG >= 9.5
 - Show VACUUM FULL or CLUSTER commands for tables with more than 20% of free space
