@@ -22,13 +22,13 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_93
-  \i tablespaces_93+.sql
+  \ir tablespaces_93+.sql
 \elif :svp_pg_92
-  \i tablespaces_92+.sql
+  \ir tablespaces_92+.sql
 \elif :svp_pg_90
-  \i tablespaces_90+.sql
+  \ir tablespaces_90+.sql
 \elif :svp_pg_82
-  \i tablespaces_82+.sql
+  \ir tablespaces_82+.sql
 
 \else
   \qecho - Not supported on version :svp_server_version

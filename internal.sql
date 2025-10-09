@@ -25,17 +25,17 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_15
-  \i internal_15+.sql
+  \ir internal_15+.sql
 \elif :svp_pg_14
-  \i internal_14+.sql
+  \ir internal_14+.sql
 \elif :svp_pg_93
-  \i internal_93+.sql
+  \ir internal_93+.sql
 \elif :svp_pg_90
-  \i internal_90+.sql
+  \ir internal_90+.sql
 \elif :svp_pg_84
-  \i internal_84+.sql
+  \ir internal_84+.sql
 \elif :svp_pg_82
-  \i internal_82+.sql
+  \ir internal_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -24,7 +24,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_10
-  \i index_stat_hash_10+.sql
+  \ir index_stat_hash_10+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

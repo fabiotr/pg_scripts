@@ -25,11 +25,11 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_12
-  \i index_big_12+.sql 
+  \ir index_big_12+.sql 
 \elif :svp_pg_90
-  \i index_big_90+.sql
+  \ir index_big_90+.sql
 \elif :svp_pg_82
-  \i index_big_82+.sql
+  \ir index_big_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

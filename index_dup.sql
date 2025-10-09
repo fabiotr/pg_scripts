@@ -25,9 +25,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_84
-  \i index_dup_84+.sql
+  \ir index_dup_84+.sql
 \elif :svp_pg_82
-  \i index_dup_82+.sql
+  \ir index_dup_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

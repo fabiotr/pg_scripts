@@ -25,9 +25,9 @@ SELECT
 \timing off
 
 \if :svp_pg_10
-  \i connections_tot_10+.sql
+  \ir connections_tot_10+.sql
 \elif :svp_pg_92
-  \i connections_tot_92+.sql
+  \ir connections_tot_92+.sql
 \else
   \qecho - not supported on version :svp_server_version
 \endif

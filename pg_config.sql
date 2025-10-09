@@ -23,7 +23,7 @@ SELECT
 \timing off
 \t on
 \if :svp_pg_96
-  \i pg_config_96+.sql
+  \ir pg_config_96+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

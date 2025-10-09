@@ -25,7 +25,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_94
-  \i index_missing_in_fk_94+.sql
+  \ir index_missing_in_fk_94+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

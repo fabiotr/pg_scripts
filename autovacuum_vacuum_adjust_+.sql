@@ -21,10 +21,8 @@ SELECT
 
 \set QUIET on
 \timing off
-\if :svp_pg_91
-  \i vacuum_91+.sql 
-\elif :svp_pg_84
-  \i vacuum_84+.sql
+\if :svp_pg_84
+  \ir autovacuum_vacuum_adjust_+_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

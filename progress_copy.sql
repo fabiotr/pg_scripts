@@ -23,9 +23,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_17
-  \i progress_copy_17+.sql 
+  \ir progress_copy_17+.sql 
 \elif :svp_pg_14
-  \i progress_copy_14+.sql
+  \ir progress_copy_14+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_91
-  \i io_table_index_91+.sql
+  \ir io_table_index_91+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -23,7 +23,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_12
-  \i progress_index_12+.sql 
+  \ir progress_index_12+.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

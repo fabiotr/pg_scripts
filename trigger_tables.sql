@@ -22,9 +22,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_90
-  \i trigger_tables_90+.sql
+  \ir trigger_tables_90+.sql
 \elif :svp_pg_82
-  \i trigger_tables_82+.sql
+  \ir trigger_tables_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

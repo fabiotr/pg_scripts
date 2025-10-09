@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_12
-  \i connections_gss_12+.sql
+  \ir connections_gss_12+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

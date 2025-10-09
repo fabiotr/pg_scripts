@@ -22,9 +22,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_94
-  \i schemas_94+.sql
+  \ir schemas_94+.sql
 \elif :svp_pg_82
-  \i schemas_82+.sql
+  \ir schemas_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

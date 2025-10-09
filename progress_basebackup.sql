@@ -23,7 +23,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_13
-  \i progress_basebackup_13+.sql 
+  \ir progress_basebackup_13+.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

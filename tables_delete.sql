@@ -22,9 +22,9 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_91
-  \i tables_delete_91+.sql 
+  \ir tables_delete_91+.sql 
 \elif :svp_pg_82
-  \i tables_delete_82+.sql
+  \ir tables_delete_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

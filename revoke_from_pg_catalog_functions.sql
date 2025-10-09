@@ -22,7 +22,7 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_91
-  \i revoke_from_pg_catalog_functions_91+.sql 
+  \ir revoke_from_pg_catalog_functions_91+.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

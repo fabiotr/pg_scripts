@@ -23,9 +23,9 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_11
-  \i wal_reciever_11+.sql
+  \ir wal_reciever_11+.sql
 \elif :svp_pg_96
-  \i wal_reciever_96+.sql
+  \ir wal_reciever_96+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

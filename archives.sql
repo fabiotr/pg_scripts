@@ -25,9 +25,9 @@ SELECT
 \timing off
 \x on
 \if :svp_pg_96
-  \i archives_96+.sql
+  \ir archives_96+.sql
 \elif :svp_pg_94
-  \i archives_94+.sql
+  \ir archives_94+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -1,4 +1,4 @@
-SELECT
+gLECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
         ,current_setting('server_version_num')::int >=  80400  AS pg_84
@@ -24,11 +24,11 @@ SELECT
 \set QUIET on
 \timing off
 \if :svp_pg_96
-  \i locks_96+.sql
+  \ir locks_96+.sql
 \elif :svp_pg_92
-  \i locks_92+.sql
+  \ir locks_92+.sql
 \elif :svp_pg_83
-  \i locks_83+.sql
+  \ir locks_83+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

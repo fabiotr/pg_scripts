@@ -8,16 +8,16 @@
 \qecho
 
 \qecho Database Wraparound
-\i vacuum_wraparound_database.sql
+\ir vacuum_wraparound_database.sql
 \qecho
 
 \qecho Tables Wraparound
-\i vacuum_wraparound_table.sql
+\ir vacuum_wraparound_table.sql
 \qecho
 
 \qecho Tables Wraparound Multixact
-\i vacuum_wraparound_table_multixact.sql
+\ir vacuum_wraparound_table_multixact.sql
 \qecho
 
 \qecho Tables Maintenance Commands
-\i vacuum_wraparound_table_clean.sql
+\ir vacuum_wraparound_table_clean.sql
