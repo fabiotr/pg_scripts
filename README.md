@@ -27,7 +27,7 @@
 - Works on PG >= 8.4
 - Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size
 - Based on pg_stat_all_tables
-### vacuum_adjust_+.sql
+### autovacuum_vacuum_adjust_+.sql
 - Works on PG >= 8.4
 - Show ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables (experimental)
 - Based on pg_stat_all_tables****
