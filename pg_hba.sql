@@ -1,3 +1,6 @@
+\set QUIET on
+\timing off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -20,13 +23,10 @@ SELECT
 \gset svp_
 
 
-
-\set QUIET on
-\timing off
-\x off
 \if :svp_pg_10
   \ir pg_hba_10+.sql 
 \else
   \qecho - Not supported on version :svp_server_version (BUT YOU SHOULD COLLECT THIS INFORMATION ON pg_hba.conf )
 \endif
+\timing on
 \set QUIET off

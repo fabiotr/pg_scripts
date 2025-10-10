@@ -1,3 +1,6 @@
+\set QUIET on
+\timing off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -19,8 +22,6 @@ SELECT
         ,current_setting('server_version') AS server_version
 \gset svp_
 
-\set QUIET on
-\timing off
 \t on
 \if :svp_pg_96
   \ir pg_config_96+.sql
@@ -28,4 +29,5 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 \t off
+\timing on
 \set QUIET off
