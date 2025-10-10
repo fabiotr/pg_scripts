@@ -1,4 +1,6 @@
---Variaveis de configuração */
+\set QUIET on
+\timing off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
        	,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -21,17 +23,16 @@ SELECT
 	,current_setting('server_version') AS server_version
 \gset svp_
 
-\set QUIET on
 --\pset xheader_width 1
-\timing off
 \x on
 \if :svp_pg_17 
-  \i statements_total_17+.sql
+  \ir statements_total_17+.sql
 \elif :svp_pg_14
-  \i statements_total_14+.sql
+  \ir statements_total_14+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
 \x off
 --\pset xheader_width full
+\timing on
 \set QUIET off

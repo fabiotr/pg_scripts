@@ -1,4 +1,3 @@
-
 \set QUIET on
 \pset footer off
 \timing off
@@ -45,8 +44,6 @@ SELECT
 \qecho '### Statements by execution time'
 \qecho
 
-\set QUIET on
-\timing off
 \if   :svp_pg_14
   \ir statements_time_14+.sql
 \elif :svp_pg_13
@@ -65,8 +62,6 @@ SELECT
 \qecho '### Statements by calls'
 \qecho
 
-\set QUIET on
-\timing off
 \if :svp_pg_14
   \ir statements_calls_14+.sql
 \elif :svp_pg_13
@@ -85,8 +80,6 @@ SELECT
 \qecho '### Statements by rows'
 \qecho
 
-\set QUIET on
-\timing off
 \if :svp_pg_14
   \ir statements_rows_14+.sql
 \elif :svp_pg_13
@@ -105,8 +98,6 @@ SELECT
 \qecho '### Statements by rows per call'
 \qecho
 
-\set QUIET on
-\timing off
 \if :svp_pg_14
   \ir statements_rows_call_14+.sql
 \elif :svp_pg_13
@@ -125,8 +116,6 @@ SELECT
 \qecho '### Statements by temp files'
 \qecho
 
-\set QUIET on
-\timing off
 \if   :svp_pg_17
   \ir statements_temp_17+.sql
 \elif :svp_pg_14
@@ -147,9 +136,7 @@ SELECT
 \qecho '### Top5 statements by execution time with full SQL'
 \qecho
 
-\set QUIET on
 \pset xheader_width 1
-\timing off
 \x on
 \if :svp_pg_13 
   \ir statements_top5_13+.sql
@@ -165,5 +152,6 @@ SELECT
 \qecho
 \x off
 \pset xheader_width full
+\timing on
 \set QUIET off
 

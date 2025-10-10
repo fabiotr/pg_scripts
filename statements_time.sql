@@ -1,3 +1,6 @@
+\set QUIET on
+\timing off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
        	,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -22,23 +25,20 @@ SELECT
 \gset svp_
 
 
-
-\set QUIET on
-\timing off
-
 \if :svp_pg_17
-  \i statements_time_17+.sql
+  \ir statements_time_17+.sql
 \elif :svp_pg_14
-  \i statements_time_14+.sql
+  \ir statements_time_14+.sql
 \elif :svp_pg_13
-  \i statements_time_13+.sql
+  \ir statements_time_13+.sql
 \elif :svp_pg_95
-  \i statements_time_95+.sql
+  \ir statements_time_95+.sql
 \elif :svp_pg_94
-  \i statements_time_94+.sql
+  \ir statements_time_94+.sql
 \elif :svp_pg_84
-  \i statements_time_84+.sql
+  \ir statements_time_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+\timing on
 \set QUIET off

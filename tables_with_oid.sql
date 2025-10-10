@@ -1,20 +1,16 @@
---tabelas com OID (until PG 11) - pg_class version
-SELECT relnamespace::regnamespace, relname, relhasoids,
-CASE relkind 
-	WHEN 'r' THEN 'table' 
-	WHEN 'v' THEN 'view' 
-	WHEN 'i' THEN 'index' 
-	WHEN 'S' THEN 'sequence'
-	WHEN 's' THEN 'special' 
-	WHEN 'f' THEN 'foreign table'
-	WHEN 't' THEN 'TOAST table'
-	WHEN 'c' THEN 'composite type'
-	WHEN 'p' THEN 'partitioned table'
-	WHEN 'I' THEN 'partitioned index'
-END as "Type"
-, pg_size_pretty(pg_relation_size( relnamespace::regnamespace || '.' || relname))
-FROM pg_class 
-WHERE relkind = 'r' 
-AND relhasoids=true 
-AND  relnamespace NOT IN ('pg_catalog'::regnamespace::oid,'information_schema'::regnamespace::oid);
+\set QUIET on
+\timing off
 
+SELECT
+        ,current_setting('server_version_num')::int < 120000  AS pg_12
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+
+\if :svp_pg_12
+  \ir tables_with_oid_11-.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\timing on 
+\set QUIET off

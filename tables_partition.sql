@@ -1,25 +1,32 @@
-SELECT n.nspname as "Schema",
-  c.relname as "Name",
-  pg_get_userbyid(c.relowner) as "Owner",
-  CASE c.relkind WHEN 'p' THEN 'partitioned table' WHEN 'I' THEN 'partitioned index' END as "Type",
-  inh.inhparent::regclass as "Parent name",
- c2.oid::regclass as "Table",
-  s.dps as "Leaf partition size",
-  s.tps as "Total size",
-  obj_description(c.oid, 'pg_class') as "Description"
-FROM pg_class c
-     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
-     LEFT JOIN pg_index i ON i.indexrelid = c.oid
-     LEFT JOIN pg_class c2 ON i.indrelid = c2.oid
-     LEFT JOIN pg_inherits inh ON c.oid = inh.inhrelid,
-     LATERAL (SELECT pg_size_pretty(sum(
-                 CASE WHEN ppt.isleaf AND ppt.level = 1
-                      THEN pg_table_size(ppt.relid) ELSE 0 END)) AS dps,
-                     pg_size_pretty(sum(pg_table_size(ppt.relid))) AS tps
-              FROM pg_partition_tree(c.oid) ppt) s
-WHERE c.relkind IN ('p','I','')
-      AND n.nspname <> 'pg_catalog'
-      AND n.nspname <> 'information_schema'
-      AND n.nspname !~ '^pg_toast'
-  AND pg_table_is_visible(c.oid)
-ORDER BY "Schema", "Type" DESC, "Parent name" NULLS FIRST, "Name";
+\set QUIET on
+\timing off
+
+SELECT
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+
+\if :svp_pg_12
+  \ir tables_partition_12+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\timing on
+\set QUIET off

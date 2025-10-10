@@ -1,3 +1,6 @@
+\set QUIET on
+\timing off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -20,8 +23,7 @@ SELECT
 	,current_setting('server_version') AS server_version
 \gset svp_
 
-\set QUIET on
-\timing off
+
 \if :svp_pg_17
   \ir progress_copy_17+.sql 
 \elif :svp_pg_14
@@ -29,4 +31,5 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+\timing on
 \set QUIET off
