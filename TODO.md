@@ -1,0 +1,14 @@
+- Create an autovacuum script based on new columns on PG 18 pg_stat_user_tables to see how long autovacuum is taking in each table.
+- Cateate a new connections_runnning script to show memmory and wal use for each user session using the new PG 18 function pg_stat_get_backend_io() and pg_stat_get_backend_wal()
+- Create a script to use pg_backend_memory_contexts
+- Create a conf_ssl.conf script to show SSL parameters
+- Update conf_resources.sql with new PG 18 parameters like io_method
+- Update conf_directories.sql with new PG 18 parameter extension_control_path
+- Update conf_master.sql with new PG 18 parameters idle_replication_slot_timeout and max_active_replication_origins 
+- Update conf_logs.conf to reflect new PG 18 values on log_connections parameter
+- Update conf_logs.conf to add new PG 18 parameter log_lock_failures
+- Update subscription_stats with new PG 18 comumns on pg_stat_subscription_stats
+- Update object_privileges_list.sql with new PG 18 function pg_get_acl()
+- Update checkpoints.sql with PG 18 new columns slru_written and num_done on pg_stat_checkpointer
+- Update internal.sql with new PG 18 parameter num_os_semaphores to internal.sql
+- Update database_size.sql with ACL using column to database_size.sql script
