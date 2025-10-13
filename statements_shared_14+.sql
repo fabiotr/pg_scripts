@@ -4,7 +4,6 @@ row_number() over(order by shared_blks_read + shared_blks_written DESC) || CASE 
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    calls,
     to_char(calls::numeric / reset_days::numeric, '999G999G990D9') AS "Calls/Day",
     --to_char(rows::numeric  / reset_days,          '999G999G999')   AS "Rows/Day",
     to_char(rows::numeric  / calls::numeric,      '999G990D9')     AS "Rows/Call",
