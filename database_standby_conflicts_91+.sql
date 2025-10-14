@@ -10,4 +10,4 @@ SELECT
 FROM 
 	pg_stat_database d
 	JOIN pg_stat_database_conflicts c ON d.datid = c.datid
-WHERE d.datname = current_database();
+ORDER BY d.datname;
