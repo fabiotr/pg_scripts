@@ -1,5 +1,5 @@
-| Type             | Scope    | Name                              | Compatibility | Description                       | Reference                 | Comments
-| :--- | :--- | :--- | :---: | :---  | :--- |
+| Type             | Scope    | Name                              | Compatibility | Description                       | Reference                 | Comments |
+| :--- | :--- | :--- | :---: | :---  | :--- | :--- |
 | assesment        | cluster  | `archives.sql`                    | PG >= 9.4     | Amount of archives generated | `pg_stat_archiver` | | 
 | assesment        | cluster  | `backup.sql`                      | PG >= 9.1     | Look for a `.backup` file with physical backup summary at pg_wal or pg_xlog | `pg_pg_read_file()` and `pg_ls_dir` functions | | 
 | assesment        | cluster  | `bgwriter.sql`                    | PG >= 17      | Background Workers stats | `pg_stat_bgwriter` | | 
