@@ -13,7 +13,7 @@
 | assesment        | cluster  | `io_cluster.sql`                        | PG >= 16      | I/O stats | `pg_stat_io` | |
 | assesment        | database | `materialized_views.sql`                | PG >= 9.3     | materialized views | `pg_class` | |
 | assesment        | database | `object_size.sql`                       |               | top 20 objects by size | `pg_class` | | 
-| assesment        | cluster  | `pg_config.sql`                         | PG >= 9.6     | compilation parameters | | `pg_config` | |
+| assesment        | cluster  | `pg_config.sql`                         | PG >= 9.6     | compilation parameters | `pg_config` | |
 | assesment        | database | `schemas.sql`                           |               | schemas | `pg_namespaces` | |
 | assesment        | database | `tables_changes.sql`                    |               | top 10 tables with more INSERTs, UPDATEs and DELETEs | `pg_stat_user_tables` | |
 | assesment        | database | `tables_delete.sql`                     |               | top 10 tables with more DELETEs | `pg_stat_user_tables` | |
