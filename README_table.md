@@ -131,7 +131,7 @@
 | troubleshooting  | cluster  | `connections_runing_detais.sql`         |               | active detailed connections stats runing now | `pg_stat_activity` | |
 | troubleshooting  | cluster  | `connections_tot.sql`                   | PG >= 9.2     | total active connections stats running now | `pg_stat_activity` | |
 | troubleshooting  | cluster  | `database_standby_conflicts.sql`        | PG >= 9.1     | queries canceled on standby due to conflicts with master | `pg_database_conflicts` | |
-| troubleshooting  | database | `index_check_btree_integrity.sql`       | PG >= 10      | check integrity on every BTREE index | | `bt_index_check(oid)` function on `amcheck` extension | | 
+| troubleshooting  | database | `index_check_btree_integrity.sql`       | PG >= 10      | check integrity on every BTREE index | `bt_index_check(oid)` function on `amcheck` extension | | 
 | troubleshooting  | database | `index_check_gin_integrity.sql`         | PG >= 18      | check integrity on every GIN index | `bt_index_check(oid)` function on `amcheck` extension | |
 | troubleshooting  | database | `index_invalid.sql`                     |               | indexes marked as invalid | `pg_index` | |
 | troubleshooting  | cluster  | `locks.sql`                             | PG >= 8.3     | Locks | `pg_locks`, `pg_stat_activity` | | 
