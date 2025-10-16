@@ -23,12 +23,12 @@ SELECT
             * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE 'Disabled' END                                                                                 AS "I/O T/Day",
     trunc(sum(shared_blks_hit) * 100 / sum(shared_blks_hit + shared_blks_read),1) || ' %' AS "Shared Hit",
-    pg_size_pretty((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer) AS "S Hit/Day",
-    pg_size_pretty((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer) AS "S Read/Day",
-    pg_size_pretty((nullif((sum(shared_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer) AS "S Write/Day",
-    pg_size_pretty((nullif((sum(shared_blks_dirtied))::numeric,0) / reset_days) * current_setting('block_size')::integer) AS "S Dirty/Day",
-    pg_size_pretty((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer) AS "Local/Day",
-    pg_size_pretty((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer) AS "Temp/Day",
+    pg_size_pretty(trunc((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer)) AS "S Hit/Day",
+    pg_size_pretty(trunc((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer)) AS "S Read/Day",
+    pg_size_pretty(trunc((nullif((sum(shared_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "S Write/Day",
+    pg_size_pretty(trunc((nullif((sum(shared_blks_dirtied))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "S Dirty/Day",
+    pg_size_pretty(trunc((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "Local/Day",
+    pg_size_pretty(trunc((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer)) AS "Temp/Day",
     --to_char(current_timestamp - stats_reset, 'YYYY-MM-DD HH24:MI') AS "Time since last Reset",
     to_char(stats_reset, 'YYYY-MM-DD HH24:MI') AS "Stats Reset"
 FROM
