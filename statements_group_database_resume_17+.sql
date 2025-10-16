@@ -20,7 +20,7 @@ SELECT
     to_char((sum(
 	shared_blk_read_time + shared_blk_write_time + 
         local_blk_read_time + local_blk_write_time + 
-        temp_blk_read_time + temp_blk_write_time) / reset_days) * INTERVAL '1 millisecond'), 'HH24:MI:SS')      AS "IO T/Day",
+        temp_blk_read_time + temp_blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')      AS "IO T/Day",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
