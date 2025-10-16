@@ -19,17 +19,9 @@ SELECT
     CASE WHEN current_setting('pg_stat_statements.track') = 'all'
 	THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'999G999G999')  ELSE 'Disabled' END  AS "N TopLevel/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
-        THEN to_char((sum(shared_blk_read_time + shared_blk_write_time) / reset_days) 
+        THEN to_char((sum(blk_read_time + blk_write_time)     / reset_days) 
             * INTERVAL '1 millisecond','HH24:MI:SS')
-        ELSE 'Disabled' END                                                                                 AS "Shared T/Day",
-    --CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
-    --    THEN to_char((sum(local_blk_read_time + local_blk_write_time)   / reset_days) 
-    --        * INTERVAL '1 millisecond','HH24:MI:SS')
-    --    ELSE 'Disabled' END                                                                               AS "Local  time/Day",
-    CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
-        THEN to_char((sum(temp_blk_read_time + temp_blk_write_time)     / reset_days) 
-            * INTERVAL '1 millisecond','HH24:MI:SS')
-        ELSE 'Disabled' END                                                                                 AS "Temp T/Day",
+        ELSE 'Disabled' END                                                                                 AS "I/O T/Day",
     trunc(sum(shared_blks_hit) * 100 / sum(shared_blks_hit + shared_blks_read),1) || ' %' AS "Shared Hit",
     pg_size_pretty((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer) AS "S Hit/Day",
     pg_size_pretty((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer) AS "S Read/Day",
