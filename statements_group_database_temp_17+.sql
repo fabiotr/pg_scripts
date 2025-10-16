@@ -7,9 +7,9 @@ SELECT
     pg_size_pretty(trunc((sum(temp_blks_read+ temp_blks_written)/reset_days) * current_setting('block_size')::integer)) AS "Temp/Day",
     pg_size_pretty(trunc((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer / sum(calls))) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
-        THEN (sum(temp_blk_read_time + temp_blk_write_time)/reset_days) * INTERVAL '1 millisecond'
+        THEN (to_char(sum(temp_blk_read_time + temp_blk_write_time)/reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE NULL END AS "Temp Time/Day",
-    trunc(sum(total_exec_time)/1000) total_exec_time_s,
+    to_char((sum(total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millissecond', 'HH24:MI:SS') AS total_time,
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') 
 FROM 
     pg_stat_statements s 
