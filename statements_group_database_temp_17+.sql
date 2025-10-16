@@ -9,7 +9,7 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN to_char((sum(temp_blk_read_time + temp_blk_write_time)/reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE NULL END AS "Temp Time/Day",
-    to_char((sum(total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millissecond', 'HH24:MI:SS') AS total_time,
+    to_char((sum(total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS total_time,
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') 
 FROM 
     pg_stat_statements s 
