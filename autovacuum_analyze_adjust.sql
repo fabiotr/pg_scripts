@@ -3,7 +3,7 @@
 -- 100K tuples storage mechanical disk
 -- 250K tuples SSD 
 -- 500K tuples SSD write intensive 
-SET lc_numeric = 'en_US.UTF-8';
+SET lc_numeric = 'C';
 SELECT
     'ALTER TABLE ' 
         || n.nspname || '.' || c.relname 
@@ -21,7 +21,7 @@ SELECT
     to_char(reltuples, '999G999G999G990')  AS n_live_tup
 FROM 
     (SELECT 
-            (100000 / reltuples)::NUMERIC scale, -- 250K tuples goal
+            (250000 / reltuples)::NUMERIC scale, -- 250K tuples goal
             relname, relnamespace, relkind, reltuples, oid 
         FROM pg_class) c
     JOIN pg_namespace n ON c.relnamespace = n.oid
