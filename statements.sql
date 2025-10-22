@@ -1,4 +1,3 @@
-\set QUIET on
 \pset footer off
 \timing off
 \x off
@@ -23,24 +22,41 @@ SELECT
        	,current_setting('server_version_num')::int >= 150000  AS pg_15
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
+\qecho
+\qecho '## Statements'
+\qecho
 
-\if :svp_pg_14
-  \t on
-  \qecho
-  SELECT  '#### Time since last Reset: ' || to_char(current_timestamp - stats_reset, 'DD-MM-YY hh24:mi') AS "Time since last Reset:"  --, stats_reset
-    FROM pg_stat_statements_info;
-  \qecho
-  \t off
+\qecho '### Statements total'
+\qecho
+\pset xheader_width 1
+\if :svp_pg_17
+  \ir statements_total_17+.sql
+\elif :svp_pg_14
+  \ir statements_total_14+.sql
+\else
+  \qecho - pg_stat_statements is not supported on version :svp_server_version
+\endif
+\pset xheader_width full
 
-  \qecho '### Statements total'
-  \qecho
-  \ir statements_total.sql
-  \qecho
+\qecho
+\qecho '### Statements resume by total time'
+\echo
+
+\if   :svp_pg_18
+  \ir statements_resume_18+.sql
+\elif :svp_pg_17
+  \ir statements_resume_17+.sql
+\elif :svp_pg_14
+  \ir statements_resume_14+.sql
+\else
+  \qecho - pg_stat_statements is not supported on version :svp_server_version
 \endif
 
+\qecho
 \qecho '### Statements by execution time'
 \qecho
 
