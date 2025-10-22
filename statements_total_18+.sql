@@ -9,7 +9,9 @@ SELECT
     trim(to_char(sum(rows)::numeric / sum(calls)::numeric, '999G999D0')) AS "Rows/Call",
     CASE WHEN current_setting('pg_stat_statements.track') = 'all' 
 	THEN trim(to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'999G999G999'))  ELSE 'Disabled' END AS "Non Toplevel calls/Day", 
-    trim(to_char(sum(wal_records)  / reset_days, '999G999G999')) || ' - ' ||
+    trim(to_char((sum(parallel_workers_to_launch)/since_days::numeric), '999G999G999')) || ' - ' ||
+    trim(to_char((sum(parallel_workers_launched)/since_days::numeric),  '999G999G999')) AS "Workers (Planned - Lunched)/Day",
+     trim(to_char(sum(wal_records)  / reset_days, '999G999G999')) || ' - ' ||
     pg_size_pretty(trunc(sum(wal_bytes)/ reset_days))           AS "WAL (Records - Size)/Day",
     trim(to_char(sum(wal_records)  / sum(calls), '999G990D9'))  AS "Wal/Call",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
