@@ -20,12 +20,15 @@ SELECT
        	,current_setting('server_version_num')::int >= 150000  AS pg_15
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
 --\pset xheader_width 1
 \x on
-\if :svp_pg_17 
+\if   :svp_pg_18 
+  \ir statements_total_18+.sql
+\elif :svp_pg_17
   \ir statements_total_17+.sql
 \elif :svp_pg_14
   \ir statements_total_14+.sql

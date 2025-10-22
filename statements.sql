@@ -1,3 +1,4 @@
+\set QUIET on
 \pset footer off
 \timing off
 \x off
@@ -149,7 +150,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Top5 statements by execution time with full SQL'
+\qecho '### Top5 statements by total time with full SQL'
 \qecho
 
 \pset xheader_width 1
