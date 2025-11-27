@@ -27,11 +27,11 @@ SELECT
 \timing off
 
 \if :svp_pg_18
-  \i statements_resume_18+.sql
+  \ir statements_resume_18+.sql
 \elif :svp_pg_17
-  \i statements_resume_17+.sql
+  \ir statements_resume_17+.sql
 \elif :svp_pg_14
-  \i statements_resume_14+.sql
+  \ir statements_resume_14+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
