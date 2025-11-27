@@ -25,21 +25,21 @@ SELECT
 
 
 \if :svp_pg_14
-  \i connections_runing_14+.sql
+  \ir connections_runing_14+.sql
 \elif :svp_pg_13
-  \i connections_runing_13+.sql
+  \ir connections_runing_13+.sql
 \elif :svp_pg_12
-  \i connections_runing_12+.sql
+  \ir connections_runing_12+.sql
 \elif :svp_pg_92
-  \i connections_runing_92+.sql
+  \ir connections_runing_92+.sql
 \elif :svp_pg_91
-  \i connections_runing_91+.sql
+  \ir connections_runing_91+.sql
 \elif :svp_pg_90
-  \i connections_runing_90+.sql
+  \ir connections_runing_90+.sql
 \elif :svp_pg_83
-  \i connections_runing_83+.sql
+  \ir connections_runing_83+.sql
 \elif :svp_pg_82
-  \i connections_runing_82+.sql
+  \ir connections_runing_82+.sql
 \else
   \qecho - not supported on version :svp_server_version
 \endif

@@ -1,6 +1,6 @@
 SELECT
     row_number() OVER (ORDER BY total_exec_time + total_plan_time DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time) OVER (),'99D99') || '%') AS "load_%",
+    trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'99D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
@@ -11,7 +11,7 @@ SELECT
     to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Exec/Day",
     to_char((total_plan_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Plan/Day",
     trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1) AS "Plan %",
-    trunc(shared_blks_hit::numeric * 100 / (shared_blks_hit + shared_blks_read)::numeric,1) AS "Hit %" ,
+    trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read)::numeric,0),1) AS "Hit %" ,
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read::numeric)                   / since_days),0)) AS "Read/Day",
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * temp_blks_read + temp_blks_written)::numeric / since_days),0)) AS "Temp/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 

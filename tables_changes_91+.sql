@@ -3,6 +3,7 @@ SELECT
     relname AS "Table",
     --to_char(coalesce(seq_scan,0) / reset_days,'999G999G999G999') AS "Seq Scans/Day",
     --to_char(coalesce(idx_scan,0) / reset_days,'999G999G999G999') AS "Idx Scans/Day",
+    to_char(n_live_tup,            '999G999G999G999') AS "Rows",
     to_char(n_tup_ins / reset_days,'999G999G999G999') AS "INSERTs/Day",
     to_char(n_tup_del / reset_days,'999G999G999G999') AS "DELETEs/Day",
     to_char(n_tup_upd / reset_days,'999G999G999G999') AS "UPDATEs/Day",
