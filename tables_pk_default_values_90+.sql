@@ -3,7 +3,7 @@ SELECT
     c.relname   AS table,
     string_agg(a.attname,       ', ') AS column, 
     string_agg(a.attnum::text,  ', ') AS order,
-    string_agg(t.typname,       ', ') AS data_type, 
+    string_agg(format_type(a.atttypid, a.atttypmod), ', ') AS data_type, 
     string_agg(pg_get_expr(at.adbin, at.adrelid), ', ') AS default_value
 FROM 
     pg_class c 

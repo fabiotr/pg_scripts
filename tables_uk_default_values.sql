@@ -4,7 +4,7 @@ SELECT
     co.conname AS constraint,
     string_agg(a.attname, ', ')  AS column, 
     --string_agg(a.attnum,  ', ')  AS order,
-    string_agg(t.typname, ', ')  AS data_type, 
+    string_agg(format_type(a.atttypid, a.atttypmod), ', ')  AS data_type, 
     string_agg(coalesce(pg_get_expr(at.adbin, at.adrelid),'null'), ', ') AS default_value
 FROM 
     pg_class c 
