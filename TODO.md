@@ -13,5 +13,4 @@
 - Update object_privileges_list.sql with new PG 18 function pg_get_acl()
 - Update checkpoints.sql with PG 18 new columns slru_written and num_done on pg_stat_checkpointer
 - Update internal.sql with new PG 18 parameter num_os_semaphores to internal.sql
-- Update database_size.sql with ACL using column to database_size.sql script
 - Update README with kill scripts
