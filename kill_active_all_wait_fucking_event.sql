@@ -1,17 +1,35 @@
--- Kill all sessions with an wait_event_type, except for 'Client'
+\set QUIET on
+\timing off
+
 SELECT
-    pid,
-    usename AS "User",
-    application_name AS "App",
-    client_addr AS "Client",
-    current_timestamp - query_start AS active_time,
-    query_id,
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query,
-    pg_terminate_backend(pid) "Killed?"
-FROM 
-    pg_stat_activity AS a
-WHERE 
-    state = 'active' AND
-    backend_type = 'client backend' AND
-    wait_event_type IN ('Activity', 'BufferPin', 'Extension', 'InjectionPoint', 'IO', 'IPC', 'Lock', 'LWLock', 'Timeout')
-ORDER BY query_start;
+         current_setting('server_version_num')::int >=  80200  AS pg_82
+        ,current_setting('server_version_num')::int >=  80300  AS pg_83
+        ,current_setting('server_version_num')::int >=  80400  AS pg_84
+        ,current_setting('server_version_num')::int >=  90000  AS pg_90
+        ,current_setting('server_version_num')::int >=  90100  AS pg_91
+        ,current_setting('server_version_num')::int >=  90200  AS pg_92
+        ,current_setting('server_version_num')::int >=  90300  AS pg_93
+        ,current_setting('server_version_num')::int >=  90400  AS pg_94
+        ,current_setting('server_version_num')::int >=  90500  AS pg_95
+        ,current_setting('server_version_num')::int >=  90600  AS pg_96
+        ,current_setting('server_version_num')::int >= 100000  AS pg_10
+        ,current_setting('server_version_num')::int >= 110000  AS pg_11
+        ,current_setting('server_version_num')::int >= 120000  AS pg_12
+        ,current_setting('server_version_num')::int >= 130000  AS pg_13
+        ,current_setting('server_version_num')::int >= 140000  AS pg_14
+        ,current_setting('server_version_num')::int >= 150000  AS pg_15
+        ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version') AS server_version
+\gset svp_
+
+
+
+\if :svp_pg_17
+  \ir kill_active_all_wait_fucking_event_17+.sql
+\elif :svp_pg_96
+  \ir kill_active_all_wait_fucking_event_96+.sql
+\else
+  \qecho - not supported on version :svp_server_version
+\endif
+\timing on
+\set QUIET off
