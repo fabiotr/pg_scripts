@@ -3,7 +3,7 @@ SELECT
     c.relname AS "Tabela",
     trim(to_char(mxid_age(c.relminmxid),'999G999G999G999')) ||
         CASE 
-            WHEN t.relfrozenxid IS NOT NULL 
+            WHEN t.relfrozenxid IS NOT NULL AND c.relminmxid != t.relminmxid 
                 THEN ' (T ' || trim(to_char(mxid_age(t.relminmxid),'999G999G999G999')) || ')'
             ELSE '' END AS "Current Age",
     trim(to_char(LEAST (to_number(COALESCE(fmi.option_value, current_setting('vacuum_multixact_freeze_min_age')),'999999999999'),
