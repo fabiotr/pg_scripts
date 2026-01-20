@@ -40,8 +40,10 @@
 | maintenance      | database | `index_poor.sql`                        | PG >= 8.4     | indexes with bad performance based on some criterias | `pg_stat_user_indexes` | We advise that this list don''d include other replicas that may use this indexes |
 | maintenance      | database | `index_poor_drop.sql`                   |               | DROP INDEX command for every not used index | `pg_stat_user_indexes` | We advise that this list don''d include other replicas that may use this indexes |
 | maintenance      | database | `index_stat_btree.sql`                  | PG >= 8.3     | top 20 BTREE indexes that may need a REINDEX (having avg_leaf_density <= 70 OR leaf_fragmentation >= 20) ordered by index size | `pgstatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O |
+| maintenance      | database | `index_stat_btree_reindex.sql`          | PG >= 10      | Reindex indexes having avg_leaf_density <= 70 OR leaf_fragmentation >= 20 | `pgstatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O and REINDEX command will generate I/O overhead and may generate small locks. We advise to monitor server while running this | 
 | maintenance      | database | `index_stat_gin.sql`                    | PG >= 9.3     | statistics about top 20 GIN indexes by size | `pgstginatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatginindex(oid) may take a wile to run and overhead your I/O |
 | maintenance      | database | `index_stat_hash.sql`                   | PG >= 10      | statistics about top 20 HASH indexes by size | `pgstathashindex(oid)` function on `pgstattuble` extension | Notice that  pgstathashindex(oid) may take a wile to run and overhead your I/O |
+| maintenance      | database | `index_table_missing.sql`               | PG >= 8.4     | Tables thay may need new indexes | `pg_stat_user_tables` | We advise that this list don''d include other replicas that may use this indexes |
 | maintenance      | database | `tables_bloat_approx.sql`               | PG >= 8.3     | top 10 tables with more free space | `pgstattuple_aprrox()` function on `pgstattuple` extension | Notice that pgstattuple_aprrox(oid) may take a wile to run and overhead your I/O |
 | maintenance      | database | `tables_index_missing.sql`              | PG >= 8.4     | tables with poor or few indexes and its reasons | `pg_stat_user_tables` | |
 | maintenance      | database | `tables_not_used.sql`                   | PG >= 8.3     | Tables with low usage | `pg_stat_user_tables`| |
@@ -63,6 +65,7 @@
 | object tuning    | database | `autovacuum_vacuum_+.sql`               | PG >= 9.2     | top 20 tables with more percentage of dead rows with separate values for toast tables | `pg_stat_all_tables`| experimental |
 | object tuning    | database | `autovacuum_vacuum_adjust.sql`          | PG >= 8.4     | ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size | Based on `pg_stat_all_tables` |
 | object tuning    | database | `autovacuum_vacuum_adjust_+.sql`        | PG >= 8.4     | ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables | `pg_stat_all_tables` | experimental |
+| object tuning    | database | `autovacuum_vacuum_queue.sql`           |               | Next tables on autovacuum vacuum queue | `pg_stat_all_tables` | |
 | object tuning    | database | `fillfactor.sql`                        | PG >= 8.4     | tables having more updates and bad hot update ratio | `pg_stat_user_tables` | |
 | object tuning    | database | `functions.sql`                         | PG >= 8.4     | functions consuming more execution time | `pg_stat_user_functions` | |
 | object tuning    | database | `object_options.sql`                    |               | objects with options set | `pg_class` | |
@@ -74,8 +77,11 @@
 | parameter tuning | cluster  | `checkpoints.sql`                       | PG >= 8.3     | checkpoint stats | `pg_stat_checkpointer` |  |
 | parameter tuning | cluster  | `conf_directories.sql`                  | PG >= 8.4     | parameteres about file and directories location | `pg_settings`| |
 | parameter tuning | cluster  | `conf_logs.sql`                         |               | parameters about logs configurations and other related | `pg_settings` | |
+| parameter tuning | cluster  | `conf_master.sql`                       | PG >= 8.4     | parameters about master server replication configurations | `pg_settings` | |
 | parameter tuning | cluster  | `conf_others.sql`                       | PG >= 8.4     | other parameters with non default values | `pg_settings` | | 
 | parameter tuning | cluster  | `conf_resource.sql`                     |               | parameters about resource configuration |  `pg_settings` | | 
+| parameter tuning | cluster  | `conf_recovery.sql`                     | PG >= 8.4     | parameters about recovery or at recovery.conf file (PG <12) | `pg_settings` OR `recovery.conf` | |
+| parameter tuning | cluster  | `conf_replica.sql`                      | PG >= 8.4     | parameters about replication slave | `pg_settings` | |
 | parameter tuning | database | `database_stats.sql`                    |               | database stats | `pg_stat_database` | |
 | parameter tuning | cluseter | `ls_logs.sql`                           | PG >= 10      | logs size | `pg_ls_logdir()` function | |
 | parameter tuning | cluster  | `ls_temp.sql`                           | PG >= 12      | temporary files size | `pg_ls_tempdir()` function | | 
@@ -88,8 +94,10 @@
 | query tuning     | database | `io_table_index.sql`                    | PG >= 9.1     | I/O stats for indexes on tables | `pg_staio_all_tables` | |
 | query tuning     | database | `io_table_others.sql`                   | PG >= 9.1     | I/O stats for TOAST and TID on tables | `pg_statio_all_tables` | | 
 | query tuning     | database | `statements_calls.sql`                  | PG >= 8.4     | top 10 statements order by calls | `pg_stat_statements` extension | |
-| query tuning     | cluster  | `statements_group_database_temp.sql`    | PG >= 9.2     | top 10 statements order by temporary files | `pg_stat_statements` extension | |
-| query tuning     | cluster  | `statements_group_database_time.sql`    | PG >= 9.4     | top 10 statements order by execution time | `pg_stat_statements` extension | |
+| query tuning     | cluster  | `statements_group_database_resume.sql`  | PG >= 14      | top 10 statements on all cluster order by execution time | `pg_stat_statements` extension | |
+| query tuning     | cluster  | `statements_group_database_temp.sql`    | PG >= 9.2     | top 10 statements on all cluster order by temporary files | `pg_stat_statements` extension | |
+| query tuning     | cluster  | `statements_group_database_time.sql`    | PG >= 9.4     | top 10 statements on all cluster order by execution time | `pg_stat_statements` extension | |
+| query tuning     | cluster  | `statements_group_database_total.sql`   | PG >= 14      | total statements summary on all cluster  | `pg_stat_statements` extension | |
 | query tuning     | database | `statements_jit.sql`                    | PG >= 15      | top 10 statements order by jit calls | `pg_stat_statements` extension | |
 | query tuning     | database | `statements_local.sql`                  | PG >= 9.2     | top 10 statements order by local memmory used | `pg_stat_statements` extension | |
 | query tuning     | database | `statements_plan.sql`                   | PG >= 14      | top 10 statements planing time | `pg_stat_statements` extension | |
@@ -127,13 +135,30 @@
 | security         | cluster  | `user_granted_roles.sql`                |               | granted roles to other roles | `pg_auth_members` | |
 | security         | database | `user_owners_x_connections.sql`         |               | current number of connections and objets owned by each role | `pg_stat_activity`, `pg_class` | |
 | security         | cluster  | `user_priv.sql`                         |               | roles with hight privileges options like superusers | `pg_roles` | |
+| troubleshooting  | cluster  | `clean_query.sql`                       |               | ask for an Query ID and show the query whithout line breaks and spaces | Based on `pg_stat_statements` | Only works on psql |
+| troubleshooting  | cluster  | `connections_by_user.sql`               | PG >= 9.2     | active connections stats by users | Based on `pg_stat_activity` | |
+| troubleshooting  | cluster  | `connections_gss.sql`                   | PG >= 12      | active connections stats using GSSAPI  authentication | Based on `pg_stat_gssapi` | |
 | troubleshooting  | cluster  | `connections_runing.sql`                |               | active connections stats runing now | Based on `pg_stat_activity` | |
 | troubleshooting  | cluster  | `connections_runing_detais.sql`         |               | active detailed connections stats runing now | `pg_stat_activity` | |
+| troubleshooting  | cluster  | `connections_ssl.sql`                   | PG >= 9.5     | active connections stats using SSL | `pg_stat_activity` | |
 | troubleshooting  | cluster  | `connections_tot.sql`                   | PG >= 9.2     | total active connections stats running now | `pg_stat_activity` | |
 | troubleshooting  | cluster  | `database_standby_conflicts.sql`        | PG >= 9.1     | queries canceled on standby due to conflicts with master | `pg_database_conflicts` | |
 | troubleshooting  | database | `index_check_btree_integrity.sql`       | PG >= 10      | check integrity on every BTREE index | `bt_index_check(oid)` function on `amcheck` extension | | 
 | troubleshooting  | database | `index_check_gin_integrity.sql`         | PG >= 18      | check integrity on every GIN index | `bt_index_check(oid)` function on `amcheck` extension | |
 | troubleshooting  | database | `index_invalid.sql`                     |               | indexes marked as invalid | `pg_index` | |
+| troubleshooting  | database | `kill_active_all_wait_fucking_event.sql` | PG >= 9.6    | Kill active sessions that have any wait event type except "Client" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_bufferpin.sql`             | PG >= 9.6     | Kill active sessions that have wait event type "Bufferpin" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_ipc.sql`                   | PG >= 9.6     | Kill active sessions that have wait event type "IPC" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_lwlock.sql`                | PG >= 9.6     | Kill active sessions that have wait event type "LWLock" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_io_query_time_greater_10_seconds.sql` | PG >= 9.6 | Kill active sessions that are running for more than 10 seconds and have wait event type "IO" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_io_query_time_greater_60_seconds.sql` |PG >= 9.6  | Kill active sessions that are running for more than 60 seconds and have wait event type "IO" | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_query_time_greater_10_seconds.sql` |       | Kill active sessions that are running for more than 10 seconds | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_active_query_time_greater_60_seconds.sql` |       | Kill active sessions that are running for more than 60 seconds | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_idle_greater_10_minutes.sql`       |              | Kill idle sessions that are running for more than 10 minutes | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_idle_greater_60_minutes.sql`       |              | Kill idle sessions that are running for more than 60 minutes | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_idle_in_transaction_60_seconds.sql` |             | Kill idle in transaceion sessions that are running for more than 60 seconds | `pg_stat_activity` | |
+| troubleshooting  | database | `kill_oldest_blocker.sql`               | PG >= 9.6     | Kill oldest loker session | `pg_stat_activity` and `pg_blocking_pids()` function | |
+
 | troubleshooting  | cluster  | `locks.sql`                             | PG >= 8.3     | Locks | `pg_locks`, `pg_stat_activity` | | 
 | troubleshooting  | cluster  | `pgbouncer_fdw.sql`                     |               | Script to create viws to pgbouncer virtual database SHOW commands | `dblink` extension | | 
 | troubleshooting  | cluster  | `prepared_transactions.sql`             |               | current prepared transactions | `pg_prepared_xacts` | | 
