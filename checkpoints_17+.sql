@@ -8,7 +8,7 @@ SELECT
     trim(to_char(restartpoints_req::NUMERIC   / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'999G990D9')) AS "Restartpoints requested / Day",
     trim(to_char(restartpoints_done::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'999G990D9')) AS "Restartpoints done      / Day",
     '-------' AS "------------------",
-    pg_size_pretty((buffers_written * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)))  AS "Write bytes / Day",
+    pg_size_pretty(trunc((buffers_written * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24))))  AS "Write bytes / Day",
     date_trunc('second',write_time / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND')                  AS "Write time  / Day",
     date_trunc('second',sync_time  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND')                  AS "Sync  time  / Day",
     '-------' AS "------------------",
