@@ -11,6 +11,8 @@ SELECT
      (SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname IN ('cloudsqladmin', 'rdsadmin')) AS not_dbaas
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                AS not_gcp
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                     AS not_rds
+    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')          AS not_aurora
+    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_stat_replication)                                        AS master
     ,current_date                                          AS date
     ,current_setting('logging_collector')                  AS logging_collector
     ,current_setting('server_version')                     AS server_version
@@ -18,12 +20,6 @@ SELECT
     ,current_setting('server_version_num')::int >=  90100  AS pg_91
     ,current_setting('server_version_num')::int >=  90500  AS pg_95
     ,current_setting('server_version_num')::int >= 120000  AS pg_12
-\gset svp_
-
-SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END AS master FROM pg_stat_replication LIMIT 1
-\gset svp_
-
-SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END AS not_gcp FROM pg_database WHERE datname = 'cloudsqladmin'
 \gset svp_
 
 
@@ -72,25 +68,29 @@ SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END AS not_gcp FROM pg_databa
   \qecho
 \endif
 
-\qecho '## Background Workers'
-\qecho
-\i bgwriter.sql
-\qecho
+\if :svp_not_aurora
+  \qecho '## Background Workers'
+  \qecho
+  \i bgwriter.sql
+  \qecho
+\endif 
 
 \qecho '## Checkpoints'
 \qecho
 \i checkpoints.sql
 \qecho
 
-\qecho '## Wal'
-\qecho
-\i wal.sql
-\qecho
+\if :svp_not_aurora
+  \qecho '## Wal'
+  \qecho
+  \i wal.sql
+  \qecho
 
-\qecho '## Archiver'
-\qecho
-\i archives.sql
-\qecho
+  \qecho '## Archiver'
+  \qecho
+  \i archives.sql
+  \qecho
+\endif
 
 \qecho '## WAL files'
 \qecho
