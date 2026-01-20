@@ -158,7 +158,6 @@
 | troubleshooting  | database | `kill_idle_greater_60_minutes.sql`       |              | Kill idle sessions that are running for more than 60 minutes | `pg_stat_activity` | |
 | troubleshooting  | database | `kill_idle_in_transaction_60_seconds.sql` |             | Kill idle in transaceion sessions that are running for more than 60 seconds | `pg_stat_activity` | |
 | troubleshooting  | database | `kill_oldest_blocker.sql`               | PG >= 9.6     | Kill oldest loker session | `pg_stat_activity` and `pg_blocking_pids()` function | |
-
 | troubleshooting  | cluster  | `locks.sql`                             | PG >= 8.3     | Locks | `pg_locks`, `pg_stat_activity` | | 
 | troubleshooting  | cluster  | `pgbouncer_fdw.sql`                     |               | Script to create viws to pgbouncer virtual database SHOW commands | `dblink` extension | | 
 | troubleshooting  | cluster  | `prepared_transactions.sql`             |               | current prepared transactions | `pg_prepared_xacts` | | 
