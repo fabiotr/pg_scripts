@@ -1,15 +1,15 @@
+\set QUIET on
+\timing off
 -- WARNING
 -- psql must be >= pg10 to run this script
 
 --Setup
-\set QUIET on
 SET client_encoding TO 'UTF8';
 SET client_min_messages TO WARNING;
 CREATE EXTENSION IF NOT EXISTS pgstattuple;
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 RESET client_min_messages;
-\timing off
-
+\r
 --Vars
 SELECT
      current_date                                          AS date    
@@ -19,13 +19,15 @@ SELECT
     ,current_setting('server_version_num')::int >= 100000  AS pg_10
     ,current_setting('server_version_num')::int >= 120000  AS pg_12
     ,current_setting('server_version_num')::int <  120000  AS under_pg_12
+    ,NOT pg_is_in_recovery()                               AS not_standby
+    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_publication) AS publication
+    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_subscription) AS subscription
 \gset svp_
 
 \pset footer off
 \pset null ' - '
 \pset border 1
 \pset pager off
-
 -- Markdown format
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Valor \n\|---\|---\|/'
 
@@ -49,12 +51,10 @@ SELECT
 \qecho
 
 \if :svp_pg_90
-  SELECT NOT pg_is_in_recovery() AS not_standby
-  \gset svp_
   \if :svp_not_standby
     \qecho '## Extensions'
     \qecho
-    \dx
+    \i extensions.sql
     \qecho
 
     \qecho '## Roles'
@@ -89,8 +89,6 @@ SELECT
 
 
 \if :svp_pg_10
-  SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END AS publication FROM pg_publication LIMIT 1
-  \gset svp_
   \if :svp_publication
 
     \qecho '## Logical Replication publications'
@@ -112,8 +110,6 @@ SELECT
     \qecho
   \endif
 
-  SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END AS subscription FROM pg_subscription LIMIT 1
-  \gset svp_
   \if :svp_subscription
 
     \qecho '## Logical Replication subscriptions'
@@ -325,10 +321,10 @@ SELECT
   \endif
 \endif
 
-\qecho '### Tables with many seq scans'
-\qecho
-\i tables_index_missing.sql
-\qecho
+--\qecho '### Tables with many seq scans'
+--\qecho
+--\i tables_index_missing.sql
+--\qecho
 
 
 \if :svp_pg_90
@@ -342,22 +338,22 @@ SELECT
 
     \qecho '### Analyze'
     \qecho
-    \i analyze.sql
+    \i autovacuum_analyze.sql
     \qecho
 
     \qecho '#### Analyze Adjusts'
     \qecho
-    \i analyze_adjust.sql
+    \i autovacuum_analyze_adjust.sql
     \qecho
 
     \qecho '### Vacuum'
     \qecho
-    \i vacuum.sql
+    \i autovacuum_vacuum.sql
     \qecho
 
     \qecho '#### Vacuum Adjusts'
     \qecho
-    \i vacuum_adjust.sql
+    \i autovacuum_vacuum_adjust.sql
     \qecho
 
     \qecho '### Vacuum "to prevent wraparound"'
