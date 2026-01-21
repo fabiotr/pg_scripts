@@ -22,7 +22,7 @@ SELECT
         ,current_setting('server_version') AS server_version
 \gset svp_
 
-\timing on
+--\timing on
 \if :svp_pg_95
   \ir tables_size_95+.sql 
 \else

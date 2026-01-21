@@ -3,6 +3,8 @@
 -- 100K tuples storage mechanical disk
 -- 250K tuples SSD 
 -- 500K tuples SSD write intensive 
+\set QUIET on
+\timing off
 SET lc_numeric = 'C';
 SELECT
     'ALTER TABLE ' 
@@ -48,3 +50,5 @@ WHERE
 ORDER BY c.reltuples DESC
 ;
 RESET lc_numeric;
+\timing on
+\set QUIET off
