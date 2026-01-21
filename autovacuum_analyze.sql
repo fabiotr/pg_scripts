@@ -1,3 +1,5 @@
+\set QUIET on
+\timing off
 SELECT
     t.schemaname "Schema", 
     t.relname "Table", 
@@ -37,3 +39,5 @@ WHERE
 ORDER BY e.enabled, CASE n_live_tup WHEN 0 then 0 ELSE t.n_mod_since_analyze/t.n_live_tup END DESC
 --ORDER BY e.enabled, CASE n_live_tup WHEN 0 then 0 ELSE (pg_relation_size(t.relid)::NUMERIC*t.n_mod_since_analyze::NUMERIC)/(t.n_live_tup::NUMERIC) END DESC
 LIMIT 10;
+\timing on
+\set QUIET off

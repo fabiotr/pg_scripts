@@ -34,6 +34,7 @@ SELECT
 \qecho '### Statements total'
 \qecho
 \pset xheader_width 1
+\x on
 \if :svp_pg_17
   \ir statements_total_17+.sql
 \elif :svp_pg_14
@@ -41,6 +42,7 @@ SELECT
 \else
   \qecho - pg_stat_statements is not supported on version :svp_server_version
 \endif
+\x off
 \pset xheader_width full
 
 \qecho

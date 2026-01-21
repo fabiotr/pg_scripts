@@ -1,3 +1,5 @@
+\set QUIET on
+\timing off
 SELECT 
 	relname AS "Table Name",  
     to_char(n_live_tup, '999G999G999G999') AS "Rows",
@@ -15,3 +17,5 @@ WHERE
     seq_scan::numeric/greatest(seq_scan + idx_scan,1) > '0.1'
 ORDER BY seq_scan desc
 LIMIT 20;
+\timing on
+\set QUIET off

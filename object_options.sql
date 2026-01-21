@@ -1,3 +1,5 @@
+\set QUIET on
+\timing off
 SELECT 
 	nspname AS "Schema",
 	relname AS "Table",
@@ -21,3 +23,5 @@ WHERE
 	reloptions IS NOT NULL AND 
 	nspname != 'pg_catalog'
 ORDER BY 1,2;
+\timing on
+\set QUIET off
