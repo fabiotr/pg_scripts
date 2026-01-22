@@ -20,12 +20,15 @@ SELECT
         ,current_setting('server_version_num')::int >= 150000  AS pg_15
         ,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
+	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version') AS server_version
 \gset svp_
 
 
 \x on
-\if :svp_pg_17
+\if :svp_pg_18
+  \ir checkpoints_18+.sql
+\elif :svp_pg_17
   \ir checkpoints_17+.sql
 \elif :svp_pg_91
   \ir checkpoints_91+.sql
