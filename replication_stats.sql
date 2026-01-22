@@ -23,7 +23,7 @@ SELECT
 \gset svp_
 
 
-\x on
+--\x on
 \if :svp_pg_12
   \ir replication_stats_12+.sql
 \elif :svp_pg_10
@@ -33,6 +33,6 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
-\x off
+--\x off
 \timing on
 \set QUIET off

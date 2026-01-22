@@ -1,7 +1,8 @@
 SELECT 
     row_number() over(order by temp_blks_read + temp_blks_written desc) "N", 
     queryid,
-    datname db, userid::regrole,  calls, 
+    --datname db, 
+    userid::regrole,  calls, 
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
     pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) total_temp,
     pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls) avg_temp,

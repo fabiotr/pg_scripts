@@ -331,7 +331,7 @@ SELECT
   \if :svp_not_standby  
     \qecho '## Maintenance'
 
-    \qecho '### Objects with individual adjusts'
+    \qecho '### Objects with individual adjustments'
     \qecho
     \i object_options.sql 
     \qecho

@@ -3,8 +3,8 @@
 
 --Setup
 \set QUIET on
-SET client_encoding TO 'UTF8';
 \timing off
+SET client_encoding TO 'UTF8';
 
 --Vars
 SELECT
@@ -13,13 +13,15 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                     AS not_rds
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')          AS not_aurora
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_stat_replication)                                        AS master
-    ,current_date                                          AS date
+    ,(SELECT  pg_is_in_recovery())                                                                                            AS recovery
     ,current_setting('logging_collector')                  AS logging_collector
     ,current_setting('server_version')                     AS server_version
     ,current_setting('server_version_num')::int >=  90000  AS pg_90
     ,current_setting('server_version_num')::int >=  90100  AS pg_91
     ,current_setting('server_version_num')::int >=  90500  AS pg_95
     ,current_setting('server_version_num')::int >= 120000  AS pg_12
+    ,current_setting('server_version_num')::int >= 140000  AS pg_14
+    ,current_date                                          AS date
 \gset svp_
 
 
@@ -137,6 +139,16 @@ SELECT
   \qecho
 \endif
 
+\qecho '### Authentication configurations'
+\qecho 
+\i conf_auth.sql
+\qecho
+
+\qecho '### SSL configurations'
+\qecho
+\i conf_ssl.sql
+\qecho
+
 \qecho '### Logs configurations'
 \qecho
 \i conf_logs.sql
@@ -158,6 +170,11 @@ SELECT
 \qecho '### Connections Total'
 \qecho
 \i connections_tot.sql
+\qecho
+
+\qecho '### Connections by User'
+\qecho 
+\i connections_by_user.sql
 \qecho
 
 \qecho '### Connections SSL'
@@ -200,47 +217,44 @@ SELECT
 
 
 \if :svp_pg_90
-  SELECT  pg_is_in_recovery() AS recovery
-  \gset svp_
   \if :svp_recovery
 
     \qecho '## Replication slave'
     \qecho
     
-	\qecho '### Recovery conf'
-	\qecho
-	\if :svp_pg_12
-	  \i conf_replica.sql
-	\else
-	  \i conf_recovery.sql
-	\endif
-	\qecho
+    \qecho '### Replica conf'
+    \qecho
+    \i conf_replica.sql
+    \qecho
+    \qecho '### Recovery conf'
+    \i conf_recovery.sql
+    \qecho
 	
-	\if :svp_pg_91
+    \if :svp_pg_91
       \qecho '### Conflicts'
       \qecho
       \i database_standby_conflicts.sql
       \qecho
     \endif
 
-    \qecho '### Wal reciever'
-    \qecho
-    \i wal_reciever.sql
-    \qecho
+    \if :not_aurora
+      \qecho '### Wal reciever'
+      \qecho
+      \i wal_reciever.sql
+      \qecho
+    \endif
   \endif
 
-  SELECT CASE WHEN count(1) > 0 THEN TRUE ELSE FALSE END AS master FROM pg_stat_replication
-  \gset svp_
   \if :svp_master
     \qecho '## Replication master'
     \qecho
 
     \qecho '### Master conf'
-	\qecho
-	\i conf_master.sql
-	\qecho
+    \qecho
+    \i conf_master.sql
+    \qecho
 	
-	\qecho '### Replication stats'
+    \qecho '### Replication stats'
     \qecho
     \i replication_stats.sql
     \qecho
@@ -277,7 +291,11 @@ SELECT
 
 \qecho '### Statements from cluster by time'
 \qecho
-\i statements_group_database_time.sql
+\if :svp_pg_14
+  \i statements_group_database_resume.sql
+\else
+  \i statements_group_database_time.sql
+\endif
 \qecho
 
 \qecho '### Statements from cluster by temp'

@@ -1,7 +1,7 @@
 SELECT 
     row_number() over(order by temp_blks_read + temp_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
     queryid,
-    datname AS "DB", 
+    --datname AS "DB", 
     userid::regrole AS "User",  
     to_char((calls::numeric/reset_days::numeric),'9G999G990D9') AS "Calls/Day",
     --to_char((rows/reset_days),'999G999G999') AS "Rows/Day",

@@ -23,8 +23,8 @@ SELECT
 \gset svp_
 
 
-\if :svp_pg_91
-  \ir database_standby_conflicts_91+.sql 
+\if :svp_pg_84
+  \i conf_auth_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
