@@ -19,12 +19,16 @@ SELECT
         ,current_setting('server_version_num')::int >= 140000  AS pg_14
         ,current_setting('server_version_num')::int >= 150000  AS pg_15
         ,current_setting('server_version_num')::int >= 160000  AS pg_16
+        ,current_setting('server_version_num')::int >= 170000  AS pg_17
+        ,current_setting('server_version_num')::int >= 180000  AS pg_18
         ,current_setting('server_version') AS server_version
 \gset svp_
 
 
 \x on
-\if :svp_pg_15
+\if :svp_pg_18
+  \ir internal_18+.sql
+\elif :svp_pg_15
   \ir internal_15+.sql
 \elif :svp_pg_14
   \ir internal_14+.sql
