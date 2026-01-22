@@ -5,4 +5,3 @@
 - Update tables_partition.sql using pg_partioned_table 
 - Update subscription_stats with new PG 18 comumns on pg_stat_subscription_stats
 - Update object_privileges_list.sql with new PG 18 function pg_get_acl()
-- Update checkpoints.sql with PG 18 new columns slru_written and num_done on pg_stat_checkpointer
