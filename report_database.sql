@@ -6,9 +6,6 @@
 --Setup
 SET client_encoding TO 'UTF8';
 SET client_min_messages TO WARNING;
-CREATE EXTENSION IF NOT EXISTS pgstattuple;
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-RESET client_min_messages;
 \r
 --Vars
 SELECT
@@ -24,6 +21,10 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_subscription) AS subscription
 \gset svp_
 
+\if :svp_not_standby
+  CREATE EXTENSION IF NOT EXISTS pgstattuple;
+  CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+\endif 
 \pset footer off
 \pset null ' - '
 \pset border 1
@@ -152,11 +153,12 @@ SELECT
 \i io_index.sql
 \qecho
 
-\qecho '### I/O on sequences'
-\qecho
-\i io_sequence.sql
-\qecho
-
+\if :svp_not_standby
+  \qecho '### I/O on sequences'
+  \qecho
+  \i io_sequence.sql
+  \qecho
+\endif
 
 \if :svp_pg_90
   \if :svp_not_standby
@@ -381,4 +383,5 @@ SELECT
 \qecho
 \qecho END
 \pset footer on
+RESET client_min_messages;
 \set QUIET off

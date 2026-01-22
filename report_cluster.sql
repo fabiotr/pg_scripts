@@ -12,8 +12,9 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                AS not_gcp
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                     AS not_rds
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')          AS not_aurora
-    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_stat_replication)                                        AS master
-    ,(SELECT  pg_is_in_recovery())                                                                                            AS recovery
+    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_stat_replication)                                        AS master
+    ,NOT pg_is_in_recovery()                               AS not_standby
+    ,pg_is_in_recovery()                                   AS recovery
     ,current_setting('logging_collector')                  AS logging_collector
     ,current_setting('server_version')                     AS server_version
     ,current_setting('server_version_num')::int >=  90000  AS pg_90
@@ -70,28 +71,30 @@ SELECT
   \qecho
 \endif
 
-\if :svp_not_aurora
-  \qecho '## Background Workers'
-  \qecho
-  \i bgwriter.sql
-  \qecho
-\endif 
+\if :svp_not_standby
+  \if :svp_not_aurora
+    \qecho '## Background Workers'
+    \qecho
+    \i bgwriter.sql
+    \qecho
+  \endif 
 
-\qecho '## Checkpoints'
-\qecho
-\i checkpoints.sql
-\qecho
-
-\if :svp_not_aurora
-  \qecho '## Wal'
+  \qecho '## Checkpoints'
   \qecho
-  \i wal.sql
+  \i checkpoints.sql
   \qecho
 
-  \qecho '## Archiver'
-  \qecho
-  \i archives.sql
-  \qecho
+  \if :svp_not_aurora
+    \qecho '## Wal'
+    \qecho
+    \i wal.sql
+    \qecho
+
+    \qecho '## Archiver'
+    \qecho
+    \i archives.sql
+    \qecho
+  \endif
 \endif
 
 \qecho '## WAL files'
@@ -197,24 +200,25 @@ SELECT
 \i prepared_transactions.sql
 \qecho
 
-\qecho '## Roles'
-\qecho
+\if :svp_not_standby
+  \qecho '## Roles'
+  \qecho
 
-\qecho '### Roles with high privileges'
-\qecho
-\i user_priv.sql
-\qecho
+  \qecho '### Roles with high privileges'
+  \qecho
+  \i user_priv.sql
+  \qecho
 
-\qecho '### Roles with options'
-\qecho
-\i user_options.sql
-\qecho
+  \qecho '### Roles with options'
+  \qecho
+  \i user_options.sql
+  \qecho
 
-\qecho '### Granted roles'
-\qecho
-\i user_granted_roles.sql
-\qecho
-
+  \qecho '### Granted roles'
+  \qecho
+  \i user_granted_roles.sql
+  \qecho
+\endif
 
 \if :svp_pg_90
   \if :svp_recovery
@@ -237,7 +241,7 @@ SELECT
       \qecho
     \endif
 
-    \if :not_aurora
+    \if :svp_not_aurora
       \qecho '### Wal reciever'
       \qecho
       \i wal_reciever.sql
@@ -273,18 +277,18 @@ SELECT
   \endif
 \endif
 
+\if :svp_not_standby
+  \qecho '## Tablespaces'
+  \qecho
+  \i tablespaces.sql
+  \qecho
 
-\qecho '## Tablespaces'
-\qecho
-\i tablespaces.sql
-\qecho
 
-
-\qecho '## Databases on cluster'
-\qecho
-\i database_size.sql
-\qecho
-
+  \qecho '## Databases on cluster'
+  \qecho
+  \i database_size.sql
+  \qecho
+\endif
 
 \qecho '## Statements from cluster'
 \qecho
