@@ -1,7 +1,6 @@
 - Create new statements to all cluster, grouping databases and users, by plan time, resume, shared buffers and wal
 - Create an autovacuum script based on new PG 18 columns in pg_stat_user_tables to see how long autovacuum is taking in each table.
 - Cateate a new connections_runnning script to show memmory and wal use for each user session based on new PG 18 function pg_stat_get_backend_io() and pg_stat_get_backend_wal()
-- Create a conf_ssl.conf script to show SSL parameters
 - Create a script to use pg_backend_memory_contexts
 - Update tables_partition.sql using pg_partioned_table 
 - Update conf_resources.sql with new PG 18 parameters like io_method
