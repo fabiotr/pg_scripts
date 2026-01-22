@@ -1,7 +1,8 @@
 SELECT
     row_number() over(order by calls  desc) "N",
     trim(to_char(calls*100/sum(calls) OVER (),'99D99') || '%') AS "Calls_%",
-    datname AS "DB", userid::regrole AS "User",
+    --datname AS "DB", 
+    userid::regrole AS "User",
     queryid,
     to_char(calls/reset_days,'999G999G999') AS "Calls/Day",
     to_char((rows/reset_days),'999G999G999') AS "Rows/Day",
