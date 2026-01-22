@@ -8,9 +8,9 @@ FROM pg_settings
 WHERE
     source = 'configuration file' AND 
     setting != boot_val AND
-    name NOT IN ('autovacuum_work_mem','maintenance_work_mem', 'logical_decoding_work_mem', 'max_wal_size','min_wal_size','shared_buffers','work_mem','effective_cache_size', 
-                 'temp_buffers', 'wal_buffers', 'checkpoint_completion_target', 'checkpoint_timeout') AND
-    name NOT IN ('data_directory','config_file', 'hba_file', 'log_directory', 'ident_file','archive_command', 'unix_socket_directories', 'external_pid_file') AND
+    name NOT IN ('autovacuum_work_mem','vacuum_buffer_usage_limit', 'maintenance_work_mem', 'logical_decoding_work_mem', 'max_wal_size','min_wal_size',
+                 'shared_buffers','work_mem','effective_cache_size', 'temp_buffers', 'wal_buffers','checkpoint_timeout', 'checkpoint_completion_target') AND
+    name NOT IN ('data_directory','config_file', 'hba_file', 'log_directory', 'ident_file','archive_command', 'unix_socket_directories', 'external_pid_file', 'extension_control_path') AND
     name NOT IN ('log_destination', 'logging_collector', 'log_directory', 'log_filename', 'log_file_mode', 'log_rotation_age', 'log_rotation_size', 'log_truncate_on_rotation',
                  'log_min_messages', 'log_min_error_statement', 'log_min_duration_statement', 'log_min_duration_sample', 'log_statement_sample_rate',
                  'log_startup_progress_interval', 'debug_print_parse', 'debug_print_rewritten', 'debug_print_plan', 'debug_pretty_print', 'log_autovacuum_min_duration',
