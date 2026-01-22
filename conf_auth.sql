@@ -24,7 +24,7 @@ SELECT
 
 
 \if :svp_pg_84
-  \i conf_auth_84+.sql
+  \ir conf_auth_84+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
