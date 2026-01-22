@@ -5,7 +5,6 @@
 - Update tables_partition.sql using pg_partioned_table 
 - Update conf_resources.sql with new PG 18 parameters like io_method
 - Update conf_directories.sql with new PG 18 parameter extension_control_path
-- Update conf_master.sql with new PG 18 parameters idle_replication_slot_timeout and max_active_replication_origins 
 - Update subscription_stats with new PG 18 comumns on pg_stat_subscription_stats
 - Update object_privileges_list.sql with new PG 18 function pg_get_acl()
 - Update checkpoints.sql with PG 18 new columns slru_written and num_done on pg_stat_checkpointer
