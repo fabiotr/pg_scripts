@@ -9,7 +9,7 @@ WHERE
     source = 'configuration file' AND 
     setting != boot_val AND
     name NOT IN ('autovacuum_work_mem','maintenance_work_mem', 'logical_decoding_work_mem', 'max_wal_size','min_wal_size','shared_buffers','work_mem','effective_cache_size', 
-	'temp_buffers', 'wal_buffers', 'checkpoint_completion_target', 'checkpoint_timeout') AND
+                 'temp_buffers', 'wal_buffers', 'checkpoint_completion_target', 'checkpoint_timeout') AND
     name NOT IN ('data_directory','config_file', 'hba_file', 'log_directory', 'ident_file','archive_command', 'unix_socket_directories', 'external_pid_file') AND
     name NOT IN ('log_destination', 'logging_collector', 'log_directory', 'log_filename', 'log_file_mode', 'log_rotation_age', 'log_rotation_size', 'log_truncate_on_rotation',
                  'log_min_messages', 'log_min_error_statement', 'log_min_duration_statement', 'log_min_duration_sample', 'log_statement_sample_rate',
@@ -27,10 +27,11 @@ WHERE
 		 'recovery_target_xid', 'recovery_target_lsn', 'recovery_target_inclusive',
 		 'recovery_target_timeline', 'recovery_target_action') AND
     name NOT IN ('primary_conninfo', 'primary_slot_name', 'hot_standby', 'max_standby_archive_delay', 'max_standby_streaming_delay', 'wal_receiver_create_temp_slot',
-		 'wal_receiver_status_interval', 'hot_standby_feedback', 'wal_receiver_timeout', 'wal_retrieve_retry_interval', 'recovery_min_apply_delay',
-		 'max_replication_slots', 'max_logical_replication_workers', 'max_sync_workers_per_subscription', 'max_parallel_apply_workers_per_subscription') AND
+                 'wal_receiver_status_interval', 'hot_standby_feedback', 'wal_receiver_timeout', 'wal_retrieve_retry_interval', 'recovery_min_apply_delay',
+                 'sync_replication_slots', 'max_active_replication_origins', 'max_logical_replication_workers', 'max_sync_workers_per_subscription',
+                 'max_parallel_apply_workers_per_subscription') AND
     name NOT IN ('ssl', 'ssl_ca_file', 'ssl_cert_file', 'ssl_crl_file', 'ssl_crl_dir', 'ssl_key_file', 'ssl_tls13_ciphers', 'ssl_ciphers', 'ssl_prefer_server_ciphers',
                  'ssl_groups', 'ssl_min_protocol_version', 'ssl_max_protocol_version', 'ssl_dh_params_file', 'ssl_passphrase_command', 'ssl_passphrase_command_supports_reload') AND
     name NOT IN ('authentication_timeout', 'password_encryption', 'scram_iterations', 'md5_password_warnings', 'krb_server_keyfile', 'krb_caseins_users', 'gss_accept_delegation',
-                  'oauth_validator_libraries')
+                 'oauth_validator_libraries')
 ORDER BY category, name;
