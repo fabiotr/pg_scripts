@@ -8,7 +8,7 @@ SELECT
   current_setting('debug_assertions') 	AS "Debug?",
   --pg_is_wal_replay_paused() AS "Recovery paused?", -- Not supported in AWS Aurora 
   current_setting('huge_pages') AS "Huge Pages",
-  pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size'))) 	AS "Shared Memmory", -- PG >= 15
+  pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size'))) 	AS "Shared Memory", -- PG >= 15
   pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size_in_huge_pages')) * 
     CASE 
       WHEN current_setting('huge_page_size') = '0' THEN 2*1024*1024 
