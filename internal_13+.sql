@@ -8,5 +8,5 @@ SELECT
   current_setting('debug_assertions') AS "Debug?",
   --pg_is_wal_replay_paused() AS "Recovery paused?", -- Not supported in AWS Aurora 
   pg_size_pretty(pg_size_bytes(current_setting('block_size'))) AS "Block Size",
-  pg_size_pretty(pg_size_bytes(current_setting('wal_segment_size'))) AS "Wal Size",
+  pg_size_pretty(pg_size_bytes(current_setting('wal_segment_size'))) AS "Wal Segemnt Size",
   pg_size_pretty(pg_size_bytes(current_setting('segment_size')) * pg_size_bytes(current_setting('block_size'))) AS "Max Segment Size";

@@ -15,6 +15,6 @@ SELECT
       WHEN current_setting('huge_page_size') = '0' THEN 2*1024*1024 
       ELSE pg_size_bytes(current_setting('huge_page_size')) END) 	AS "Shared Huge Pages", -- PG >= 15
   current_setting('block_size') 	AS "Block Size",
-  current_setting('wal_segment_size') 	AS "Wal Size",
+  current_setting('wal_segment_size') 	AS "Wal Segment Size",
   current_setting('segment_size') 	AS "Max Segment Size",
   current_setting('server_encoding')    AS "Encoding";
