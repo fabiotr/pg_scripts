@@ -61,7 +61,7 @@ SELECT
 	
 	WHEN name = 'shared_preload_libraries'          AND source IN ('default', 'configuration file') AND setting LIKE '%pg_stat_statements%'         THEN 'OK'
 	WHEN name = 'pg_stat_statements.max'		AND source IN ('default', 'configuration file')							THEN '--'
-	WHEN name = 'pg_stat_statements.track'		AND source IN ('default', 'configuration file') AND setting = 'ALL'				THEN 'OK'
+	WHEN name = 'pg_stat_statements.track'		AND source IN ('default', 'configuration file') AND setting = 'all'				THEN 'OK'
 	WHEN name = 'pg_stat_statements.track_utility'  AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
 	WHEN name = 'pg_stat_statements.track_planning' AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
 	WHEN name = 'pg_stat_statements.save'		AND source IN ('default', 'configuration file') AND setting = 'on'				THEN 'OK'
