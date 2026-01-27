@@ -27,7 +27,7 @@ SELECT
 
 \if :svp_pg_18
   \ir conf_logs_18+.sql
-\elif :svp_pg82
+\elif :svp_pg_82
   \ir conf_logs_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
