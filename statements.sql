@@ -63,7 +63,9 @@ SELECT
 \qecho '### Statements by execution time'
 \qecho
 
-\if   :svp_pg_14
+\if   :svp_pg_17
+  \ir statements_time_17+.sql
+\elif :svp_pg_14
   \ir statements_time_14+.sql
 \elif :svp_pg_13
   \ir statements_time_13+.sql
