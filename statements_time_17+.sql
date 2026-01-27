@@ -26,5 +26,3 @@ FROM
 WHERE datname = current_database()
 ORDER BY total_exec_time DESC
 LIMIT 10;
-\timing on
-\set QUIET off
