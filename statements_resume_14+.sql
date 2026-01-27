@@ -22,6 +22,8 @@ FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
---WHERE datname = current_database()
+WHERE 
+    datname = current_database() AND
+    calls > 0
 ORDER BY total_exec_time + total_plan_time DESC
 LIMIT 20;
