@@ -14,6 +14,6 @@ FROM
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
 GROUP BY array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' '), queryid 
-HAVING sum(calls) > 0
+HAVING sum(calls) > 0 AND sum(temp_blks_read) + sum(temp_blks_written) > 0
 ORDER BY sum(temp_blks_read + temp_blks_written) DESC
 LIMIT 20;

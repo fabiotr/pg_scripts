@@ -17,6 +17,6 @@ FROM
     JOIN pg_roles u ON u.oid = s.userid,
     (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 GROUP BY reset_days, array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' '), queryid 
-HAVING sum(calls) > 0
+HAVING sum(calls) > 0 AND sum(temp_blks_read) + sum(temp_blks_written) > 0
 ORDER BY sum(temp_blks_read + temp_blks_written) DESC
 LIMIT 20;
