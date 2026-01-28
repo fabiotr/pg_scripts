@@ -55,6 +55,8 @@ SELECT
 \if :svp_not_dbaas
   \qecho '## Compilation options'
   \qecho
+  \qecho '| Info | Valor'
+  \qecho '|---|---|'
   \i pg_config.sql
   \qecho
 \endif
