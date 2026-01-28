@@ -20,4 +20,4 @@ FROM
           filename LIKE '%.backup' ) AS check_backup_label
 ;
 
-SELECT * FROM pg_stat_progress_basebackup;
+--SELECT * FROM pg_stat_progress_basebackup;

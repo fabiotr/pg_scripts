@@ -19,4 +19,4 @@ FROM
                             WHERE pg_ls_dir IN ('pg_wal', 'pg_xlog') )) AS filename ) AS file_list
       WHERE
           filename LIKE '%.backup' ) AS check_backup_label
-
+;

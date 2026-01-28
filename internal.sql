@@ -32,6 +32,8 @@ SELECT
   \ir internal_15+.sql
 \elif :svp_pg_14
   \ir internal_14+.sql
+\elif :svp_pg_13
+  \ir internal_13+.sql
 \elif :svp_pg_93
   \ir internal_93+.sql
 \elif :svp_pg_90
