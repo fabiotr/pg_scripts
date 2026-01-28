@@ -1,4 +1,4 @@
-SELECT current_setting('logging_collector') AS "Collector", current_setting('log_destination') AS "Destination", current_setting('log_directory') AS "Directory", current_setting('log_filename') AS "Filename";
+--SELECT current_setting('logging_collector') AS "Collector", current_setting('log_destination') AS "Destination", current_setting('log_directory') AS "Directory", current_setting('log_filename') AS "Filename";
 
 SELECT 
 	count(1) AS qt, 
