@@ -25,7 +25,7 @@ SELECT
   CREATE EXTENSION IF NOT EXISTS pgstattuple;
   CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 \endif
-SET show pg_stat_statements.track TO none;
+SET pg_stat_statements.track TO none;
 
 \pset footer off
 \pset null ' - '
