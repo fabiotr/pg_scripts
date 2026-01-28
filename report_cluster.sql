@@ -137,7 +137,6 @@ SELECT
 \if :svp_not_gcp
   \qecho '### pg_hba.conf'
   \qecho
-  \x off
   \i pg_hba.sql
   \qecho
 \endif
