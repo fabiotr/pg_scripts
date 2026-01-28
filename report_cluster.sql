@@ -311,5 +311,5 @@ SELECT
 \pset footer on
 \timing on
 RESET client_encoding;
-RESET pg_stat_statements.track;
+--RESET pg_stat_statements.track;
 \set QUIET off
