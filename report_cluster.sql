@@ -314,7 +314,7 @@ SELECT
 \qecho
 \qecho END
 \pset footer on
-\timing on
-RESET client_encoding;
+--\timing on
+--RESET client_encoding;
 --RESET pg_stat_statements.track;
-\set QUIET off
+--\set QUIET off
