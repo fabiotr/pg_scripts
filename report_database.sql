@@ -385,7 +385,7 @@ SET pg_stat_statements.track TO none;
 \qecho
 \qecho END
 \pset footer on
-RESET client_encoding;
-RESET client_min_messages;
-RESET pg_stat_statements.track;
-\set QUIET off
+--RESET client_encoding;
+--RESET client_min_messages;
+--RESET pg_stat_statements.track;
+--\set QUIET off
