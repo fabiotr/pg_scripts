@@ -22,6 +22,7 @@ SELECT
     ,current_setting('server_version_num')::int >=  90500  AS pg_95
     ,current_setting('server_version_num')::int >= 120000  AS pg_12
     ,current_setting('server_version_num')::int >= 140000  AS pg_14
+    ,current_setting('server_version_num')::int >= 170000  AS pg_17
     ,current_date                                          AS date
 \gset svp_
 
@@ -75,10 +76,12 @@ SELECT
 
 \if :svp_not_standby
   \if :svp_not_aurora
-    \qecho '## Background Workers'
-    \qecho
-    \i bgwriter.sql
-    \qecho
+    \if :svp_pg_17
+      \qecho '## Background Workers'
+      \qecho
+      \i bgwriter.sql
+      \qecho
+    \endif
   \endif 
 
   \qecho '## Checkpoints'
