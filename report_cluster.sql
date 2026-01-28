@@ -5,7 +5,7 @@
 \set QUIET on
 \timing off
 SET client_encoding TO 'UTF8';
-SET pg_stat_statements.track TO none;
+--SET pg_stat_statements.track TO none;
 --Vars
 SELECT
      (SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname IN ('cloudsqladmin', 'rdsadmin')) AS not_dbaas
