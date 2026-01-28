@@ -7,7 +7,7 @@ SELECT
   current_setting('data_checksums') 	AS "Checksum?",
   current_setting('debug_assertions') 	AS "Debug?",
   --pg_is_wal_replay_paused() AS "Recovery paused?", -- Not supported in AWS Aurora 
-  current_setting('huge_pages') AS "Huge Pages",
+  current_setting('huge_pages')         AS "Huge Pages",
   pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size'))) 	AS "Shared Memory", -- PG >= 15
   pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size_in_huge_pages')) * 
     CASE 
