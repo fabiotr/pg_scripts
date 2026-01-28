@@ -386,5 +386,5 @@ SET pg_stat_statements.track TO none;
 \qecho END
 \pset footer on
 RESET client_min_messages;
-RESET show pg_stat_statements.track;
+RESET pg_stat_statements.track;
 \set QUIET off
