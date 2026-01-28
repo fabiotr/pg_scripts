@@ -24,7 +24,9 @@ SELECT
 \if :svp_not_standby
   CREATE EXTENSION IF NOT EXISTS pgstattuple;
   CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-\endif 
+\endif
+SET show pg_stat_statements.track TO none;
+
 \pset footer off
 \pset null ' - '
 \pset border 1
@@ -384,4 +386,5 @@ SELECT
 \qecho END
 \pset footer on
 RESET client_min_messages;
+RESET show pg_stat_statements.track;
 \set QUIET off
