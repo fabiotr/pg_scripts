@@ -113,7 +113,7 @@ SELECT
 \qecho
 
 \if :svp_not_gcp
-  \qecho '### Log files'
+  \qecho '## Log files'
   \qecho
   \i ls_logs.sql
   \qecho
