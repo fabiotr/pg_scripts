@@ -1,4 +1,3 @@
-\x on
 SELECT
     to_char(100 * num_timed::NUMERIC  	    / nullif((num_timed + num_requested),0),'990D9') || ' %' AS "Checkpoints timed",
     to_char(100 * num_requested::NUMERIC    / nullif((num_timed + num_requested),0),'990D9') || ' %' AS "Checkpoints requested",
@@ -14,4 +13,3 @@ SELECT
     '-------' AS "------------------",
     date_trunc('second', current_timestamp - stats_reset)                                                                                            AS "Age"
 FROM pg_stat_checkpointer;
-\x auto

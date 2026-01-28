@@ -1,4 +1,3 @@
-\x on
 SELECT
     to_char(100 * checkpoints_timed::NUMERIC  / nullif((checkpoints_timed + checkpoints_req),0),'990D9') || ' %' AS "Checkpoints timed",
     to_char(100 * checkpoints_req::NUMERIC    / nullif((checkpoints_timed + checkpoints_req),0),'990D9') || ' %' AS "Checkpoints req",
@@ -9,4 +8,3 @@ SELECT
     '-------' AS "------------------",
     pg_size_pretty((buffers_checkpoint + buffers_clean + buffers_backend) * current_setting('block_size')::INTEGER) AS "Size"
 FROM pg_stat_bgwriter;
-\x auto

@@ -1,5 +1,3 @@
-\set QUIET on
-\timing off
 SELECT
     CASE
         WHEN name = 'log_destination'               	AND source IN ('default', 'configuration file') AND setting = 'stderr'                          THEN 'OK'
@@ -82,5 +80,3 @@ WHERE name IN (
 	'compute_query_id', 'log_statement_stats', 'log_parser_stats', 'log_planner_stats', 'log_executor_stats', 
 	'shared_preload_libraries', 'pg_stat_statements.track', 'pg_stat_statements.track_planning', 'pg_stat_statements.track_utility', 'pg_stat_statements.save', 'pg_stat_statements.max')
 ORDER BY category, name;
-\timing on
-\set QUIET off
