@@ -24,6 +24,7 @@ ANALYZE;
 \qecho '*** Show current stats_reset ***'
 \qecho
 
+SELECT datname AS database, stats_reset FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY datname;
 SELECT datname AS database, stats_reset FROM pg_stat_database ORDER BY datname;
 SELECT slot_name, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;
 SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
@@ -32,8 +33,7 @@ SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
 UNION
 SELECT 'wal' AS shared_stat, stats_reset FROM pg_stat_wal
 UNION
-SELECT DISTINCT 'slru' AS shared_stat, stats_reset FROM pg_stat_slru
+SELECT DISTINCT 'slru / ' || name AS shared_stat, stats_reset FROM pg_stat_slru
 UNION
-SELECT 
 SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM pg_stat_statements_info
 ORDER BY 2,1;
