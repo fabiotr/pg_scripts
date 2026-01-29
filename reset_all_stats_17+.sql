@@ -16,6 +16,10 @@ SELECT
 ANALYZE;
 \set QUIET on
 
+\qecho
+\qecho '*** Show current stats_reset ***'
+\qecho
+
 SELECT datname AS database, stats_reset FROM pg_stat_database ORDER BY datname;
 SELECT slot_name, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;
 SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDER BY subname;
