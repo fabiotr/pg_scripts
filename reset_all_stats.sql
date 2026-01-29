@@ -1,6 +1,7 @@
 \set QUIET on
 \timing off
 \pset footer off
+SET client_min_messages TO warning ;
 
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
@@ -47,6 +48,7 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
+RESET client_min_messages;
 \pset footer on
 \timing on
 \set QUIET off
