@@ -17,7 +17,9 @@ SELECT
   pg_stat_reset_slru('other')
 \gset
 
+\set QUIET off
 ANALYZE;
+\set QUIET on
 
 SELECT datname AS database, stats_reset FROM pg_stat_database ORDER BY datname;
 SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
