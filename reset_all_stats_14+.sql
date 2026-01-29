@@ -1,6 +1,6 @@
 SET pg_stat_statements.track TO 'none';
 
-CREATE EXTENSION IF NOT EXISTS pg_stat_staements;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 SELECT 
   pg_stat_reset_shared('wal'), 
