@@ -20,7 +20,9 @@ SELECT
        THEN pg_stat_reset_replication_slot(NULL) END 
 \gset
 
+\set QUIET off
 ANALYZE;
+\set QUIET on
 
 SELECT datname AS database, stats_reset FROM pg_stat_database ORDER BY datname;
 SELECT slot_name, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;

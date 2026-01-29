@@ -1,4 +1,7 @@
+\set QUIET on
 \timing off
+\pset footer off
+
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -44,4 +47,6 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
+\pset footer on
 \timing on
+\set QUIET off
