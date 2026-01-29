@@ -2,6 +2,8 @@
 \timing off
 \pset footer off
 SET client_min_messages TO warning ;
+SET pg_stat_statements.track TO 'none';
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
@@ -48,6 +50,7 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
+RESET pg_stat_statements.track;
 RESET client_min_messages;
 \pset footer on
 \timing on

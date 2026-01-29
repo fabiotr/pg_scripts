@@ -1,7 +1,3 @@
-SET pg_stat_statements.track TO 'none';
-
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-
 SELECT 
   pg_stat_reset_shared('wal'), 
   pg_stat_reset_shared('archiver'), 
@@ -41,5 +37,3 @@ UNION
 SELECT 
 SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM pg_stat_statements_info
 ORDER BY 2,1;
-
-RESET pg_stat_statements.track;

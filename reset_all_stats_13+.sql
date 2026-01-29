@@ -1,7 +1,3 @@
-SET pg_stat_statements.track TO 'none';
-
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-
 SELECT 
   pg_stat_reset_shared('archiver'), 
   pg_stat_reset_shared('bgwriter'), 
@@ -32,5 +28,3 @@ SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
 UNION
 SELECT DISTINCT 'slru' AS shared_stat, stats_reset FROM pg_stat_slru
 ORDER BY 2,1;
-
-RESET pg_stat_statements.track;
