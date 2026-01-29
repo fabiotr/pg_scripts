@@ -1,3 +1,4 @@
+\timing off
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
         ,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -21,6 +22,9 @@ SELECT
         ,current_setting('server_version') AS server_version
 \gset svp_
 
+\qecho
+\qecho 'Reset all stats'
+\qecho
 
 \if :svp_pg_17
   \ir reset_all_stats_17+.sql
@@ -39,3 +43,5 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+
+\timing on

@@ -15,7 +15,7 @@ SELECT
   pg_stat_reset_slru('Subtrans'), 
   pg_stat_reset_slru('Xact'), 
   pg_stat_reset_slru('other')
-;
+\gset
 
 ANALYZE;
 
