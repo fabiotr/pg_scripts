@@ -21,7 +21,7 @@ SELECT
        THEN pg_stat_reset_replication_slot(NULL) END,
   CASE WHEN (SELECT CASE WHEN count(1) = 0 THEN TRUE END FROM pg_database WHERE datname = 'rdsadmin')
 	THEN pg_stat_reset_subscription_stats(NULL) END
-;
+\gset
 
 ANALYZE;
 
