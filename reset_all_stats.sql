@@ -33,6 +33,8 @@ SELECT
   \ir reset_all_stats_15+.sql
 \elif :svp_pg_14
   \ir reset_all_stats_14+.sql
+\elif :svp_pg_13
+  \ir reset_all_stats_13+.sql
 \elif :svp_pg_94
   \ir reset_all_stats_94+.sql
 \elif :svp_pg_90
