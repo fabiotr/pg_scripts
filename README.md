@@ -1,4 +1,21 @@
+### PostgreSQL DBA Scripts
+## Highlights
+- You just need psql to run then, no other tool is needed
+- Scripts are versioned from PostgreSQL 8.2 to current (PostgreSQL 18 by now)
+- You don't need to look witch version you are now. Each script detect the current version and call the right version for you
+- Scripts are divided in several groups:
+  - Assesment: Discover with object you have and their stats
+  - Maintenence: Find possible problens and how to fix then
+  - Migration: Help you to migrate no a new PostgreSQL version, dealing with some corner cases
+  - Object tuning: Set some objects options to have a better performance
+  - Parameter tuning: Find some configurations apliyed on your PostgreSQL cluster
+  - Query tuning: Find queries that consume more resources
+  - Replication: Stats and configuration from replication on PostgreSQL
+  - Security: find possible security problemns that you may want to fix
+  - Troubleshooting: now you are under fire, call this scritps to find and deal with emergencies on your PostgreSQL server.
+ - See the scope where this script will look: for the hole cluster, for a particular database or both
 
+## List of scripts now avaliable
 | Type             | Scope    | Name                                    | Compatibility | Description                       | Reference                 | Comments |
 | :---             | :---     | :---                                    | :---:         | :---                              | :---                      | :---     |
 | assesment        | cluster  | `archives.sql`                          | PG >= 9.4     | Amount of archives generated | `pg_stat_archiver` | | 
