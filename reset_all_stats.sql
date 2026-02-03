@@ -29,7 +29,7 @@ SELECT
 \gset svp_
 
 \qecho
-\qecho '*** Reseting all stats ***'
+\qecho '*** Resetting all stats ***'
 \qecho
 
 \if :svp_pg_17
