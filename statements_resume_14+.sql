@@ -1,6 +1,6 @@
 SELECT
     row_number() OVER (ORDER BY total_exec_time + total_plan_time DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'99D99') || '%') AS "load_%",
+    trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'99D99') || '%') AS "load_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
     to_char((calls::numeric/reset_days::numeric),'999G999G990D9') AS "Calls/Day",
