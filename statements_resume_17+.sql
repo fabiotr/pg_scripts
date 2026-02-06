@@ -7,11 +7,11 @@ SELECT
     to_char((calls::numeric/since_days::numeric),'999G999G990D9') AS "Calls/Day",
     to_char((plans::numeric/since_days::numeric),  '999G999G999') AS "Plans/Day",
     to_char((rows::numeric/calls::numeric),          '999G990D9') AS "Rows/Call",
-    to_char(mean_exec_time                        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS "Avg Exec",
-    to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Exec/Day",
-    to_char((total_plan_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Plan/Day",
-    trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1) AS "Plan %",
-    trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read)::numeric,0),1) AS "Hit %" ,
+    to_char(mean_exec_time                        * INTERVAL '1 millisecond', 'HH24:MI:SS,US')        AS "Avg Exec",
+    to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Exec/Day",
+    to_char((total_plan_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Plan/Day",
+    trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1)           AS "Plan %",
+    trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read),0)::numeric,1) AS "Hit %" ,   
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read::numeric)                   / since_days),0)) AS "Read/Day",
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * temp_blks_read + temp_blks_written)::numeric / since_days),0)) AS "Temp/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
@@ -27,6 +27,7 @@ FROM
     (SELECT stats_reset, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     datname = current_database() AND
+    total_exec_time + total_plan_time > 0 AND
     calls > 0
 ORDER BY total_exec_time + total_plan_time DESC
 LIMIT 20;
