@@ -1,6 +1,6 @@
 SELECT
     row_number() over(order by total_exec_time + total_plan_time desc) "N",
-    trim(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'99D99') || '%') AS "load_%",
+    trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'99D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
