@@ -297,14 +297,28 @@ SELECT
 \qecho '## Statements from cluster'
 \qecho
 
-\qecho '### Statements from cluster by time'
 \qecho
 \if :svp_pg_14
+  \qecho '### Statements total on cluster'
+  \qecho
+  \i statements_group_total.sql
+  \qecho
+
+  \qecho '### Statements total grouped by database'
+  \qecho 
+  \i statements_group_database_total.sql
+  \qecho
+
+  \qecho '### Statements resume from cluster by time'
+  \qecho
   \i statements_group_database_resume.sql
+  \qecho
 \else
+  \qecho '### Statements from cluster by time'
+  \qecho
   \i statements_group_database_time.sql
+  \qecho
 \endif
-\qecho
 
 \qecho '### Statements from cluster by temp'
 \qecho
