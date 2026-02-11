@@ -25,7 +25,7 @@ SELECT
 \gset svp_
 
 
-
+\x on
 \if :svp_pg_18
   \ir statements_group_total_18+.sql
 \elif :svp_pg_17
@@ -35,5 +35,6 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+\x auto
 \timing on
 \set QUIET off
