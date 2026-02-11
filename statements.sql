@@ -24,7 +24,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-	,current_setting('server_version') AS server_version
+        ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
+	,current_setting('jit') AS jit
 \gset svp_
 
 \qecho
@@ -77,6 +78,64 @@ SELECT
   \ir statements_time_84+.sql
 \else
   \qecho - pg_stat_statements is not supported on version :svp_server_version
+\endif
+
+\qecho
+\qecho '### Statements by plan time'
+\qecho
+
+\if :svp_pg_17
+  \ir statements_plan_17+.sql
+\elif :svp_pg_14
+  \ir statements_plan_14+.sql
+\else
+  \qecho - pg_stat_statements is not supported on version :svp_server_version
+\endif
+
+\qecho
+\qecho '### Statements by shared I/O'
+\qecho 
+
+\if :svp_pg_17
+  \ir statements_shared_17+.sql
+\elif :svp_pg_14
+  \ir statements_shared_14+.sql
+\elif :svp_pg_92
+  \ir statements_shared_92+.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+
+\if :svp_not_aurora
+  \qecho
+  \qecho '### Statements by WAL'
+  \qecho 
+
+  \if :svp_pg_18
+    \ir statements_wal_18+.sql
+  \elif :svp_pg_17
+    \ir statements_wal_17+.sql
+  \elif :svp_pg_14
+    \ir statements_wal_14+.sql
+  \elif :svp_pg_13
+    \ir statements_wal_13+.sql
+  \else
+    \qecho - Not supported on version :svp_server_version
+  \endif
+\endif
+
+\if :svp_jit
+  \if svp_pg_11
+    \qecho
+    \qecho '### Statements by Jit'
+    \qecho
+    
+    \if :svp_pg_17
+      \ir statements_jit_17+.sql
+    \elif :svp_pg_15
+      \ir statements_jit_15+.sql
+    \endif
+  \endif
 \endif
 
 \qecho
