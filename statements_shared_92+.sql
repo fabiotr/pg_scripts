@@ -28,5 +28,3 @@ WHERE
     datname = current_database()
 ORDER BY shared_blks_read + shared_blks_written DESC
 LIMIT 10;
-\timing on
-\set QUIET off
