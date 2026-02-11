@@ -11,7 +11,7 @@ SELECT
     trunc(sum(total_plan_time)::numeric * 100 / nullif(sum(total_plan_time + total_exec_time)::numeric, 0), 1)  AS "Plan %",
     to_char((sum(total_exec_time) / reset_days)                   * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Exec T/Day",
     to_char((sum(total_plan_time) / reset_days)                   * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Plan T/Day",
-    to_char((sum(total_exec_time) + total_plan_time / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Total T/Day",
+    to_char((sum(total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Total T/Day",
     trunc(sum(shared_blks_hit)::numeric * 100 / nullif(sum(shared_blks_hit + shared_blks_read)::numeric, 0), 1) AS "S Hit %",
     pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(shared_blks_read)                   
         / reset_days),0))                                                                                       AS "S Read/Day",
