@@ -1,14 +1,3 @@
-\x on\x on
-SELECT
-    s.q || ' / ' || current_setting('pg_stat_statements.max') || ' / ' || r.dealloc AS "Number of queryes / Max / Lost",
-    to_char(current_timestamp - stats_reset, 'YYYY-MM-DD HH24:MI') AS "Time since last Reset",
-    to_char(stats_reset, 'YYYY-MM-DD HH24:MI') AS "Stats Reset"
-FROM
- (SELECT count(1) AS q FROM pg_stat_statements) s,
- pg_stat_statements_info r
-;
-
-\x off
 SELECT 
     d.datname AS "Database",
     to_char(sum(total_plan_time) * INTERVAL '1 millisecond' / nullif(sum(calls),0),'SS.FF6')                  AS "Avg Plan T",
