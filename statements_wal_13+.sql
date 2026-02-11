@@ -23,6 +23,3 @@ WHERE
     datname = current_database()
 ORDER BY wal_bytes DESC
 LIMIT 10;
-
-\timing on
-\set QUIET off
