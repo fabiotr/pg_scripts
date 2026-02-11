@@ -32,6 +32,3 @@ WHERE
     datname = current_database()
 ORDER BY jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC
 LIMIT 10;
-
-\timing on
-\set QUIET off
