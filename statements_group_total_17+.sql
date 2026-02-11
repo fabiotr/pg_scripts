@@ -6,7 +6,7 @@ SELECT
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6')       AS "Avg (Plan - Exec) time ",
     trim(to_char(sum(calls)::numeric / reset_days,'999G999G999G999'))  || ' - ' ||
     trim(to_char(sum(rows)::numeric  / reset_days,'999G999G999G999'))                                                AS "(Calls - Rows)/Day",
-    trim(to_char(sum(rows)::numeric / nullif(sum(calls),0)::numeric, '999G999D0'))                                   AS "Rows/Call",
+    trim(to_char(sum(rows)::numeric / nullif(sum(calls),0)::numeric, '999G990D0'))                                   AS "Rows/Call",
     CASE WHEN current_setting('pg_stat_statements.track') = 'all'
         THEN trim(to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'999G999G999'))  ELSE 'Disabled' END AS "Non Toplevel calls/Day",
     trim(to_char(sum(wal_records)  / reset_days, '999G999G999')) || ' - ' ||
