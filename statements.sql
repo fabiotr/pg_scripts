@@ -125,7 +125,7 @@ SELECT
 \endif
 
 \if :svp_jit
-  \if svp_pg_11
+  \if :svp_pg_11
     \qecho
     \qecho '### Statements by Jit'
     \qecho
