@@ -9,7 +9,7 @@ SELECT
     to_char(sum(calls)::numeric / reset_days,'999G999G999')                                                   AS "Calls/Day",
     CASE WHEN current_setting('pg_stat_statements.track') = 'all'
 	THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'999G999G999') ELSE 'Disabled' END AS "N TopLevel/Day",
-    to_char((sum(parallel_workers_launched)::numeric/since_days::numeric),  '999G999G999')                    AS "Workers L/Day",
+    to_char((sum(parallel_workers_launched)::numeric/reset_days::numeric),  '999G999G999')                    AS "Workers L/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char((sum(shared_blk_read_time + shared_blk_write_time) / reset_days) 
             * INTERVAL '1 millisecond','HH24:MI:SS')
