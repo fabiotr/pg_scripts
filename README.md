@@ -46,7 +46,6 @@ cp pg_scripts/.psqlrc $HOME/
 psql -f script_name.sql
 
 ## Usage at psql prompt:
-```
 \i script_name.sql
 ```
 **Note**: Some scripts may require superuser privileges or the pg_stat_statements extension to provide full insights.
