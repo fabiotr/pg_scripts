@@ -104,6 +104,7 @@ If you have a script that could be useful or a suggestion to improve the existin
 ---
 
 ## List of scripts now avaliable
+
 | Type             | Scope    | Name                                    | Compatibility | Description                       | Reference                 | Comments |
 | :---             | :---     | :---                                    | :---:         | :---                              | :---                      | :---     |
 | assesment        | cluster  | `archives.sql`                          | PG >= 9.4     | Amount of archives generated | `pg_stat_archiver` | | 
