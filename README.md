@@ -1,19 +1,107 @@
-### PostgreSQL DBA Scripts
-## Highlights
-- You just need psql to run then, no other tool is needed
-- Scripts are versioned from PostgreSQL 8.2 to current (PostgreSQL 18 by now)
-- You don't need to look witch version you are now. Each script detect the current version and call the right version for you
-- Scripts are divided in several groups:
-  - Assesment: Discover with object you have and their stats
-  - Maintenence: Find possible problens and how to fix then
-  - Migration: Help you to migrate no a new PostgreSQL version, dealing with some corner cases
-  - Object tuning: Set some objects options to have a better performance
-  - Parameter tuning: Find some configurations apliyed on your PostgreSQL cluster
-  - Query tuning: Find queries that consume more resources
-  - Replication: Stats and configuration from replication on PostgreSQL
-  - Security: find possible security problemns that you may want to fix
-  - Troubleshooting: now you are under fire, call this scritps to find and deal with emergencies on your PostgreSQL server.
- - See the scope where this script will look: for the hole cluster, for a particular database or both
+# 🐘 PostgreSQL DBA Essentials
+> A curated collection of SQL scripts for performance tuning, monitoring, and database maintenance.
+
+[![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-18+-336791?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/fabiotr/pg_scripts/graphs/commit-activity)
+
+Este repositório contém scripts essenciais para o dia a dia de um DBA ou desenvolvedor que trabalha com PostgreSQL, focando em identificar gargalos de performance e otimização de recursos.
+
+---
+
+## ✨ Highlight Features
+
+What makes this repository essential for managing PostgreSQL instances:
+- **🔄 Wide Version Compatibility**: Scripts are carefully crafted to be compatible from **PostgreSQL 8.2 up to the current stable release**.
+- **⚡ Version Auto-Detection**: Scripts are designed to automatically detect the running PostgreSQL version to ensure compatibility with specific system catalogs and views.
+- **🎯 Zero Dependencies**: All scripts are pure SQL. Just copy, paste, and run — no extra packages required.
+- **📊 Smart Reporting**: Detailed reports that clearly shows objects details, performance insights, slow queries and more
+ 
+---
+
+## 🛠️ Requirements
+
+To ensure these scripts run correctly, please check the following prerequisites:
+
+- [x] **PostgreSQL 8.2+**: While most scripts work PostgreSQL 8.2 to the current version (PostgreSQL 18 now). Unfortunately some of then will not work on older versions because some features did not exists on then.
+- [x] **psql** client: The standard PostgreSQL command-line tool. Most of this scrips use meta-commands from psql to format output or to choose the correct version of PostgreSQL you are running. Of course you can take the SQL scrip manually and run in any PostgreSQL compatible client.
+- [x] **Superuser Access**: Many scripts require access to system catalogs and stats views. 
+- [x] **pgstattuple**: Some scripts use this extension to provide information about tables and indexes health.
+- [x] **pg_stat_statements**: For performance analysis scripts (like query tracking), ensure this extension is enabled in your `postgresql.conf`:
+```conf
+shared_preload_libraries = 'pg_stat_statements'
+```
+
+---
+
+## 🚀 Quick Start
+
+Para executar qualquer script utilizando o terminal, use o comando abaixo:
+
+```bash
+git clone https://github.com/fabiotr/pg_scripts.git
+cp pg_scripts/.psqlrc $HOME/
+
+## Usage at shell environment:
+psql -f script_name.sql
+
+## Usage at psql prompt:
+```
+\i script_name.sql
+```
+**Note**: Some scripts may require superuser privileges or the pg_stat_statements extension to provide full insights.
+
+---
+
+## ⚠️ Safety & Best Practices
+
+Before running these scripts in a production environment, please consider the following:
+
+> [!WARNING]
+> **Use at your own risk:** These scripts are provided as-is. Always test them in a staging or development environment before executing them in production.
+
+- **Performance Overhead:** Some scripts, particularly those calculating **Bloat** or **Table Sizes**, may perform sequential scans or heavy metadata lookups. On very large databases, this can cause temporary performance degradation.
+- **Transaction Locks:** While most scripts are read-only (SELECT), monitoring long-running transactions or locks is critical. Avoid running scripts that create temporary tables during peak hours if your disk I/O is near its limit.
+- **Read-Only Intent:** All scripts in this repository are designed for **read-only** diagnostic purposes. They do not perform `DROP`, `DELETE`, or `TRUNCATE` operations. However, always verify the script content before execution.
+
+---
+
+## 📂 Scripts Categories
+
+The scripts are organized into specialized groups to facilitate database management:
+
+- **🔍 Assessment**: Discover existing objects, their structures, and current statistics.
+- **🛠️ Maintenance**: Identify potential issues and generate recommendations for fixes.
+- **🚀 Migration**: Specialized tools to assist in upgrading to new PostgreSQL versions, handling edge cases and compatibility.
+- **⚙️ Object Tuning**: Optimize specific object parameters (tables, indexes) for peak performance.
+- **📋 Parameter Tuning**: Audit and review configuration settings applied to your PostgreSQL cluster.
+- **⚡ Query Tuning**: Pinpoint resource-heavy queries and identify optimization opportunities.
+* **🔗 Replication**: Monitor health, lag, and configuration for PostgreSQL replication setups.
+* **🛡️ Security**: Audit your environment to find and fix potential security vulnerabilities.
+* **🔥 Troubleshooting**: Emergency scripts for "under fire" situations to diagnose and resolve production incidents quickly.
+
+> **Scope Note:** Each script is designed to run at a specific level: **Cluster-wide**, **Database-specific**, or **Both**.
+
+--- 
+
+## 📈 Improvements & Contributions
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a script that could be useful or a suggestion to improve the existing ones, please follow these steps:
+
+1. **Fork** the Project
+2. Create your **Feature Branch** (`git checkout -b feature/AmazingScript`)
+3. **Commit** your Changes (`git commit -m 'Add some AmazingScript'`)
+4. **Push** to the Branch (`git push origin feature/AmazingScript`)
+5. Open a **Pull Request**
+
+### 💡 Suggestions for Contributors
+- Ensure your SQL scripts are compatible with **PostgreSQL 18+**.
+- Add brief comments inside the `.sql` file explaining what the script does.
+- Avoid hardcoded schema names (use `public` or generic placeholders).
+
+---
 
 ## List of scripts now avaliable
 | Type             | Scope    | Name                                    | Compatibility | Description                       | Reference                 | Comments |
