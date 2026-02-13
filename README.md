@@ -34,11 +34,12 @@ shared_preload_libraries = 'pg_stat_statements'
 
 ## 🚀 Quick Start
 
-Para executar qualquer script utilizando o terminal, use o comando abaixo:
+To execute any script from terminal, use the following commands:
 
 ```bash
+cd $HOME
 git clone https://github.com/fabiotr/pg_scripts.git
-cp pg_scripts/.psqlrc $HOME/
+cp pg_scripts/psqlrc $HOME/.psqlrc
 
 ## Usage at shell environment:
 psql -f script_name.sql
