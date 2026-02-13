@@ -175,7 +175,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | cluster  | `connections_by_user.sql`               | PG >= 9.2     | Active connections stats by users | Based on `pg_stat_activity` | |
 | cluster  | `connections_gss.sql`                   | PG >= 12      | Active connections stats using GSSAPI  authentication | Based on `pg_stat_gssapi` | |
 | cluster  | `connections_running.sql`                |              | Active connections stats running now | Based on `pg_stat_activity` | |
-| cluster  | `connections_running_detais.sql`         |              | Active detailed connections stats running now | `pg_stat_activity` | |
+| cluster  | `connections_running_details.sql`         |              | Active detailed connections stats running now | `pg_stat_activity` | |
 | cluster  | `connections_ssl.sql`                   | PG >= 9.5     | Active connections stats using SSL | `pg_stat_activity` | |
 | cluster  | `connections_tot.sql`                   | PG >= 9.2     | Total active connections stats running now | `pg_stat_activity` | |
 | cluster  | `database_standby_conflicts.sql`        | PG >= 9.1     | Queries canceled on standby due to conflicts with master | `pg_database_conflicts` | |
