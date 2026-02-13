@@ -59,7 +59,7 @@ Before running these scripts in a production environment, please consider the fo
 > [!WARNING]
 > **Use at your own risk:** These scripts are provided as-is. Always test them in a staging or development environment before executing them in production.
 
-- **Performance Overhead:** Some scripts, particularly those calculating **Bloat** or **Table Sizes**, may perform sequential scans or heavy metadata lookups. On very large databases, this can cause temporary performance degradation.
+- **Performance Overhead:** Some scripts, particularly those calculating **Bloat** or **Table Sizes**, may perform sequential scans or heavy meta-data lookups. On very large databases, this can cause temporary performance degradation.
 - **Transaction Locks:** While most scripts are read-only (SELECT), monitoring long-running transactions or locks is critical. Avoid running scripts that create temporary tables during peak hours if your disk I/O is near its limit.
 - **Read-Only Intent:** All scripts in this repository are designed for **read-only** diagnostic purposes. They do not perform `DROP`, `DELETE`, or `TRUNCATE` operations. However, always verify the script content before execution.
 
@@ -109,17 +109,17 @@ The scripts are organized by functional area and scope. Click on a category to e
 | Cluster  | `pg_config.sql` | PG >= 9.6 | Compilation and build parameters | `pg_config` |
 | Database | `schemas.sql` | | Schema inventory | `pg_namespace` |
 | Database | `tables_changes.sql` | | Top 10 tables with most I/U/D activity | `pg_stat_user_tables` |
-| database | `tables_delete.sql` | | top 10 tables with more DELETEs | `pg_stat_user_tables` | |
+| database | `tables_delete.sql` | | Top 10 tables with more DELETEs | `pg_stat_user_tables` | |
 | Database | `tables_fks.sql` | PG >= 9.5 | Table precedence based on FK inheritance | `pg_constraint` |
 | Database | `tables_foreign.sql` | PG >= 9.1 | Foreign Tables using FDW | `pg_foreign_table` |
-| database | `tables_insert.sql` | | top 10 tables with more INSERTs | `pg_stat_user_tables` | |
+| database | `tables_insert.sql` | | Top 10 tables with more INSERTs | `pg_stat_user_tables` | |
 | Database | `tables_partition.sql` | PG >= 12 | Partitioned tables and indexes | `pg_class`, `pg_inherits` |
 | Database | `tables_rule.sql` | | Tables with rules defined | `pg_rules` |
 | Database | `tables_size.sql` | PG >= 9.5 | Top 20 tables by size (approximate free space) | `pgstattuple` |
 | Database | `tables_unlogged.sql` | PG >= 9.3 | List of unlogged tables | `pg_class` |
-| database | `tables_update.sql` | | top 10 tables with more UPDATEs | `pg_stat_user_tables` | |
+| database | `tables_update.sql` | | Top 10 tables with more UPDATEs | `pg_stat_user_tables` | |
 | Database | `tablespaces.sql` | | Tablespace inventory | `pg_tablespace` |
-| database | `tablespace_objects.sql` | PG >= 9.4     | number of objects by type for each tablespace | `pg_tablespace` | |
+| database | `tablespace_objects.sql` | PG >= 9.4     | Number of objects by type for each tablespace | `pg_tablespace` | |
 | database | `trigger_events.sql` | PG >= 9.3     | Event Triggers | `pg_event_trigger` | |
 | database | `trigger_tables.sql` |               | Table Triggers | `pg_trigger`, `pg_proc` | |
 | Database | `views.sql` | | View inventory | `pg_views` |
@@ -131,26 +131,26 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 | Scope | Name | Compatibility | Description | Comments |
 | :--- | :--- | :---: | :--- | :--- |
-| database | `index_dup.sql`                         |               | duplicated indexes that have same columns | `pg_index` |  We recommend check manually other differences before drop any index | |
+| database | `index_dup.sql`                         |               | Duplicated indexes that have same columns | `pg_index` |  We recommend check manually other differences before drop any index | |
 | database | `index_missing_in_fk.sql`               | PG >= 9.4     | Foreign Keys without an associated index on same columns | `pg_constraint` and `pg_index` | | 
-| database | `index_missing_in_fk_create.sql`        | PG >= 9.4     | CREATE INDEX command for every Foreign Keys whithout an associated index on same columns | `pg_constraint` and `pg_index` | |
-| database | `index_poor.sql`                        | PG >= 8.4     | indexes with bad performance based on some criterias | `pg_stat_user_indexes` | We advise that this list don''d include other replicas that may use this indexes |
-| database | `index_poor_drop.sql`                   |               | DROP INDEX command for every not used index | `pg_stat_user_indexes` | We advise that this list don''d include other replicas that may use this indexes |
-| database | `index_stat_btree.sql`                  | PG >= 8.3     | top 20 BTREE indexes that may need a REINDEX (having avg_leaf_density <= 70 OR leaf_fragmentation >= 20) ordered by index size | `pgstatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O |
+| database | `index_missing_in_fk_create.sql`        | PG >= 9.4     | CREATE INDEX command for every Foreign Keys without an associated index on same columns | `pg_constraint` and `pg_index` | |
+| database | `index_poor.sql`                        | PG >= 8.4     | Indexes with bad performance based on some criteria | `pg_stat_user_indexes` | We advise that this list don't include other replicas that may use this indexes |
+| database | `index_poor_drop.sql`                   |               | DROP INDEX command for every not used index | `pg_stat_user_indexes` | We advise that this list don't include other replicas that may use this indexes |
+| database | `index_stat_btree.sql`                  | PG >= 8.3     | Top 20 BTREE indexes that may need a REINDEX (having avg_leaf_density <= 70 OR leaf_fragmentation >= 20) ordered by index size | `pgstatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O |
 | database | `index_stat_btree_reindex.sql`          | PG >= 10      | Reindex indexes having avg_leaf_density <= 70 OR leaf_fragmentation >= 20 | `pgstatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatindex(oid) may take a wile to run and overhead your I/O and REINDEX command will generate I/O overhead and may generate small locks. We advise to monitor server while running this | 
-| database | `index_stat_gin.sql`                    | PG >= 9.3     | statistics about top 20 GIN indexes by size | `pgstginatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatginindex(oid) may take a wile to run and overhead your I/O |
-| database | `index_stat_hash.sql`                   | PG >= 10      | statistics about top 20 HASH indexes by size | `pgstathashindex(oid)` function on `pgstattuble` extension | Notice that  pgstathashindex(oid) may take a wile to run and overhead your I/O |
-| database | `index_table_missing.sql`               | PG >= 8.4     | Tables thay may need new indexes | `pg_stat_user_tables` | We advise that this list don''d include other replicas that may use this indexes |
-| both     | `reset_all_stats.sql                    | PG >- 9.0     | Reset all stats from current database and cluster | `pg_stat_reset_*` | This script run an ANALYZE commant on current database to prevent autovacuum issues |
-| database | `tables_bloat_approx.sql`               | PG >= 8.3     | top 10 tables with more free space | `pgstattuple_aprrox()` function on `pgstattuple` extension | Notice that pgstattuple_aprrox(oid) may take a wile to run and overhead your I/O |
-| database | `tables_index_missing.sql`              | PG >= 8.4     | tables with poor or few indexes and its reasons | `pg_stat_user_tables` | |
+| database | `index_stat_gin.sql`                    | PG >= 9.3     | Statistics about top 20 GIN indexes by size | `pgstginatindex(oid)` function on `pgstattuble` extension | Notice that  pgstatginindex(oid) may take a wile to run and overhead your I/O |
+| database | `index_stat_hash.sql`                   | PG >= 10      | Statistics about top 20 HASH indexes by size | `pgstathashindex(oid)` function on `pgstattuble` extension | Notice that  pgstathashindex(oid) may take a wile to run and overhead your I/O |
+| database | `index_table_missing.sql`               | PG >= 8.4     | Tables that may need new indexes | `pg_stat_user_tables` | We advise that this list don't include other replicas that may use this indexes |
+| both     | `reset_all_stats.sql                    | PG >- 9.0     | Reset all stats from current database and cluster | `pg_stat_reset_*` | This script run an ANALYZE command on current database to prevent autovacuum issues |
+| database | `tables_bloat_approx.sql`               | PG >= 8.3     | Top 10 tables with more free space | `pgstattuple_aprrox()` function on `pgstattuple` extension | Notice that pgstattuple_aprrox(oid) may take a wile to run and overhead your I/O |
+| database | `tables_index_missing.sql`              | PG >= 8.4     | Tables with poor or few indexes and its reasons | `pg_stat_user_tables` | |
 | database | `tables_not_used.sql`                   | PG >= 8.3     | Tables with low usage | `pg_stat_user_tables`| |
-| database | `tables_not_used_drop.sql`              |               | DROP TABLE commant for tables with low usage | `pg_stat_user_tables` | |
+| database | `tables_not_used_drop.sql`              |               | DROP TABLE commands for tables with low usage | `pg_stat_user_tables` | |
 | database | `vacuum_full_or_cluster.sql`            | PG >= 9.5     | VACUUM FULL or CLUSTER commands for tables with more than 20% of free space | `pgstattuple_approx()` function on `pgstattuple` extension | Notice that  pgstattuple_approx(oid) may take a wile to run and overhead your I/O |
-| cluster  | `vacuum_wraparound_database.sql`        |               | databases near a vacuum wraparound order by age | `pg_database` | |
-| database | `vacuum_wraparound_table.sql`           | PG >= 9.3     | tables near a vacuum wraparound order by age | `pg_class` | |
-| database | `vacuum_wraparound_table_clean.sql`     | PG >= 9.5     | VACUUM comands to prevent a vacuum wraparound | `pg_class` | |
-| database | `vacuum_wraparound_table_multixact.sql` | PG >= 9.5     | tables near a vacuum wraparound due to multixact age | `pg_class` | |
+| cluster  | `vacuum_wraparound_database.sql`        |               | Databases near a vacuum wraparound order by age | `pg_database` | |
+| database | `vacuum_wraparound_table.sql`           | PG >= 9.3     | Tables near a vacuum wraparound order by age | `pg_class` | |
+| database | `vacuum_wraparound_table_clean.sql`     | PG >= 9.5     | VACUUM commands to prevent a vacuum wraparound | `pg_class` | |
+| database | `vacuum_wraparound_table_multixact.sql` | PG >= 9.5     | Tables near a vacuum wraparound due to multixact age | `pg_class` | |
 
 </details>
 
@@ -171,17 +171,17 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 | Scope | Name | Compatibility | Description | Reference |
 | :--- | :--- | :---: | :--- | :--- |
-| cluster  | `clean_query.sql`                       |               | ask for an Query ID and show the query whithout line breaks and spaces | Based on `pg_stat_statements` | Only works on psql |
-| cluster  | `connections_by_user.sql`               | PG >= 9.2     | active connections stats by users | Based on `pg_stat_activity` | |
-| cluster  | `connections_gss.sql`                   | PG >= 12      | active connections stats using GSSAPI  authentication | Based on `pg_stat_gssapi` | |
-| cluster  | `connections_runing.sql`                |               | active connections stats runing now | Based on `pg_stat_activity` | |
-| cluster  | `connections_runing_detais.sql`         |               | active detailed connections stats runing now | `pg_stat_activity` | |
-| cluster  | `connections_ssl.sql`                   | PG >= 9.5     | active connections stats using SSL | `pg_stat_activity` | |
-| cluster  | `connections_tot.sql`                   | PG >= 9.2     | total active connections stats running now | `pg_stat_activity` | |
-| cluster  | `database_standby_conflicts.sql`        | PG >= 9.1     | queries canceled on standby due to conflicts with master | `pg_database_conflicts` | |
-| database | `index_check_btree_integrity.sql`       | PG >= 10      | check integrity on every BTREE index | `bt_index_check(oid)` function on `amcheck` extension | | 
-| database | `index_check_gin_integrity.sql`         | PG >= 18      | check integrity on every GIN index | `bt_index_check(oid)` function on `amcheck` extension | |
-| database | `index_invalid.sql`                     |               | indexes marked as invalid | `pg_index` | |
+| cluster  | `clean_query.sql`                       |               | Ask for an Query ID and show the query without line breaks and spaces | Based on `pg_stat_statements` | Only works on psql |
+| cluster  | `connections_by_user.sql`               | PG >= 9.2     | Active connections stats by users | Based on `pg_stat_activity` | |
+| cluster  | `connections_gss.sql`                   | PG >= 12      | Active connections stats using GSSAPI  authentication | Based on `pg_stat_gssapi` | |
+| cluster  | `connections_running.sql`                |              | Active connections stats running now | Based on `pg_stat_activity` | |
+| cluster  | `connections_running_detais.sql`         |              | Active detailed connections stats running now | `pg_stat_activity` | |
+| cluster  | `connections_ssl.sql`                   | PG >= 9.5     | Active connections stats using SSL | `pg_stat_activity` | |
+| cluster  | `connections_tot.sql`                   | PG >= 9.2     | Total active connections stats running now | `pg_stat_activity` | |
+| cluster  | `database_standby_conflicts.sql`        | PG >= 9.1     | Queries canceled on standby due to conflicts with master | `pg_database_conflicts` | |
+| database | `index_check_btree_integrity.sql`       | PG >= 10      | Check integrity on every BTREE index | `bt_index_check(oid)` function on `amcheck` extension | | 
+| database | `index_check_gin_integrity.sql`         | PG >= 18      | Check integrity on every GIN index | `bt_index_check(oid)` function on `amcheck` extension | |
+| database | `index_invalid.sql`                     |               | Indexes marked as invalid | `pg_index` | |
 | database | `kill_active_all_wait_fucking_event.sql` | PG >= 9.6    | Kill active sessions that have any wait event type except "Client" | `pg_stat_activity` | |
 | database | `kill_active_bufferpin.sql`             | PG >= 9.6     | Kill active sessions that have wait event type "Bufferpin" | `pg_stat_activity` | |
 | database | `kill_active_ipc.sql`                   | PG >= 9.6     | Kill active sessions that have wait event type "IPC" | `pg_stat_activity` | |
@@ -192,17 +192,17 @@ The scripts are organized by functional area and scope. Click on a category to e
 | database | `kill_active_query_time_greater_60_seconds.sql` |       | Kill active sessions that are running for more than 60 seconds | `pg_stat_activity` | |
 | database | `kill_idle_greater_10_minutes.sql`       |              | Kill idle sessions that are running for more than 10 minutes | `pg_stat_activity` | |
 | database | `kill_idle_greater_60_minutes.sql`       |              | Kill idle sessions that are running for more than 60 minutes | `pg_stat_activity` | |
-| database | `kill_idle_in_transaction_60_seconds.sql` |             | Kill idle in transaceion sessions that are running for more than 60 seconds | `pg_stat_activity` | |
-| database | `kill_oldest_blocker.sql`               | PG >= 9.6     | Kill oldest loker session | `pg_stat_activity` and `pg_blocking_pids()` function | |
+| database | `kill_idle_in_transaction_60_seconds.sql` |             | Kill idle in transaction sessions that are running for more than 60 seconds | `pg_stat_activity` | |
+| database | `kill_oldest_blocker.sql`               | PG >= 9.6     | Kill oldest locker session | `pg_stat_activity` and `pg_blocking_pids()` function | |
 | cluster  | `locks.sql`                             | PG >= 8.3     | Locks | `pg_locks`, `pg_stat_activity` | | 
-| cluster  | `pgbouncer_fdw.sql`                     |               | Script to create viws to pgbouncer virtual database SHOW commands | `dblink` extension | | 
-| cluster  | `prepared_transactions.sql`             |               | current prepared transactions | `pg_prepared_xacts` | | 
-| cluster  | `progress_analyze.sql`                  | PG >= 13      | status about ANLYZE commands running | `pg_stat_progress_analyze` | |
-| cluster  | `progress_basebackup.sql`               | PG >= 13      | status about pg_basebackup running | `pg_stat_progress_basebackup` | |
-| cluster  | `progress_cluster.sql`                  | PG >= 12      | status about CLUSTER commands running | `pg_stat_progress_cluster` | |
-| cluster  | `progress_copy.sql`                     | PG >= 14      | status about COPY commands running | `pg_stat_progress_copy` | |
-| cluster  | `progress_index.sql`                    | PG >= 12      | status about CREATE INDEX commands running | `pg_stat_progress_create_index` | |
-| cluster  | `progress_vacuum.sql`                   | PG >= 9.6     | status about VACUUM commands running | `pg_stat_progress_vacuum` | |
+| cluster  | `pgbouncer_fdw.sql`                     |               | Script to create views to pgBouncer virtual database SHOW commands | `dblink` extension | | 
+| cluster  | `prepared_transactions.sql`             |               | Current prepared transactions | `pg_prepared_xacts` | | 
+| cluster  | `progress_analyze.sql`                  | PG >= 13      | Status about ANLYZE commands running | `pg_stat_progress_analyze` | |
+| cluster  | `progress_basebackup.sql`               | PG >= 13      | Status about pg_basebackup running | `pg_stat_progress_basebackup` | |
+| cluster  | `progress_cluster.sql`                  | PG >= 12      | Status about CLUSTER commands running | `pg_stat_progress_cluster` | |
+| cluster  | `progress_copy.sql`                     | PG >= 14      | Status about COPY commands running | `pg_stat_progress_copy` | |
+| cluster  | `progress_index.sql`                    | PG >= 12      | Status about CREATE INDEX commands running | `pg_stat_progress_create_index` | |
+| cluster  | `progress_vacuum.sql`                   | PG >= 9.6     | Status about VACUUM commands running | `pg_stat_progress_vacuum` | |
 
 </details>
 
@@ -211,19 +211,19 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 | Scope | Name | Compatibility | Description | Reference |
 | :--- | :--- | :---: | :--- | :--- |
-| database | `autovacuum_analyze.sql`                |               | List ANALYZE and autovacum ANALYZE stats | `pg_stat_user_tables` | | 
-| database | `autovacuum_analyze_adjust.sql`         |               | Recomend autovacuum_analyze_scale_factor adjust based on number of rows on table | `pg_stat_user_tables` | | 
-| database | `autovacuum_vacuum.sql`                 | PG >= 8.4     | top 20 tables with more percentage of dead rows | `pg_stat_all_tables` | |
-| database | `autovacuum_vacuum_+.sql`               | PG >= 9.2     | top 20 tables with more percentage of dead rows with separate values for toast tables | `pg_stat_all_tables`| experimental |
+| database | `autovacuum_analyze.sql`                |               | List ANALYZE and autovacuum ANALYZE stats | `pg_stat_user_tables` | | 
+| database | `autovacuum_analyze_adjust.sql`         |               | Recommend autovacuum_analyze_scale_factor adjust based on number of rows on table | `pg_stat_user_tables` | | 
+| database | `autovacuum_vacuum.sql`                 | PG >= 8.4     | Top 20 tables with more percentage of dead rows | `pg_stat_all_tables` | |
+| database | `autovacuum_vacuum_+.sql`               | PG >= 9.2     | Top 20 tables with more percentage of dead rows with separate values for toast tables | `pg_stat_all_tables`| experimental |
 | database | `autovacuum_vacuum_adjust.sql`          | PG >= 8.4     | ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size | Based on `pg_stat_all_tables` |
 | database | `autovacuum_vacuum_adjust_+.sql`        | PG >= 8.4     | ALTER TABLE command to adjust autovacuum_vacuum_scale factor based on table size with separate values for toast tables | `pg_stat_all_tables` | experimental |
 | database | `autovacuum_vacuum_queue.sql`           |               | Next tables on autovacuum vacuum queue | `pg_stat_all_tables` | |
-| database | `fillfactor.sql`                        | PG >= 8.4     | tables having more updates and bad hot update ratio | `pg_stat_user_tables` | |
-| database | `functions.sql`                         | PG >= 8.4     | functions consuming more execution time | `pg_stat_user_functions` | |
-| database | `object_options.sql`                    |               | objects with options set | `pg_class` | |
+| database | `fillfactor.sql`                        | PG >= 8.4     | Tables having more updates and bad hot update ratio | `pg_stat_user_tables` | |
+| database | `functions.sql`                         | PG >= 8.4     | Functions consuming more execution time | `pg_stat_user_functions` | |
+| database | `object_options.sql`                    |               | Objects with options set | `pg_class` | |
 | database | `tables_alignment_padding.sql`          | PG >= 94      | Suggested Columns Reorder | | |
-| database | `tables_without_index.sql`              |               | tables without any index | `pg_class` | |
-| database | `tables_without_pk.sql`                 |               | tables without any Primary Key (PK) | `pg_constraint` | |
+| database | `tables_without_index.sql`              |               | Tables without any index | `pg_class` | |
+| database | `tables_without_pk.sql`                 |               | Tables without any Primary Key (PK) | `pg_constraint` | |
 
 </details>
 
@@ -233,21 +233,21 @@ The scripts are organized by functional area and scope. Click on a category to e
 | Scope | Name | Compatibility | Description | Reference |
 | :--- | :--- | :---: | :--- | :--- |
 | cluster  | `bgwriter.sql`                          | PG >= 17      | Background Workers stats | `pg_stat_bgwriter` | | 
-| database | `autovacuum_queue.sql`                  |               | next tables where autovacuum will work | `pg_stat_user_tables` |  |
-| cluster  | `checkpoints.sql`                       | PG >= 8.3     | checkpoint stats | `pg_stat_checkpointer` |  |
-| cluster  | `conf_directories.sql`                  | PG >= 8.4     | parameteres about file and directories location | `pg_settings`| |
-| cluster  | `conf_logs.sql`                         |               | parameters about logs configurations and other related | `pg_settings` | |
-| cluster  | `conf_master.sql`                       | PG >= 8.4     | parameters about master server replication configurations | `pg_settings` | |
-| cluster  | `conf_others.sql`                       | PG >= 8.4     | other parameters with non default values | `pg_settings` | | 
-| cluster  | `conf_resource.sql`                     |               | parameters about resource configuration |  `pg_settings` | | 
-| cluster  | `conf_recovery.sql`                     | PG >= 8.4     | parameters about recovery or at recovery.conf file (PG <12) | `pg_settings` OR `recovery.conf` | |
-| cluster  | `conf_replica.sql`                      | PG >= 8.4     | parameters about replication slave | `pg_settings` | |
-| database | `database_stats.sql`                    |               | database stats | `pg_stat_database` | |
-| cluseter | `ls_logs.sql`                           | PG >= 10      | logs size | `pg_ls_logdir()` function | |
-| cluster  | `ls_temp.sql`                           | PG >= 12      | temporary files size | `pg_ls_tempdir()` function | | 
-| cluster  | `ls_wal.sql`                            | PG >= 10      | wal files size | `pg_ls_waldir()` function | |
-| cluster  | `user_options.sql`                      | PG >= 9.0     | roles with parameter options set | `pg_db_role_setting`| |
-| cluster  | `wal.sql`                               | PG >= 14      | transaction logs (WAL) statistics | `pg_stat_wal` | |
+| database | `autovacuum_queue.sql`                  |               | Next tables where autovacuum will work | `pg_stat_user_tables` |  |
+| cluster  | `checkpoints.sql`                       | PG >= 8.3     | Checkpoint stats | `pg_stat_checkpointer` |  |
+| cluster  | `conf_directories.sql`                  | PG >= 8.4     | Parameters about file and directories location | `pg_settings`| |
+| cluster  | `conf_logs.sql`                         |               | Parameters about logs configurations and other related | `pg_settings` | |
+| cluster  | `conf_master.sql`                       | PG >= 8.4     | Parameters about master server replication configurations | `pg_settings` | |
+| cluster  | `conf_others.sql`                       | PG >= 8.4     | Other parameters with non default values | `pg_settings` | | 
+| cluster  | `conf_resource.sql`                     |               | Parameters about resource configuration |  `pg_settings` | | 
+| cluster  | `conf_recovery.sql`                     | PG >= 8.4     | Parameters about recovery or at recovery.conf file (PG <12) | `pg_settings` OR `recovery.conf` | |
+| cluster  | `conf_replica.sql`                      | PG >= 8.4     | Parameters about replication slave | `pg_settings` | |
+| database | `database_stats.sql`                    |               | Database stats | `pg_stat_database` | |
+| cluseter | `ls_logs.sql`                           | PG >= 10      | Logs size | `pg_ls_logdir()` function | |
+| cluster  | `ls_temp.sql`                           | PG >= 12      | Temporary files size | `pg_ls_tempdir()` function | | 
+| cluster  | `ls_wal.sql`                            | PG >= 10      | WAL files size | `pg_ls_waldir()` function | |
+| cluster  | `user_options.sql`                      | PG >= 9.0     | Roles with parameter options set | `pg_db_role_setting`| |
+| cluster  | `wal.sql`                               | PG >= 14      | Transaction logs (WAL) statistics | `pg_stat_wal` | |
 
 </details>
 
@@ -267,12 +267,12 @@ The scripts are organized by functional area and scope. Click on a category to e
 | cluster  | `statements_group_database_time.sql`    | PG >= 9.4     | top 10 statements on all cluster order by execution time | `pg_stat_statements` extension | |
 | cluster  | `statements_group_database_total.sql`   | PG >= 14      | total statements summary on all cluster  | `pg_stat_statements` extension | |
 | database | `statements_jit.sql`                    | PG >= 15      | top 10 statements order by jit calls | `pg_stat_statements` extension | |
-| database | `statements_local.sql`                  | PG >= 9.2     | top 10 statements order by local memmory used | `pg_stat_statements` extension | |
+| database | `statements_local.sql`                  | PG >= 9.2     | top 10 statements order by local memory used | `pg_stat_statements` extension | |
 | database | `statements_plan.sql`                   | PG >= 14      | top 10 statements planing time | `pg_stat_statements` extension | |
 | database | `statements_resume.sql`                 | PG >= 14      | top 20 statements order by planing and execution time | `pg_stat_statements` extension | |
 | database | `statements_rows.sql`                   | PG >= 8.4     | top 10 statements order by rows | `pg_stat_statements` extension | |
 | database | `statements_rows_call.sql`              | PG >= 8.4     | top 10 statements statistics order by rows per call | `pg_stat_statements` extension | |
-| database | `statements_shared.sql`                 | PG >= 9.2     | top 10 statements order by shared memmory on disk used | `pg_stat_statements` extension | |
+| database | `statements_shared.sql`                 | PG >= 9.2     | top 10 statements order by shared memory on disk used | `pg_stat_statements` extension | |
 | database | `statements_temp.sql`                   | PG >= 9.2     | top 10 statements order by temporary files | `pg_stat_statements` extension | |
 | database | `statements_time.sql`                   | PG >= 8.4     | top 10 statements order by execution time | `pg_stat_statements` extension | |
 | database | `statements_top5.sql`                   | PG >= 8.4     | top 5 full query statements order by execution and planing time | `pg_stat_statements` extension | |
@@ -289,8 +289,8 @@ The scripts are organized by functional area and scope. Click on a category to e
 | :--- | :--- | :---: | :--- | :--- |
 | cluster  | `backup.sql`                            | PG >= 9.1     | Look for a `.backup` file with physical backup summary at pg_wal or pg_xlog | `pg_pg_read_file()` and `pg_ls_dir` functions | | 
 | cluster  | `conf_recovery.sql`                     | PG >= 8.4     | parameters about backup recovery | Based on `pg_settings` | |
-| cluster  | `connections_gss.sql`                   | PG >= 12      | total connections stats runing now using GSS |   `pg_stat_gssapi` | |
-| cluster  | `connections_runing_ssl.sql`            | PG >= 9.5     | total connections stats running now using SSL | `pg_stat_ssl` | |
+| cluster  | `connections_gss.sql`                   | PG >= 12      | total connections stats running now using GSS |   `pg_stat_gssapi` | |
+| cluster  | `connections_running_ssl.sql`            | PG >= 9.5     | total connections stats running now using SSL | `pg_stat_ssl` | |
 | database | `object_privileges_list.sql`            |               | privileges on objects | `pg_class`, `pg_roles` | |
 | cluster  | `pg_hba.sql`                            | PG >= 10      | pg_hba.conf non commented lines and erros | `pg_hba_file_rules` | list rules even if they are not active yet after any change on pg_hba.conf file | 
 | cluster  | `security_labes.sql`                    | PG >= 9.1     | security labels on SE Linux Security Policies | `pg_seclabels` | |
@@ -298,7 +298,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | database | `user_default_privileges.sql`           | PG >= 9.0     | Default privileges | `pg_default_acl` | |
 | database | `user_granted_parameters.sql`           | PG >= 15      | privileges on parameters | `pg_parameter_acl` | |
 | cluster  | `user_granted_roles.sql`                |               | granted roles to other roles | `pg_auth_members` | |
-| database | `user_owners_x_connections.sql`         |               | current number of connections and objets owned by each role | `pg_stat_activity`, `pg_class` | |
+| database | `user_owners_x_connections.sql`         |               | current number of connections and objects owned by each role | `pg_stat_activity`, `pg_class` | |
 | cluster  | `user_priv.sql`                         |               | roles with hight privileges options like superusers | `pg_roles` | |
 
 </details>
