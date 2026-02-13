@@ -1,7 +1,7 @@
 # 🐘 PostgreSQL DBA Essentials
 > A curated collection of SQL scripts for performance tuning, monitoring, and database maintenance.
 
-[![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-18+-336791?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL 8.2–18](https://img.shields.io/badge/PostgreSQL-8.2--18-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/fabiotr/pg_scripts/graphs/commit-activity)
 
