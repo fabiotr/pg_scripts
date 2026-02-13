@@ -81,25 +81,6 @@ The scripts are organized into specialized groups to facilitate database managem
 
 > **Scope Note:** Each script is designed to run at a specific level: **Cluster-wide**, **Database-specific**, or **Both**.
 
---- 
-
-## 📈 Improvements & Contributions
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a script that could be useful or a suggestion to improve the existing ones, please follow these steps:
-
-1. **Fork** the Project
-2. Create your **Feature Branch** (`git checkout -b feature/AmazingScript`)
-3. **Commit** your Changes (`git commit -m 'Add some AmazingScript'`)
-4. **Push** to the Branch (`git push origin feature/AmazingScript`)
-5. Open a **Pull Request**
-
-### 💡 Suggestions for Contributors
-- Ensure your SQL scripts are compatible with **PostgreSQL 18+**.
-- Add brief comments inside the `.sql` file explaining what the script does.
-- Avoid hardcoded schema names (use `public` or generic placeholders).
-
 ---
 
 ## List of scripts now avaliable
