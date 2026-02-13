@@ -75,9 +75,9 @@ The scripts are organized into specialized groups to facilitate database managem
 - **⚙️ Object Tuning**: Optimize specific object parameters (tables, indexes) for peak performance.
 - **📋 Parameter Tuning**: Audit and review configuration settings applied to your PostgreSQL cluster.
 - **⚡ Query Tuning**: Pinpoint resource-heavy queries and identify optimization opportunities.
-* **🔗 Replication**: Monitor health, lag, and configuration for PostgreSQL replication setups.
-* **🛡️ Security**: Audit your environment to find and fix potential security vulnerabilities.
-* **🔥 Troubleshooting**: Emergency scripts for "under fire" situations to diagnose and resolve production incidents quickly.
+- **🔗 Replication**: Monitor health, lag, and configuration for PostgreSQL replication setups.
+- **🛡️ Security**: Audit your environment to find and fix potential security vulnerabilities.
+- **🔥 Troubleshooting**: Emergency scripts for "under fire" situations to diagnose and resolve production incidents quickly.
 
 > **Scope Note:** Each script is designed to run at a specific level: **Cluster-wide**, **Database-specific**, or **Both**.
 
