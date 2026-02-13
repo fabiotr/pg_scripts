@@ -83,8 +83,6 @@ The scripts are organized into specialized groups to facilitate database managem
 
 ---
 
-## List of scripts now avaliable
-
 ## 📂 Script Catalog
 
 The scripts are organized by functional area and scope. Click on a category to expand the full list.
