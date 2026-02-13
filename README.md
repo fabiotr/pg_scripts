@@ -91,7 +91,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 | Scope    | Name | Compatibility | Description | Reference |
 | :---     | :--- | :---: | :--- | :--- |
-| Cluster  | `archives.sql` | PG >= 9.4 | Amount of WAL archives generated | `pg_stat_archiver` |
+| Cluster  | [`archives.sql`](./archives.sql) | PG >= 9.4 | Amount of WAL archives generated | `pg_stat_archiver` |
 | Database | `index_big.sql` | | Indexes > 800KB and > 50% of table size | `pg_index` |
 | Database | `index_functions.sql` | | Indexes using expressions on columns | `pg_index` |
 | Cluster  | `database_size.sql` | | Databases on cluster: size and options | `pg_database` |
