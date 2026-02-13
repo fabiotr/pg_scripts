@@ -16,7 +16,7 @@
 --SET statement_timeout = '60s';
 
 \getenv home HOME
-\cd :home/pg_scripts
+\cd :home/pg_scripts/sql
 
 SELECT current_setting('transaction_read_only')::boolean AS is_reader \gset
 \if :is_reader
