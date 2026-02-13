@@ -5,8 +5,6 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/fabiotr/pg_scripts/graphs/commit-activity)
 
-Este repositório contém scripts essenciais para o dia a dia de um DBA ou desenvolvedor que trabalha com PostgreSQL, focando em identificar gargalos de performance e otimização de recursos.
-
 ---
 
 ## ✨ Highlight Features
