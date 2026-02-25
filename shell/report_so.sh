@@ -134,9 +134,12 @@ done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Grub CMD"                                                 >> $file_dest
+echo "### Grub Huge Pages parameters"                               >> $file_dest
 echo '```'                                                          >> $file_dest
-cat /etc/default/grub | grep 'GRUB_CMDLINE_LINUX=' | grep -v ^#     >> $file_dest
+grub_config=$(grep "^[^#]*GRUB_CMDLINE_LINUX" /etc/default/grub | sed 's/.*"\(.*\)".*/\1/')
+if [ -n "$grub_config" ]; then
+  echo "$grub_config" | tr ' ' '\n' | grep -E "hugepages|transparent_hugepage" || echo "No HP/THP parameter found" >> $file_dest
+fi
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
@@ -156,19 +159,19 @@ echo ""                                                             >> $file_des
 
 echo "### Crontab ($USER)"                                          >> $file_dest
 echo '```'                                                          >> $file_dest
-crontab -l | grep -v '#'                             2>> $file_dest >> $file_dest
+crontab -l | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'        >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/crontab)"                                   >> $file_dest
 echo '```'                                                          >> $file_dest
-cat /etc/crontab | grep -v '#'                                      >> $file_dest
+cat /etc/crontab | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'  >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/cron.d)"                                    >> $file_dest
 echo '```'                                                          >> $file_dest
-cat /etc/cron.d/* | grep -v '#'                                     >> $file_dest
+cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
 
 
@@ -211,7 +214,7 @@ echo "### Environment Variables"                                    >> $file_des
 echo '```'                                                          >> $file_dest
 env | grep USER                                                     >> $file_dest
 env | grep HOME                                                     >> $file_dest
-env | grep PATH                                                     >> $file_dest
+env | grep ^PATH                                                    >> $file_dest
 env | grep ^PG | grep -v PGPASSWORD                                 >> $file_dest
 if [ -n "$PGPASSWORD" ]; then echo 'PGPASSWORD=*****';fi            >> $file_dest
 echo '```'                                                          >> $file_dest
