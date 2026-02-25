@@ -112,7 +112,10 @@ echo ""                                                             >> $file_des
 
 echo "### sysctl.d"                                                 >> $file_dest
 echo '```'                                                          >> $file_dest
-grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/*.conf               >> $file_dest
+ls /etc/sysctl.d | grep .conf | while read FILE
+do 
+  grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/$FILE              >> $file_dest             
+done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
@@ -124,7 +127,10 @@ echo ""                                                             >> $file_des
 
 echo "### limits.d:"                                                >> $file_dest
 echo '```'                                                          >> $file_dest
-grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/*.conf      >> $file_dest
+ls /etc/security/limits.d | grep .conf | while read FILE
+do 
+  grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/$FILE     >> $file_dest             
+done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
