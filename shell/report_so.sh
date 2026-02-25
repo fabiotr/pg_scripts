@@ -180,7 +180,7 @@ echo ""                                                             >> $file_des
 
 echo "### Timezone"                                                 >> $file_dest
 echo '```'                                                          >> $file_dest
-timedatectl | grep 'Time zone'                                      >> $file_dest
+echo `timedatectl | grep 'Time zone'`                               >> $file_dest
 timedatectl | grep 'System clock synchronized'                      >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
