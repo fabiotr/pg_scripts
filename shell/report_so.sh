@@ -207,7 +207,7 @@ if [ -n "$PGPASSFILE" ]; then
 fi
 if [ -f "$HOME/.pgpass" ]; then
   cut -d ':' -f 1,2,3,4 $HOME/.pgpass | while read LINE
-    do echo "$LINE:*****"                                         >> $file_dest
+    do echo "$LINE:*****"                                           >> $file_dest
   done
 fi
 echo '```'                                                          >> $file_dest
@@ -217,17 +217,17 @@ echo "### .pg_service.conf"                                         >> $file_des
 echo '```'                                                          >> $file_dest
 if [ -n "$PGSERVICEFILE" ]; then
   if [ -f "$PGSERVICEFILE" ]; then
-    echo "Enviroment file: $PGSERVICEFILE"                                         >> $file_dest
+    echo "Enviroment file: $PGSERVICEFILE"                          >> $file_dest
         cat $PGSERVICEFILE | grep -v '#'                            >> $file_dest
   fi
 fi
 if [ -f "$HOME/.pg_service.conf" ]; then
-  cat $HOME/.pg_service.conf | grep -v '#'                        >> $file_dest
+  cat $HOME/.pg_service.conf | grep -v '#'                          >> $file_dest
 fi
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### .pg_service.conf"                                         >> $file_dest
+echo "### .psqlrc"                                                  >> $file_dest
 echo '```'                                                          >> $file_dest
 if [ -f "$HOME/.psqlrc" ]; then
   cat $HOME/.psqlrc | grep -v '\-\-'                                >> $file_dest
