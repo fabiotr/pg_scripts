@@ -94,15 +94,13 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "## Linux"                                                     >> $file_dest
-echo "### Kernel"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
-uname -r                                                            >> $file_dest
-echo '```'                                                          >> $file_dest
-echo ""                                                             >> $file_dest
-
 echo "### Distro"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
-hostnamectl                                                         >> $file_dest
+hostnamectl | grep "Operating System"                               >> $file_dest
+hostnamectl | grep "Kernel"                                         >> $file_dest
+hostnamectl | grep "Virtualization"                                 >> $file_dest
+hostnamectl | grep "Hardware Vendor"                                >> $file_dest
+hostnamectl | grep "Hardware Model"                                 >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
