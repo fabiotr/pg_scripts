@@ -1,126 +1,241 @@
+
 #!/bin/sh
-echo "# Report SO"                                                   > /tmp/so.md
-echo ""                                                             >> /tmp/so.md
 
-echo "## CPU:"                                                      >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-lscpu | grep 'Architecture'                                         >> /tmp/so.md
-lscpu | grep 'Byte Order'                                           >> /tmp/so.md
-lscpu | grep 'Vendor ID'                                            >> /tmp/so.md
-lscpu | grep 'Model name'                                           >> /tmp/so.md
-lscpu | grep 'CPU MHz'                                              >> /tmp/so.md
-lscpu | grep 'BogoMIPS'                                             >> /tmp/so.md
-lscpu | grep 'L1d'                                                  >> /tmp/so.md
-lscpu | grep 'L1i'                                                  >> /tmp/so.md
-lscpu | grep 'L2'                                                   >> /tmp/so.md
-lscpu | grep 'L3'                                                   >> /tmp/so.md
-lscpu | grep 'Thread(s) per core'                                   >> /tmp/so.md
-lscpu | grep 'Core(s) per socket'                                   >> /tmp/so.md
-lscpu | grep 'Socket(s)'                                            >> /tmp/so.md
-lscpu | grep 'CPU(s):' | grep -v NUMA                               >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+file_dest=/tmp/so.md
 
-echo "## Network:"                                                  >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-#/sbin/ifconfig | grep inet | grep -v '127.0.0.1' | grep -v '::1'   >> /tmp/so.md
-ip a | grep inet | grep -v '127.0.0.1'                              >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+echo "# SO report for $HOSTNAME"                                     > $file_dest
+echo ""                                                             >> $file_dest
 
-echo "## Memory:"                                                   >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-free -h                                                             >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+echo "## CPU:"                                                      >> $file_dest
+echo '```'                                                          >> $file_dest
+lscpu | grep 'Architecture'                                         >> $file_dest
+lscpu | grep 'Byte Order'                                           >> $file_dest
+lscpu | grep 'Vendor ID'                                            >> $file_dest
+lscpu | grep 'Model name'                                           >> $file_dest
+lscpu | grep 'CPU MHz'                                              >> $file_dest
+lscpu | grep 'BogoMIPS'                                             >> $file_dest
+lscpu | grep 'L1d'                                                  >> $file_dest
+lscpu | grep 'L1i'                                                  >> $file_dest
+lscpu | grep 'L2'                                                   >> $file_dest
+lscpu | grep 'L3'                                                   >> $file_dest
+lscpu | grep 'Thread(s) per core'                                   >> $file_dest
+lscpu | grep 'Core(s) per socket'                                   >> $file_dest
+lscpu | grep 'Socket(s)'                                            >> $file_dest
+lscpu | grep 'CPU(s):' | grep -v NUMA                               >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
-echo "## Huge Pages"                                                >> /tmp/so.md
-echo "### THP defrag:"                                              >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /sys/kernel/mm/transparent_hugepage/defrag                      >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### THP enabled:"                                             >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /sys/kernel/mm/transparent_hugepage/enabled                     >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### VmPeak"                                                   >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-grep ^VmPeak /proc/"$(pgrep -o postgres)"/status                    >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### Pages:"                                                   >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /proc/meminfo | grep -i 'HugePages'                             >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "## Discs"                                                     >> /tmp/so.md
-echo "### fstab"                                                    >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /etc/fstab | grep -v '#'                                        >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### Partitions"                                               >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-df -hT | grep -v '/run' | grep -v '/sys' | grep -v 'devtmpfs'       >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "## Linux"                                                     >> /tmp/so.md
-echo "### Kernel"                                                   >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-uname -a                                                            >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### Distro:"                                                  >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-hostnamectl                                                         >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### sysctl.conf:"                                             >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /etc/sysctl.conf | grep -v '#'                                  >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### sysctl.d:"                                                >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /etc/sysctl.d/*.conf | grep -v '#'                              >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
-
-echo "### Scheduler:"                                               >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-for d in /sys/block/*; do
-  [ -f "$d/queue/scheduler" ] || continue
-  echo "$(basename "$d"): $d/queue/scheduler"                       >> /tmp/so.md
+echo "## Network:"                                                  >> $file_dest
+echo '```'                                                          >> $file_dest
+#/sbin/ifconfig | grep inet | grep -v '127.0.0.1' | grep -v '::1'   >> $file_dest
+#ip a | grep inet | grep -v '127.0.0.1' | grep -v '::1/128'         >> $file_dest
+printf "%-12s | %-8s | %-18s | %-28s\n" "Interface" "Estado" "IPv4/Mask" "IPv6/Mask"           >> $file_dest
+echo "-------------+----------+--------------------+-----------------------------------------" >> $file_dest
+for interface in /sys/class/net/*; do
+  ifname=$(basename "$interface")
+  if [ "$ifname" != "lo" ]; then
+    state=$(cat "$interface/operstate" 2>/dev/null || echo "unknown")
+    ipv4=$(ip -4 addr show "$ifname" | grep -oP '(?<=inet\s)\d+(\.\d+){3}/\d+' | head -n 1)
+    ipv4=${ipv4:-"N/A"}
+    ipv6=$(ip -6 addr show "$ifname" | grep -oP '(?<=inet6\s)[a-f0-9:]+/\d+' | grep -v '^fe80' | head -n 1)
+    ipv6=${ipv6:-"N/A"}
+    printf "%-12s | %-8s | %-18s | %-28s\n" "$ifname" "$state" "$ipv4" "$ipv6"                 >> $file_dest
+  fi
 done
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
-echo "### Crontab ($USER):"                                         >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-crontab -l | grep -v '#'                                            >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+echo "## Memory:"                                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+free -h                                                             >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
-echo "### Crontab (/etc/crontab):"                                  >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /etc/crontab | grep -v '#'                                      >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-echo ""                                                             >> /tmp/so.md
+echo "## Huge Pages"                                                >> $file_dest
+echo "### THP defrag:"                                              >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /sys/kernel/mm/transparent_hugepage/defrag                      >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
-echo "### Crontab (/etc/cron.d):"                                   >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
-cat /etc/cron.d/* | grep -v '#'                                     >> /tmp/so.md
-echo '```'                                                          >> /tmp/so.md
+echo "### THP enabled:"                                             >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /sys/kernel/mm/transparent_hugepage/enabled                     >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
-cat /tmp/so.md
+echo "### VmPeak"                                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+if [ -e /proc/"$(pgrep -o postgres)"/status ]; then
+  grep ^VmPeak /proc/"$(pgrep -o postgres)"/status                  >> $file_dest
+else
+  echo "No PostgreSQL active now"                                   >> $file_dest
+fi
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Pages:"                                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /proc/meminfo | grep -i 'HugePages'                             >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "## Discs"                                                     >> $file_dest
+echo "### fstab"                                                    >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /etc/fstab | grep -v '#'                                        >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Partitions"                                               >> $file_dest
+echo '```'                                                          >> $file_dest
+df -hT | grep -v '/run' | grep -v '/sys' | grep -v 'devtmpfs'       >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "## Linux"                                                     >> $file_dest
+echo "### Kernel"                                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+uname -a                                                            >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Distro:"                                                  >> $file_dest
+echo '```'                                                          >> $file_dest
+hostnamectl                                                         >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### sysctl.conf:"                                             >> $file_dest
+echo '```'                                                          >> $file_dest
+grep -vhE '^(#|;|[[:space:]]*$)' /etc/sysctl.conf                   >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### sysctl.d:"                                                >> $file_dest
+echo '```'                                                          >> $file_dest
+grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/*.conf               >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Scheduler:"                                               >> $file_dest
+echo '```'                                                          >> $file_dest
+echo "Device      | Scheduler"                                      >> $file_dest
+echo "------------+----------"                                      >> $file_dest
+for disk_path in /sys/block/*/queue/scheduler; do
+  dev_name=$(basename "$(dirname "$(dirname "$disk_path")")")
+  if [[ ! $dev_name =~ ^loop ]]; then
+    current_scheduler=$(cat "$disk_path")
+    printf "%-11s | %s\n" "$dev_name" "$current_scheduler"          >> $file_dest
+  fi
+done
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Crontab ($USER):"                                         >> $file_dest
+echo '```'                                                          >> $file_dest
+crontab -l | grep -v '#'                             2>> $file_dest >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Crontab (/etc/crontab):"                                  >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /etc/crontab | grep -v '#'                                      >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Crontab (/etc/cron.d):"                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /etc/cron.d/* | grep -v '#'                                     >> $file_dest
+echo '```'                                                          >> $file_dest
+
+
+echo "### PostgreSQL related packages"                              >> $file_dest
+# Red Hat like Linux
+if [ -f /etc/redhat-release ]; then
+  echo '```'                                                        >> $file_dest
+  rpm -qa | grep postgres                                           >> $file_dest
+  rpm -qa | grep pgbackrest                                         >> $file_dest
+  rpm -qa | grep pgbadger                                           >> $file_dest
+  rpm -qa | grep pg_                                                >> $file_dest
+  echo '```'                                                        >> $file_dest
+fi
+
+# Debian like Linux
+if [ -f /etc/debian_version ]; then
+  echo '```'                                                        >> $file_dest
+  dpkg -l | grep postgres                                           >> $file_dest
+  dpkg -l | grep pgbackrest                                         >> $file_dest
+  dpkg -l | grep pgbadger                                           >> $file_dest
+  dpkg -l | grep pg-activity                                        >> $file_dest
+  echo '```'                                                        >> $file_dest
+fi
+echo ""                                                             >> $file_dest
+
+echo "### Locale"                                                   >> $file_dest
+echo '```'                                                          >> $file_dest
+localectl | grep 'System Locale'                                    >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Timezone"                                                 >> $file_dest
+echo '```'                                                          >> $file_dest
+timedatectl | grep 'Time zone'                                      >> $file_dest
+timedatectl | grep 'System clock synchronized'                      >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Environment Variables"                                    >> $file_dest
+echo '```'                                                          >> $file_dest
+env | grep USER                                                     >> $file_dest
+env | grep HOME                                                     >> $file_dest
+env | grep PATH                                                     >> $file_dest
+env | grep ^PG | grep -v PGPASSWORD                                 >> $file_dest
+if [ -n "$PGPASSWORD" ]; then echo 'PGPASSWORD=*****';fi            >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### .pgpass"                                                  >> $file_dest
+echo '```'                                                          >> $file_dest
+if [ -n "$PGPASSFILE" ]; then
+  if [ -f "$PGPASSFILE" ]; then
+    cut -d ':' -f 1,2,3,4 $PGPASSFILE | while read LINE
+          do echo "$LINE:*****"                                     >> $file_dest
+        done
+  fi
+else
+  if [ -f "$HOME/.pgpass" ]; then
+    cut -d ':' -f 1,2,3,4 $HOME/.pgpass | while read LINE
+      do echo "$LINE:*****"                                         >> $file_dest
+    done
+  fi
+fi
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### .pg_service.conf"                                         >> $file_dest
+echo '```'                                                          >> $file_dest
+if [ -n "$PGSERVICEFILE" ]; then
+  if [ -f "$PGSERVICEFILE" ]; then
+    echo "$PGSERVICEFILE :"                                         >> $file_dest
+        cat $PGSERVICEFILE | grep -v '#'                            >> $file_dest
+  fi
+else
+  if [ -f "$HOME/.pg_service.conf" ]; then
+    cat $HOME/.pg_service.conf | grep -v '#'                        >> $file_dest
+  fi
+fi
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### .pg_service.conf"                                         >> $file_dest
+echo '```'                                                          >> $file_dest
+if [ -f "$HOME/.psqlrc" ]; then
+  cat $HOME/.psqlrc | grep -v '\-\-'                                >> $file_dest
+fi
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "END"                                                          >> $file_dest
+
+cat $file_dest
