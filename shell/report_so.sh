@@ -96,7 +96,7 @@ echo ""                                                             >> $file_des
 echo "## Linux"                                                     >> $file_dest
 echo "### Kernel"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
-uname -a                                                            >> $file_dest
+uname -r                                                            >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
