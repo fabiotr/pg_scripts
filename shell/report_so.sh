@@ -116,6 +116,18 @@ grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/*.conf               >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
+echo "### limits.conf"                                              >> $file_dest
+echo '```'                                                          >> $file_dest
+grep -vhE '^(#|;|[[:space:]]*$)' /etc/security/limits.conf          >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### sysctl.d:"                                                >> $file_dest
+echo '```'                                                          >> $file_dest
+grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/*.conf      >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
 echo "### Scheduler"                                                >> $file_dest
 echo '```'                                                          >> $file_dest
 echo "Device      | Scheduler"                                      >> $file_dest
