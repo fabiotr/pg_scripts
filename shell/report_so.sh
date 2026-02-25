@@ -138,7 +138,7 @@ echo "### Grub Huge Pages parameters"                               >> $file_des
 echo '```'                                                          >> $file_dest
 grub_config=$(grep "^[^#]*GRUB_CMDLINE_LINUX" /etc/default/grub | sed 's/.*"\(.*\)".*/\1/')
 if [ -n "$grub_config" ]; then
-  echo "$grub_config" | tr ' ' '\n' | grep -E "hugepages|transparent_hugepage" || echo "No HP/THP parameter found" >> $file_dest
+  echo "$grub_config" | tr ' ' '\n' | grep -E "hugepages|transparent_hugepage" >> $file_dest
 fi
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
