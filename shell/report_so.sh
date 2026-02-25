@@ -122,9 +122,15 @@ grep -vhE '^(#|;|[[:space:]]*$)' /etc/security/limits.conf          >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### sysctl.d:"                                                >> $file_dest
+echo "### limits.d:"                                                >> $file_dest
 echo '```'                                                          >> $file_dest
 grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/*.conf      >> $file_dest
+echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
+
+echo "### Grub CMD"                                                 >> $file_dest
+echo '```'                                                          >> $file_dest
+cat /etc/default/grub | grep 'GRUB_CMDLINE_LINUX=' | grep -v ^#     >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
