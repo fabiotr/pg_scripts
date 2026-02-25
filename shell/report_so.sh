@@ -6,7 +6,7 @@ file_dest=/tmp/so.md
 echo "# SO report for $HOSTNAME"                                     > $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## CPU:"                                                      >> $file_dest
+echo "## CPU"                                                       >> $file_dest
 echo '```'                                                          >> $file_dest
 lscpu | grep 'Architecture'                                         >> $file_dest
 lscpu | grep 'Byte Order'                                           >> $file_dest
@@ -25,11 +25,11 @@ lscpu | grep 'CPU(s):' | grep -v NUMA                               >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Network:"                                                  >> $file_dest
+echo "## Network"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
 #/sbin/ifconfig | grep inet | grep -v '127.0.0.1' | grep -v '::1'   >> $file_dest
 #ip a | grep inet | grep -v '127.0.0.1' | grep -v '::1/128'         >> $file_dest
-printf "%-12s | %-8s | %-18s | %-28s\n" "Interface" "Estado" "IPv4/Mask" "IPv6/Mask"           >> $file_dest
+printf "%-12s | %-8s | %-18s | %-28s\n" "Interface" "State" "IPv4/Mask" "IPv6/Mask"            >> $file_dest
 echo "-------------+----------+--------------------+-----------------------------------------" >> $file_dest
 for interface in /sys/class/net/*; do
   ifname=$(basename "$interface")
@@ -45,20 +45,20 @@ done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Memory:"                                                   >> $file_dest
+echo "## Memory"                                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 free -h                                                             >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "## Huge Pages"                                                >> $file_dest
-echo "### THP defrag:"                                              >> $file_dest
+echo "### THP defrag"                                               >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /sys/kernel/mm/transparent_hugepage/defrag                      >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### THP enabled:"                                             >> $file_dest
+echo "### THP enabled"                                             >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /sys/kernel/mm/transparent_hugepage/enabled                     >> $file_dest
 echo '```'                                                          >> $file_dest
@@ -100,25 +100,25 @@ uname -a                                                            >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Distro:"                                                  >> $file_dest
+echo "### Distro"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
 hostnamectl                                                         >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### sysctl.conf:"                                             >> $file_dest
+echo "### sysctl.conf"                                              >> $file_dest
 echo '```'                                                          >> $file_dest
 grep -vhE '^(#|;|[[:space:]]*$)' /etc/sysctl.conf                   >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### sysctl.d:"                                                >> $file_dest
+echo "### sysctl.d"                                                 >> $file_dest
 echo '```'                                                          >> $file_dest
 grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/*.conf               >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Scheduler:"                                               >> $file_dest
+echo "### Scheduler"                                                >> $file_dest
 echo '```'                                                          >> $file_dest
 echo "Device      | Scheduler"                                      >> $file_dest
 echo "------------+----------"                                      >> $file_dest
@@ -132,19 +132,19 @@ done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Crontab ($USER):"                                         >> $file_dest
+echo "### Crontab ($USER)"                                          >> $file_dest
 echo '```'                                                          >> $file_dest
 crontab -l | grep -v '#'                             2>> $file_dest >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Crontab (/etc/crontab):"                                  >> $file_dest
+echo "### Crontab (/etc/crontab)"                                   >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /etc/crontab | grep -v '#'                                      >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "### Crontab (/etc/cron.d):"                                   >> $file_dest
+echo "### Crontab (/etc/cron.d)"                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /etc/cron.d/* | grep -v '#'                                     >> $file_dest
 echo '```'                                                          >> $file_dest
