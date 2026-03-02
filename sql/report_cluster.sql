@@ -196,7 +196,7 @@ SELECT
 
 \qecho '### Connection Running'
 \qecho
-\i connections_runing.sql
+\i connections_running.sql
 \qecho
 
 \qecho '### Prepared Transactions (Two Phase Commit)'
