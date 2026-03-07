@@ -81,6 +81,7 @@ echo "\i sql/tables_size.sql" > comando.sql
 
 The scripts are organized by functional area and scope. Click on a category to expand the full list.
 
+
 <details>
 <summary>🔍 Assessment (Inventory & Statistics)</summary>
 
@@ -122,7 +123,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 <summary>🛠️ Maintenance (Optimization & Cleanup)</summary>
 
 | Scope    | Name                                    | Compatibility | Description                                                                                              | Reference                                                                                                                                                             | Comments |
-| :---     | :---                                    | :---:         | :---                                                                                                     | :---                                                                                                                                                                  |
+| :---     | :---                                    | :---:         | :---                                                                                                     | :---                                                                                                                                                                  | :--- |
 | database | `index_dup.sql`                         |               | Duplicated indexes that have same columns                                                                | [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html)                                                                                           |  We recommend check manually other differences before drop any index | |
 | database | `index_missing_in_fk.sql`               | PG >= 9.4     | Foreign Keys without an associated index on same columns                                                 | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) and [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) | | 
 | database | `index_missing_in_fk_create.sql`        | PG >= 9.4     | CREATE INDEX command for every Foreign Keys without an associated index on same columns                  | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) and [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) | |
@@ -278,7 +279,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 <summary>🛡️ Security (Auditing & Permissions)</summary>
 
 | Scope    | Name                                    | Compatibility | Description                                                                 | Reference                                                                                                                                                                                                                    | Comments | 
-| :---     | :---                                    | :---:         | :---                                                                        | :---                                                                                                                                                                                                                         |
+| :---     | :---                                    | :---:         | :---                                                                        | :---                                                                                                                                                                                                                         | :---     |
 | cluster  | `backup.sql`                            | PG >= 9.1     | Look for a `.backup` file with physical backup summary at pg_wal or pg_xlog | [`pg_read_file()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-GENFILE) and [`pg_ls_dir()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-GENFILE) functions | | 
 | cluster  | `conf_recovery.sql`                     | PG >= 8.4     | parameters about backup recovery                                            | [`pg_settings`](https://www.postgresql.org/docs/current/view-pg-settings.html)                                                                                                                                               | |
 | cluster  | `connections_gss.sql`                   | PG >= 12      | total connections stats running now using GSS                               | [`pg_stat_gssapi`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-GSSAPI-VIEW)                                                                                                             | |
@@ -294,6 +295,8 @@ The scripts are organized by functional area and scope. Click on a category to e
 | cluster  | `user_priv.sql`                         |               | roles with hight privileges options like superusers                         | [`pg_roles`](https://www.postgresql.org/docs/current/catalog-pg-roles.html)                                                                                                                                                  | |
 
 </details>
+
+
 ---
 
 ## 🐚 Shell Scripts
