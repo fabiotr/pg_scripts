@@ -33,7 +33,7 @@ SELECT
 \pset pager off
 
 -- Markdown format
-\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Valor \n\|---\|---\|/'
+\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
 \qecho '# Report for cluster'
@@ -56,7 +56,7 @@ SELECT
 \if :svp_not_dbaas
   \qecho '## Compilation options'
   \qecho
-  \qecho '| Info | Valor'
+  \qecho '| Info | Value'
   \qecho '|---|---|'
   \i pg_config.sql
   \qecho

@@ -1,6 +1,6 @@
 SELECT
-    n.nspname AS "Esquema", 
-    c.relname AS "Tabela",
+    n.nspname AS "Schema",
+    c.relname AS "Table",
     trim(to_char(mxid_age(c.relminmxid),'999G999G999G999')) ||
         CASE 
             WHEN t.relfrozenxid IS NOT NULL AND c.relminmxid != t.relminmxid 
@@ -27,7 +27,7 @@ SELECT
                 THEN ' (T ' || trim(to_char(to_number(tfma.option_value ,'999999999999'),'999G999G999G999')) || ')' 
             ELSE '' END AS "Max Age", 
     trim(to_char(to_number(current_setting('vacuum_multixact_failsafe_age'),'999999999999'),'999G999G999G999')) AS "Failsafe Age", 
-    pg_size_pretty(pg_table_size(c.oid)) AS "Tamanho"
+    pg_size_pretty(pg_table_size(c.oid)) AS "Size"
 FROM 
     pg_class c 
     JOIN pg_namespace n ON c.relnamespace = n.oid
