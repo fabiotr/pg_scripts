@@ -328,5 +328,3 @@ Before running these scripts in a production environment, please consider the fo
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to add new scripts or improve existing ones.
 
----
-*Maintained with ❤️ by the PostgreSQL community.*
