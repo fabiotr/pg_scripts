@@ -132,28 +132,27 @@ The scripts are organized by functional area and scope. Click on a category to e
 <details>
 <summary>🛠️ Maintenance (Optimization & Cleanup)</summary>
 
-| Scope    | Name                                    | Compatibility | Description                                                                             | Comments |
-| :---     | :---                                    | :---:         | :---                                                                                    | :--- |
-| database | `index_dup.sql`                         |               | Duplicated indexes that have same columns                                               | We recommend checking manually other differences before dropping any index |
-| database | `index_missing_in_fk.sql`               | PG >= 9.4     | Foreign Keys without an associated index on same columns                                | `pg_constraint` and `pg_index` |
-| database | `index_missing_in_fk_create.sql`        | PG >= 9.4     | CREATE INDEX command for every Foreign Keys without an associated index on same columns | `pg_constraint` and `pg_index` |
-| database | `index_poor.sql`                        | PG >= 8.4     | Indexes with bad performance based on some criteria                                     | We advise that this list doesn't include other replicas that may use these indexes |
-| database | `index_poor_drop.sql`                   |               | DROP INDEX command for every not used index                                             | We advise that this list doesn't include other replicas that may use these indexes |
-| database | `index_stat_btree.sql`                  | PG >= 8.3     | Top 20 BTREE indexes that may need a REINDEX                                            | Notice that `pgstatindex(oid)` may take a while to run and overhead your I/O |
-| database | `index_stat_btree_reindex.sql`          | PG >= 10      | Reindex indexes having bad density or fragmentation                                     | Notice that `pgstatindex(oid)` may take a while to run and overhead your I/O. REINDEX command will generate I/O overhead and may generate small locks. |
-| database | `index_stat_gin.sql`                    | PG >= 9.3     | Statistics about top 20 GIN indexes by size                                             | Notice that `pgstatginindex(oid)` may take a while to run and overhead your I/O |
-| database | `index_stat_hash.sql`                   | PG >= 10      | Statistics about top 20 HASH indexes by size                                            | Notice that `pgstathashindex(oid)` may take a while to run and overhead your I/O |
-| database | `index_table_missing.sql`               | PG >= 8.4     | Tables that may need new indexes                                                        | We advise that this list doesn't include other replicas that may use these indexes |
-| both     | `reset_all_stats.sql`                   | PG >= 9.0     | Reset all stats from current database and cluster                                       | This script runs an ANALYZE command on current database to prevent autovacuum issues |
-| database | `tables_bloat_approx.sql`               | PG >= 8.3     | Top 10 tables with more free space                                                      | Notice that `pgstattuple_approx(oid)` may take a while to run and overhead your I/O |
-| database | `tables_index_missing.sql`              | PG >= 8.4     | Tables with poor or few indexes and its reasons                                         | `pg_stat_user_tables` |
-| database | `tables_not_used.sql`                   | PG >= 8.3     | Tables with low usage                                                                   | `pg_stat_user_tables`|
-| database | `tables_not_used_drop.sql`              |               | DROP TABLE commands for tables with low usage                                           | `pg_stat_user_tables` |
-| database | `vacuum_full_or_cluster.sql`            | PG >= 9.5     | VACUUM FULL or CLUSTER commands for tables with more than 20% of free space             | Notice that `pgstattuple_approx(oid)` may take a while to run and overhead your I/O |
-| cluster  | `vacuum_wraparound_database.sql`        |               | Databases near a vacuum wraparound order by age                                         | `pg_database` |
-| database | `vacuum_wraparound_table.sql`           | PG >= 9.3     | Tables near a vacuum wraparound order by age                                            | `pg_class` |
-| database | `vacuum_wraparound_table_clean.sql`     | PG >= 9.5     | VACUUM commands to prevent a vacuum wraparound                                          | `pg_class` |
-| database | `vacuum_wraparound_table_multixact.sql` | PG >= 9.5     | Tables near a vacuum wraparound due to multixact age                                    | `pg_class` |
+| Scope    | Name                                    | Compatibility | Description                                                                 | Reference               | Comments |
+| :---     | :---                                    | :---:         | :---                                                                        | :---                    | :---     |
+| database | `index_dup.sql`                         |               | Duplicated indexes that have same columns                                   | `pg_index`              | We recommend checking manually other differences before dropping any index |
+| database | `index_missing_in_fk.sql`               | PG >= 9.4     | Foreign Keys without an associated index on same columns                    | `pg_constraint`         | |
+| database | `index_poor.sql`                        | PG >= 8.4     | Indexes with bad performance based on some criteria                         | `pg_stat_user_indexes`  | We advise that this list doesn't include other replicas that may use these indexes |
+| database | `index_poor_drop.sql`                   |               | DROP INDEX command for every not used index                                 | `pg_stat_user_indexes`  | We advise that this list doesn't include other replicas that may use these indexes |
+| database | `index_stat_btree.sql`                  | PG >= 8.3     | Top 20 BTREE indexes that may need a REINDEX                                | `pgstattuple` extension | Notice that `pgstatindex(oid)` may take a while to run and overhead your I/O |
+| database | `index_stat_btree_reindex.sql`          | PG >= 10      | Reindex indexes having bad density or fragmentation                         | `pgstattuple` extension | Notice that `pgstatindex(oid)` may take a while to run and overhead your I/O. REINDEX command will generate I/O overhead and may generate small locks. |
+| database | `index_stat_gin.sql`                    | PG >= 9.3     | Statistics about top 20 GIN indexes by size                                 | `pgstattuple` extension | Notice that `pgstatginindex(oid)` may take a while to run and overhead your I/O |
+| database | `index_stat_hash.sql`                   | PG >= 10      | Statistics about top 20 HASH indexes by size                                | `pgstattuple` extension | Notice that `pgstathashindex(oid)` may take a while to run and overhead your I/O |
+| database | `index_table_missing.sql`               | PG >= 8.4     | Tables that may need new indexes                                            | `pg_stat_user_tables`   | We advise that this list doesn't include other replicas that may use these indexes |
+| both     | `reset_all_stats.sql`                   | PG >= 9.0     | Reset all stats from current database and cluster                           | `pg_reset_*` functions  | This script runs an ANALYZE command on current database to prevent autovacuum issues |
+| database | `tables_bloat_approx.sql`               | PG >= 8.3     | Top 10 tables with more free space                                          | `pgstattuple` extension | Notice that `pgstattuple_approx(oid)` may take a while to run and overhead your I/O |
+| database | `tables_index_missing.sql`              | PG >= 8.4     | Tables with poor or few indexes and its reasons                             | `pg_stat_user_tables`   | | 
+| database | `tables_not_used.sql`                   | PG >= 8.3     | Tables with low usage                                                       | `pg_stat_user_tables`   | |
+| database | `tables_not_used_drop.sql`              |               | DROP TABLE commands for tables with low usage                               | `pg_stat_user_tables`   | |
+| database | `vacuum_full_or_cluster.sql`            | PG >= 9.5     | VACUUM FULL or CLUSTER commands for tables with more than 20% of free space | `pgstattuple` extension | Notice that `pgstattuple_approx(oid)` may take a while to run and overhead your I/O |
+| cluster  | `vacuum_wraparound_database.sql`        |               | Databases near a vacuum wraparound order by age                             | `pg_database` | |
+| database | `vacuum_wraparound_table.sql`           | PG >= 9.3     | Tables near a vacuum wraparound order by age                                | `pg_class` | |
+| database | `vacuum_wraparound_table_clean.sql`     | PG >= 9.5     | VACUUM commands to prevent a vacuum wraparound                              | `pg_class` | |
+| database | `vacuum_wraparound_table_multixact.sql` | PG >= 9.5     | Tables near a vacuum wraparound due to multixact age                        | `pg_class` | |
 
 </details>
 
@@ -311,9 +310,9 @@ Before running these scripts in a production environment, please consider the fo
 > [!WARNING]
 > **Use at your own risk:** These scripts are provided as-is. Always test them in a staging or development environment before executing them in production.
 
-- **Performance Overhead:** Some scripts, particularly those calculating **Bloat** or **Table Sizes**, may perform sequential scans or heavy meta-data lookups. On very large databases, this can cause temporary performance degradation.
-- **Transaction Locks:** While most scripts are read-only (SELECT), monitoring long-running transactions or locks is critical. Avoid running scripts that create temporary tables during peak hours if your disk I/O is near its limit.
-- **Read-Only Intent:** All scripts in this repository are designed for **read-only** diagnostic purposes. They do not perform `DROP`, `DELETE`, or `TRUNCATE` operations. However, always verify the script content before execution.
+- **Be careful using kill scripts on troubleshooting session** : This scripts will kill sessions on current cluster. Be carefull before play with this toys.
+- **Performance Overhead:** Some scripts on maintenance session, particularly those calculating **Bloat** or **Table Sizes**, may perform sequential scans or heavy meta-data lookups. On very large databases, this can cause temporary performance degradation. Please see the comments on scripts catalog befere run.
+- **Read-Only Intent:** All other scripts in this repository are designed for **read-only** diagnostic purposes. They do not perform `DROP`, `DELETE`, or `TRUNCATE` operations. However, always verify the script content before execution.
 
 ---
 
