@@ -13,7 +13,7 @@ SELECT
     trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read),0)::numeric,1) AS "Hit %" ,
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read::numeric)                   / reset_days),0)) AS "Read/Day",
     pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * temp_blks_read + temp_blks_written)::numeric / reset_days),0)) AS "Temp/Day",
-    CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE AND (temp_blk_read_time + temp_blk_write_time > 0)
+    CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE AND (blk_read_time + blk_write_time > 0)
         THEN ((temp_blk_read_time + temp_blk_write_time)/reset_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
