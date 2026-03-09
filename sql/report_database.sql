@@ -32,7 +32,7 @@ SET pg_stat_statements.track TO none;
 \pset border 1
 \pset pager off
 -- Markdown format
-\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Valor \n\|---\|---\|/'
+\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
 \qecho # Report for database :DBNAME
@@ -70,7 +70,7 @@ SET pg_stat_statements.track TO none;
   \endif
 \endif
 
-\qecho '### Owner X Conections'
+\qecho '### Owner X Connections'
 \qecho
 \i user_owners_x_connections.sql
 \qecho
@@ -318,7 +318,7 @@ SET pg_stat_statements.track TO none;
     \i index_missing_in_fk.sql
     \qecho
 
-    \qecho '### Foreigin Key without index CREATE'
+    \qecho '### Foreign Key without index CREATE'
     \qecho
     \i index_missing_in_fk_create.sql
     \qecho
