@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS amcheck;
-SELECT 'SELECT gin_index_check(' || c.oid || '); -- ' || to_char(row_number() OVER (ORDER BY c.relpages),'0000') || ' | ' || c.relname || ', TAMANHO:' || pg_size_pretty(pg_relation_size(c.oid))
+SELECT 'SELECT gin_index_check(' || c.oid || '); -- ' || to_char(row_number() OVER (ORDER BY c.relpages),'0000') || ' | ' || c.relname || ', SIZE:' || pg_size_pretty(pg_relation_size(c.oid))
     FROM 
              pg_index i
         JOIN pg_opclass op ON i.indclass[0] = op.oid

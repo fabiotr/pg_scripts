@@ -77,7 +77,7 @@ WHERE
     AND index_bytes > 100000000
 ORDER BY grp, index_bytes DESC, schemaname, tablename)
 
-SELECT reason "Motivo", schemaname "Esquema", tablename "Tabela", indexname "Índice",
+SELECT reason "Reason", schemaname "Schema", tablename "Table", indexname "Index",
     index_scan_pct "idx scan %", scans_per_write "scan/w", index_size , table_size
 FROM index_groups
 WHERE index_bytes > 1000000
