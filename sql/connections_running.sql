@@ -1,4 +1,4 @@
-gset QUIET on
+\set QUIET on
 \timing off
 
 SELECT
