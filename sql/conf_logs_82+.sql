@@ -40,7 +40,7 @@ SELECT
 
 	WHEN name = 'TimeZone'                      	AND source IN ('default', 'configuration file')                                                 THEN '--'
         WHEN name = 'log_timezone'                  	AND source IN ('default', 'configuration file') AND setting = current_setting('TimeZone')       THEN 'OK'
-        WHEN name = 'lc_messages'                   	AND source IN ('default', 'configuration file') AND setting IN ('C', 'C.UTF-8', 'en_US.UTF-8')  THEN 'OK'
+        WHEN name = 'lc_messages'                   	AND source IN ('default', 'configuration file') AND setting IN ('C', 'C.UTF-8', 'en_US.UTF-8','en_US.UTF8', 'C.UTF8')  THEN 'OK'
 
 	WHEN name = 'track_activities'              	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'track_activity_query_size'     	AND source IN ('default', 'configuration file') AND to_number(setting, '99999') >= 1024         THEN 'OK'
