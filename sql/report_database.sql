@@ -60,15 +60,15 @@ SET pg_stat_statements.track TO none;
     \i extensions.sql
     \qecho
 
-    \qecho '## Roles'
-    \qecho
-
     \qecho '### Default privileges'
     \qecho
     \i user_default_privileges.sql
     \qecho
   \endif
 \endif
+
+\qecho '## Roles'
+\qecho
 
 \qecho '### Owner X Connections'
 \qecho
@@ -82,9 +82,9 @@ SET pg_stat_statements.track TO none;
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Label'
+    \qecho '### Security Labels'
     \qecho
-    \i security_labes.sql
+    \i security_labels.sql
     \qecho
  
   \endif
@@ -167,7 +167,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Database DML'
     \qecho
 
-    \qecho '#### INSERT + UPDATE + DELETE stats'
+    \qecho '### INSERT + UPDATE + DELETE stats'
     \qecho
     \i tables_changes.sql
     \qecho
@@ -221,7 +221,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Tables'
     \qecho
 
-    \qecho '### Tables size'
+    \qecho '### Table sizes'
     \qecho
     \i tables_size.sql
     \qecho
@@ -232,7 +232,7 @@ SET pg_stat_statements.track TO none;
     \qecho
 	
 	
-    \qecho '### Table Triggers'
+    \qecho '### Table triggers'
     \qecho
     \i trigger_tables.sql
     \qecho
