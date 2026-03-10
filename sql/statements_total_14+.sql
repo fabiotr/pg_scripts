@@ -1,5 +1,4 @@
 SELECT
-    count(1) || ' / ' || current_setting('pg_stat_statements.max') || ' / ' || r.dealloc AS "Number of queryes / Max / Lost",
     to_char((sum(total_exec_time)/reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'FF6') AS "Avg time (uS)", 
     to_char(sum(calls)/reset_days,'999G999G999G999') AS "Total calls/Day",
     to_char((sum(total_exec_time)/reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total time/Day",

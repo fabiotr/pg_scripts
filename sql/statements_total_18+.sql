@@ -1,7 +1,4 @@
 SELECT
-    trim(to_char(count(1),'999G999')) || ' - ' || 
-    trim(to_char(current_setting('pg_stat_statements.max')::integer,'9999G999')) || ' - ' || 
-    trim(to_char(r.dealloc,'999G999')) AS "Queries (Tracked - Max - Lost)",
     to_char((sum(total_plan_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6') || ' - ' ||  
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6') AS "Avg (Plan - Exec) time ", 
     trim(to_char(sum(calls)::numeric / reset_days,'999G999G999G999'))  || ' - ' ||
