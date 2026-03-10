@@ -10,7 +10,7 @@ SELECT
     to_char(wal_records::numeric  / calls::numeric, '999G990D9')          AS "Wal/Call",
     pg_size_pretty(trunc(nullif(wal_bytes::numeric/calls,0)))             AS "WAL Size/Call",
     to_char(wal_records::numeric/since_days,  '999G999G999')              AS "WAL Records/Day",
-    to_char(wal_fpi::numeric/since_days,          '999G999')              AS "WAL FPI/Day", 
+    to_char(wal_fpi::numeric/since_days,          '9G999G999')            AS "WAL FPI/Day", 
     to_char(wal_buffers_full::numeric/since_days, '999G999')              AS "WAL full buffers/Day", 
     pg_size_pretty(nullif(wal_bytes::numeric/since_days,0))               AS "WAL Size/Day",
     to_char((total_exec_time + total_plan_time / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
