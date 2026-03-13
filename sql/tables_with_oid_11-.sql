@@ -1,4 +1,4 @@
---tabelas com OID (until PG 11) - pg_class version
+--tables with OID (until PG 11) - pg_class version
 SELECT relnamespace::regnamespace, relname, relhasoids,
 CASE relkind 
 	WHEN 'r' THEN 'table' 
@@ -17,4 +17,3 @@ FROM pg_class
 WHERE relkind = 'r' 
 AND relhasoids=true 
 AND  relnamespace NOT IN ('pg_catalog'::regnamespace::oid,'information_schema'::regnamespace::oid);
-
