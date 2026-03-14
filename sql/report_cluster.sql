@@ -194,7 +194,7 @@ SELECT
 \i connections_gss.sql
 \qecho
 
-\qecho '### Connection Running'
+\qecho '### Connections Running'
 \qecho
 \i connections_running.sql
 \qecho
@@ -246,9 +246,9 @@ SELECT
     \endif
 
     \if :svp_not_aurora
-      \qecho '### Wal reciever'
+      \qecho '### WAL Receiver'
       \qecho
-      \i wal_reciever.sql
+      \i wal_receiver.sql
       \qecho
     \endif
   \endif
