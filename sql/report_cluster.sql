@@ -246,9 +246,9 @@ SELECT
     \endif
 
     \if :svp_not_aurora
-      \qecho '### WAL reciever'
+      \qecho '### WAL receiver'
       \qecho
-      \i wal_reciever.sql
+      \i wal_receiver.sql
       \qecho
     \endif
   \endif
