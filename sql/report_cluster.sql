@@ -90,7 +90,7 @@ SELECT
   \qecho
 
   \if :svp_not_aurora
-    \qecho '## Wal'
+    \qecho '## Write Ahead Log (WAL)'
     \qecho
     \i wal.sql
     \qecho
