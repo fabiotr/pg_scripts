@@ -83,10 +83,12 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 <details>
 <summary>📊 Reports (Complete Database & Cluster Audits)</summary>
+ 
 | Scope    | Name                  | Compatibility | Description                                                                                                               |
 | :---     | :---                  | :---:         | :---                                                                                                                      |
 | Cluster  | `report_cluster.sql`  | PG >= 10      | **Full Cluster Audit**: Generates a comprehensive Markdown report including config, connections, replication, and more.   |
 | Database | `report_database.sql` | PG >= 10      | **Full Database Audit**: Generates a detailed report of the current database including sizes, bloating, and index health. |
+
 </details>
 
 <details>
