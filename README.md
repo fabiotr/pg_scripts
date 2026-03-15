@@ -86,8 +86,9 @@ The scripts are organized by functional area and scope. Click on a category to e
 <summary>🔍 Assessment (Inventory & Statistics)</summary>
 
 | Scope    | Name                              | Compatibility | Description                                   | Reference |
-| :---     | :---                              | :---: 		   | :---                                          | :---      |
+| :---     | :---                              | :---: 		      | :---                                          | :---      |
 | Cluster  | `archives.sql`                    | PG >= 9.4 	   | Amount of WAL archives generated              | [`pg_stat_archiver`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ARCHIVER-VIEW) |
+| Database | `extensions.sql`                  | PG >= 9.0     | List all installed extensions                 | [`pg_extension`](https://www.postgresql.org/docs/current/catalog-pg-extension.html) |
 | Database | `index_big.sql`                   |               | Indexes > 800KB and > 50% of table size       | [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) |
 | Database | `index_functions.sql`             |               | Indexes using expressions on columns          | [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) |
 | Cluster  | `database_size.sql`               |               | Databases on cluster: size and options        | [`pg_database`](https://www.postgresql.org/docs/current/catalog-pg-database.html) |
