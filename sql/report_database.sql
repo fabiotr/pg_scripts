@@ -82,7 +82,7 @@ SET pg_stat_statements.track TO none;
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Label'
+    \qecho '### Security Labels'
     \qecho
     \i security_labes.sql
     \qecho
