@@ -82,9 +82,9 @@ SET pg_stat_statements.track TO none;
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Label'
+    \qecho '### Security Labels'
     \qecho
-    \i security_labes.sql
+    \i security_labels.sql
     \qecho
  
   \endif
@@ -167,7 +167,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Database DML'
     \qecho
 
-    \qecho '#### INSERT + UPDATE + DELETE stats'
+    \qecho '### INSERT + UPDATE + DELETE stats'
     \qecho
     \i tables_changes.sql
     \qecho
