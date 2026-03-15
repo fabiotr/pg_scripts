@@ -167,7 +167,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Database DML'
     \qecho
 
-    \qecho '#### INSERT + UPDATE + DELETE stats'
+    \qecho '#### DML (INSERT, UPDATE, DELETE) stats'
     \qecho
     \i tables_changes.sql
     \qecho
@@ -221,7 +221,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Tables'
     \qecho
 
-    \qecho '### Tables size'
+    \qecho '### Table sizes'
     \qecho
     \i tables_size.sql
     \qecho
