@@ -292,7 +292,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Foreign Tables'
     \qecho
+    \qecho '```sql'
     \i tables_foreign.sql
+    \qecho '```'
     \qecho
   \endif
 \endif
@@ -347,7 +349,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '#### Analyze Adjusts'
     \qecho
+    \qecho '```sql'
     \i autovacuum_analyze_adjust.sql
+    \qecho '```'
     \qecho
 
     \qecho '### Vacuum'
@@ -357,7 +361,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '#### Vacuum Adjusts'
     \qecho
+    \qecho '```sql'
     \i autovacuum_vacuum_adjust.sql
+    \qecho '```'
     \qecho
 
     \qecho '### Vacuum "to prevent wraparound"'
