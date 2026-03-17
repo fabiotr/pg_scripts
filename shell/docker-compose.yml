@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:18
+    container_name: pg_scripts_test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../sql:/sql:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # Enable pg_stat_statements as required by many scripts
+    command: postgres -c shared_preload_libraries=pg_stat_statements
+    tmpfs:
+      - /var/lib/postgresql

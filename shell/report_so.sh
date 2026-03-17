@@ -80,7 +80,7 @@ cat /proc/meminfo | grep -i 'HugePages'                             >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Discs"                                                     >> $file_dest
+echo "## Disks"                                                     >> $file_dest
 echo "### fstab"                                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /etc/fstab | grep -v '#'                                        >> $file_dest
@@ -171,7 +171,7 @@ echo ""                                                             >> $file_des
 
 echo "### Crontab (/etc/cron.d)"                                    >> $file_dest
 echo '```'                                                          >> $file_dest
-cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
+cat /etc/cron.d/* 2>/dev/null | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
 
 
