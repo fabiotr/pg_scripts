@@ -90,7 +90,7 @@ SELECT
   \qecho
 
   \if :svp_not_aurora
-    \qecho '## Wal'
+    \qecho '## Write Ahead Log (WAL)'
     \qecho
     \i wal.sql
     \qecho
@@ -156,7 +156,7 @@ SELECT
 \i conf_ssl.sql
 \qecho
 
-\qecho '### Logs configurations'
+\qecho '### Log configurations'
 \qecho
 \i conf_logs.sql
 \qecho
@@ -166,7 +166,7 @@ SELECT
 \i conf_resource.sql
 \qecho
 
-\qecho '### Others configurations'
+\qecho '### Other configurations'
 \qecho
 \i conf_others.sql
 \qecho
@@ -194,7 +194,7 @@ SELECT
 \i connections_gss.sql
 \qecho
 
-\qecho '### Connection Running'
+\qecho '### Connections Running'
 \qecho
 \i connections_running.sql
 \qecho
@@ -246,9 +246,9 @@ SELECT
     \endif
 
     \if :svp_not_aurora
-      \qecho '### Wal reciever'
+      \qecho '### WAL receiver'
       \qecho
-      \i wal_reciever.sql
+      \i wal_receiver.sql
       \qecho
     \endif
   \endif

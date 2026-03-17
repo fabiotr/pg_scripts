@@ -82,7 +82,7 @@ SET pg_stat_statements.track TO none;
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Label'
+    \qecho '### Security Labels'
     \qecho
     \i security_labes.sql
     \qecho
@@ -167,7 +167,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Database DML'
     \qecho
 
-    \qecho '#### INSERT + UPDATE + DELETE stats'
+    \qecho '#### DML (INSERT, UPDATE, DELETE) stats'
     \qecho
     \i tables_changes.sql
     \qecho
@@ -221,7 +221,7 @@ SET pg_stat_statements.track TO none;
     \qecho '## Tables'
     \qecho
 
-    \qecho '### Tables size'
+    \qecho '### Table sizes'
     \qecho
     \i tables_size.sql
     \qecho
@@ -292,7 +292,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Foreign Tables'
     \qecho
+    \qecho '```sql'
     \i tables_foreign.sql
+    \qecho '```'
     \qecho
   \endif
 \endif
@@ -347,7 +349,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '#### Analyze Adjusts'
     \qecho
+    \qecho '```sql'
     \i autovacuum_analyze_adjust.sql
+    \qecho '```'
     \qecho
 
     \qecho '### Vacuum'
@@ -357,7 +361,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '#### Vacuum Adjusts'
     \qecho
+    \qecho '```sql'
     \i autovacuum_vacuum_adjust.sql
+    \qecho '```'
     \qecho
 
     \qecho '### Vacuum "to prevent wraparound"'

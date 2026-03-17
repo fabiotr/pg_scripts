@@ -105,13 +105,13 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### sysctl.conf"                                              >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 grep -vhE '^(#|;|[[:space:]]*$)' /etc/sysctl.conf                   >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### sysctl.d"                                                 >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 ls /etc/sysctl.d | grep .conf | while read FILE
 do 
   grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/$FILE              >> $file_dest             
@@ -120,13 +120,13 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### limits.conf"                                              >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 grep -vhE '^(#|;|[[:space:]]*$)' /etc/security/limits.conf          >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### limits.d:"                                                >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 ls /etc/security/limits.d | grep .conf | while read FILE
 do 
   grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/$FILE     >> $file_dest             
@@ -135,7 +135,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Grub Huge Pages parameters"                               >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 grub_config=$(grep "^[^#]*GRUB_CMDLINE_LINUX" /etc/default/grub | sed 's/.*"\(.*\)".*/\1/')
 if [ -n "$grub_config" ]; then
   echo "$grub_config" | tr ' ' '\n' | grep -E "hugepages|transparent_hugepage" >> $file_dest
@@ -160,18 +160,18 @@ echo ""                                                             >> $file_des
 echo "### Crontab ($USER)"                                          >> $file_dest
 echo '```'                                                          >> $file_dest
 crontab -l | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'        >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/crontab)"                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 cat /etc/crontab | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'  >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/cron.d)"                                    >> $file_dest
-echo '```'                                                          >> $file_dest
-cat /etc/cron.d/* 2>/dev/null | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
+echo '```bash'                                                          >> $file_dest
+cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
 
 
@@ -211,7 +211,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Environment Variables"                                    >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 env | grep USER                                                     >> $file_dest
 env | grep HOME                                                     >> $file_dest
 env | grep ^PATH                                                    >> $file_dest
@@ -221,7 +221,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### .pgpass"                                                  >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 if [ -n "$PGPASSFILE" ]; then
   if [ -f "$PGPASSFILE" ]; then
     echo "Enviroment file: $PGPASSFILE"                             >> $file_dest
@@ -239,7 +239,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### .pg_service.conf"                                         >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                          >> $file_dest
 if [ -n "$PGSERVICEFILE" ]; then
   if [ -f "$PGSERVICEFILE" ]; then
     echo "Enviroment file: $PGSERVICEFILE"                          >> $file_dest
@@ -253,7 +253,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### .psqlrc"                                                  >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```sql'                                                          >> $file_dest
 if [ -f "$HOME/.psqlrc" ]; then
   cat $HOME/.psqlrc | grep -v '\-\-'                                >> $file_dest
 fi
