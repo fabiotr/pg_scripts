@@ -27,9 +27,9 @@ SELECT
 
 
 \if :svp_pg_17
-  \ir kill_active_all_wait_fucking_event_17+.sql
+  \ir kill_active_wait_events_17+.sql
 \elif :svp_pg_96
-  \ir kill_active_all_wait_fucking_event_96+.sql
+  \ir kill_active_wait_events_96+.sql
 \else
   \qecho - not supported on version :svp_server_version
 \endif
