@@ -55,11 +55,15 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Extensions'
     \qecho
     \i extensions.sql
     \qecho
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Roles'
     \qecho
 
@@ -84,7 +88,7 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Security Labels'
     \qecho
-    \i security_labes.sql
+    \i security_labels.sql
     \qecho
  
   \endif
@@ -94,6 +98,8 @@ SET pg_stat_statements.track TO none;
 \if :svp_pg_10
   \if :svp_publication
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Logical Replication publications'
     \qecho
 
@@ -115,6 +121,8 @@ SET pg_stat_statements.track TO none;
 
   \if :svp_subscription
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Logical Replication subscriptions'
     \qecho
 
@@ -131,6 +139,8 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## I/O'
 \qecho
 
@@ -164,10 +174,12 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Database DML'
     \qecho
 
-    \qecho '#### DML (INSERT, UPDATE, DELETE) stats'
+    \qecho '### DML (INSERT, UPDATE, DELETE) stats'
     \qecho
     \i tables_changes.sql
     \qecho
@@ -188,27 +200,37 @@ SET pg_stat_statements.track TO none;
     \qecho
 
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Tablespaces objects'
     \qecho 
     \i tablespace_objects.sql
     \qecho
 
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Schemas'
     \qecho
     \i schemas.sql
     \qecho
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Views'
     \qecho
     \i views.sql
     \qecho
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Top objects'
     \qecho
     \i object_size.sql
     \qecho
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Triggers'
     \qecho
 
@@ -218,6 +240,8 @@ SET pg_stat_statements.track TO none;
     \qecho
 
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Tables'
     \qecho
 
@@ -300,6 +324,8 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Indexes'
 \qecho
 
@@ -334,7 +360,9 @@ SET pg_stat_statements.track TO none;
 
 
 \if :svp_pg_90
-  \if :svp_not_standby  
+  \if :svp_not_standby
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Maintenance'
 
     \qecho '### Objects with individual adjustments'
@@ -347,7 +375,7 @@ SET pg_stat_statements.track TO none;
     \i autovacuum_analyze.sql
     \qecho
 
-    \qecho '#### Analyze Adjusts'
+    \qecho '### Analyze Adjusts'
     \qecho
     \qecho '```sql'
     \i autovacuum_analyze_adjust.sql
@@ -359,7 +387,7 @@ SET pg_stat_statements.track TO none;
     \i autovacuum_vacuum.sql
     \qecho
 
-    \qecho '#### Vacuum Adjusts'
+    \qecho '### Vacuum Adjusts'
     \qecho
     \qecho '```sql'
     \i autovacuum_vacuum_adjust.sql
@@ -378,11 +406,15 @@ SET pg_stat_statements.track TO none;
   \endif
 \endif
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Functions'
 \qecho
 \i functions.sql
 \qecho
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## pg_stat_statement'
 \qecho
 

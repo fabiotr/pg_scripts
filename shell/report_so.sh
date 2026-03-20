@@ -158,9 +158,9 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Crontab ($USER)"                                          >> $file_dest
-echo '```'                                                          >> $file_dest
-crontab -l | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'        >> $file_dest
 echo '```bash'                                                          >> $file_dest
+crontab -l | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'        >> $file_dest
+echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/crontab)"                                   >> $file_dest

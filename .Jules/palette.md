@@ -1,0 +1,3 @@
+## 2026-03-20 - Markdown Report Navigation and Syntax Highlighting
+**Learning:** Adding quick navigation links (`[⬆ Back to Index](#index)`) before level 2 headers in long Markdown reports significantly improves usability by allowing users to jump back to the Table of Contents, especially when the reports are generated from automated scripts like SQL. Additionally, ensuring proper language identifiers for code blocks (e.g., ` ```bash `) improves syntax highlighting and readability in Markdown viewers.
+**Action:** When working with scripts that generate Markdown documentation or reports, always check for consistent header hierarchies, broken internal links, and provide "Back to Top" navigation for improved accessibility and user experience.

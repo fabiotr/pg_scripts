@@ -62,12 +62,16 @@ SELECT
   \qecho
 \endif
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Preset options'
 \qecho
 \i internal.sql
 \qecho
 
 \if :svp_not_gcp
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Shared Memory use'
   \qecho
   \i shared_buffers_stats.sql
@@ -77,6 +81,8 @@ SELECT
 \if :svp_not_standby
   \if :svp_not_aurora
     \if :svp_pg_17
+      \qecho '[⬆ Back to Index](#index)'
+      \qecho
       \qecho '## Background Workers'
       \qecho
       \i bgwriter.sql
@@ -84,17 +90,23 @@ SELECT
     \endif
   \endif 
 
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Checkpoints'
   \qecho
   \i checkpoints.sql
   \qecho
 
   \if :svp_not_aurora
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Write Ahead Log (WAL)'
     \qecho
     \i wal.sql
     \qecho
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Archiver'
     \qecho
     \i archives.sql
@@ -102,17 +114,23 @@ SELECT
   \endif
 \endif
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## WAL files'
 \qecho
 \i ls_wal.sql
 \qecho
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Temp files'
 \qecho
 \i ls_temp.sql
 \qecho
 
 \if :svp_not_gcp
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Log files'
   \qecho
   \i ls_logs.sql
@@ -120,22 +138,30 @@ SELECT
 \endif
 
 \if :svp_not_dbaas
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Backup'
   \qecho
   \i backup.sql
   \qecho
 \endif
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## I/O Cluster'
 \qecho 
 \i io_cluster.sql
 \qecho
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## SLRU'
 \qecho
 \i slru_stats.sql
 \qecho
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Configurations'
 \qecho
 
@@ -171,6 +197,8 @@ SELECT
 \i conf_others.sql
 \qecho
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Connections'
 \qecho
 
@@ -205,6 +233,8 @@ SELECT
 \qecho
 
 \if :svp_not_standby
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Roles'
   \qecho
 
@@ -227,6 +257,8 @@ SELECT
 \if :svp_pg_90
   \if :svp_recovery
 
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Replication slave'
     \qecho
     
@@ -254,6 +286,8 @@ SELECT
   \endif
 
   \if :svp_master
+    \qecho '[⬆ Back to Index](#index)'
+    \qecho
     \qecho '## Replication master'
     \qecho
 
@@ -282,18 +316,24 @@ SELECT
 \endif
 
 \if :svp_not_standby
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Tablespaces'
   \qecho
   \i tablespaces.sql
   \qecho
 
 
+  \qecho '[⬆ Back to Index](#index)'
+  \qecho
   \qecho '## Databases on cluster'
   \qecho
   \i database_size.sql
   \qecho
 \endif
 
+\qecho '[⬆ Back to Index](#index)'
+\qecho
 \qecho '## Statements from cluster'
 \qecho
 
