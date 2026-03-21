@@ -35,56 +35,56 @@ SET pg_stat_statements.track TO none;
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho # Report for database :DBNAME
+\qecho # 🐘 Report for database :DBNAME
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
 \qecho - Version:  :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# Index'
+\qecho '# 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '## Database stats'
+\qecho '## 📊 Database stats'
 \qecho
 \i database_stats.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '## Extensions'
+    \qecho '## 🧩 Extensions'
     \qecho
     \i extensions.sql
     \qecho
 
-    \qecho '## Roles'
+    \qecho '## 👥 Roles'
     \qecho
 
-    \qecho '### Default privileges'
+    \qecho '### 🔑 Default privileges'
     \qecho
     \i user_default_privileges.sql
     \qecho
   \endif
 \endif
 
-\qecho '### Owner X Connections'
+\qecho '### 👤 Owner X Connections'
 \qecho
 \i user_owners_x_connections.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '### Row level security'
+    \qecho '### 🔒 Row level security'
     \qecho
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Labels'
+    \qecho '### 🏷️ Security Labels'
     \qecho
-    \i security_labes.sql
+    \i security_labels.sql
     \qecho
  
   \endif
@@ -94,20 +94,20 @@ SET pg_stat_statements.track TO none;
 \if :svp_pg_10
   \if :svp_publication
 
-    \qecho '## Logical Replication publications'
+    \qecho '## 📣 Logical Replication publications'
     \qecho
 
-    \qecho '### Publications'
+    \qecho '### 📢 Publications'
     \qecho
     \i publications.sql
     \qecho
 
-    \qecho '### Schemas in publications'
+    \qecho '### 📂 Schemas in publications'
     \qecho
     \i publication_schemas.sql
     \qecho
 
-    \qecho '### Tables in publications'
+    \qecho '### 📋 Tables in publications'
     \qecho
     \i publication_tables.sql
     \qecho
@@ -115,15 +115,15 @@ SET pg_stat_statements.track TO none;
 
   \if :svp_subscription
 
-    \qecho '## Logical Replication subscriptions'
+    \qecho '## 📥 Logical Replication subscriptions'
     \qecho
 
-    \qecho '### Subscriptions'
+    \qecho '### 📝 Subscriptions'
     \qecho
     \i subscription_stats.sql
     \qecho
 
-    \qecho '### Tables in subscriptions'
+    \qecho '### 📋 Tables in subscriptions'
     \qecho
     \i subscription_rel_stats.sql
     \qecho
@@ -131,32 +131,32 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
-\qecho '## I/O'
+\qecho '## 🔌 I/O'
 \qecho
 
-\qecho '### I/O on tables (heap)'
+\qecho '### 📥 I/O on tables (heap)'
 \qecho
 \i io_table_heap.sql
 \qecho
 
-\qecho '### I/O on tables (others)'
+\qecho '### 📥 I/O on tables (others)'
 \qecho
 \i io_table_others.sql
 \qecho
 
-\qecho '### I/O on tables (indexes)'
+\qecho '### 📥 I/O on tables (indexes)'
 \qecho
 \i io_table_index.sql
 \qecho
 
 
-\qecho '### I/O on indexes'
+\qecho '### 📥 I/O on indexes'
 \qecho
 \i io_index.sql
 \qecho
 
 \if :svp_not_standby
-  \qecho '### I/O on sequences'
+  \qecho '### 📥 I/O on sequences'
   \qecho
   \i io_sequence.sql
   \qecho
@@ -164,101 +164,101 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '## Database DML'
+    \qecho '## ⚡ Database DML'
     \qecho
 
-    \qecho '#### DML (INSERT, UPDATE, DELETE) stats'
+    \qecho '### 📊 DML (INSERT, UPDATE, DELETE) stats'
     \qecho
     \i tables_changes.sql
     \qecho
 
-    \qecho '### INSERT stats'
+    \qecho '### 📥 INSERT stats'
     \qecho
     \i tables_insert.sql
     \qecho
 
-    \qecho '### UPDATE stats'
+    \qecho '### 🔄 UPDATE stats'
     \qecho
     \i tables_update.sql
     \qecho
 
-    \qecho '### DELETE stats'
+    \qecho '### 🗑️ DELETE stats'
     \qecho
     \i tables_delete.sql
     \qecho
 
 
-    \qecho '## Tablespaces objects'
+    \qecho '## 📂 Tablespaces objects'
     \qecho 
     \i tablespace_objects.sql
     \qecho
 
 
-    \qecho '## Schemas'
+    \qecho '## 📂 Schemas'
     \qecho
     \i schemas.sql
     \qecho
 
-    \qecho '## Views'
+    \qecho '## 👁️ Views'
     \qecho
     \i views.sql
     \qecho
 
-    \qecho '## Top objects'
+    \qecho '## 🔝 Top objects'
     \qecho
     \i object_size.sql
     \qecho
 
-    \qecho '## Triggers'
+    \qecho '## 🔫 Triggers'
     \qecho
 
-    \qecho '### Event Triggers'
+    \qecho '### 📅 Event Triggers'
     \qecho
     \i trigger_events.sql
     \qecho
 
 
-    \qecho '## Tables'
+    \qecho '## 📋 Tables'
     \qecho
 
-    \qecho '### Table sizes'
+    \qecho '### 📏 Table sizes'
     \qecho
     \i tables_size.sql
     \qecho
 
-    \qecho '### Tables unlogged'
+    \qecho '### 🪵 Tables unlogged'
     \qecho
     \i tables_unlogged.sql
     \qecho
 	
 	
-    \qecho '### Table Triggers'
+    \qecho '### 🔫 Table Triggers'
     \qecho
     \i trigger_tables.sql
     \qecho
 	
-    \qecho '### Tables with unused space'
+    \qecho '### 💨 Tables with unused space'
     \qecho
     \i tables_bloat_approx.sql
     \qecho
 
-    \qecho '### Tables with unused space cleanup'
+    \qecho '### 🧹 Tables with unused space cleanup'
     \qecho
     \i vacuum_full_or_cluster.sql
     \qecho
 	
-    \qecho '### Tables without PK'
+    \qecho '### 🚫 Tables without PK'
     \qecho
     \i tables_without_pk.sql
     \qecho
 
-    \qecho '### Tables without any Index'
+    \qecho '### 🚫 Tables without any Index'
     \qecho
     \i tables_without_index.sql
     \qecho
 
     \if :svp_under_pg_12
-      \qecho '### Tables with OID'
+      \qecho '### 🆔 Tables with OID'
       \qecho
       \i tables_with_oid.sql
       \qecho
@@ -267,12 +267,12 @@ SET pg_stat_statements.track TO none;
   \endif
 \endif
 
-\qecho '### Tables with seq scan'
+\qecho '### 🔍 Tables with seq scan'
 \qecho
 \i tables_with_seq_scan.sql
 \qecho
 
-\qecho '### Not used tables'
+\qecho '### 📦 Not used tables'
 \qecho
 \i tables_not_used.sql
 \qecho
@@ -280,17 +280,17 @@ SET pg_stat_statements.track TO none;
 \if :svp_pg_90
   \if :svp_not_standby
 
-    \qecho '### Partition tables'
+    \qecho '### 🍕 Partition tables'
     \qecho
     \i tables_partition.sql
     \qecho
 
-    \qecho '### Materialized Views'
+    \qecho '### 🧊 Materialized Views'
     \qecho
     \i materialized_views.sql
     \qecho
 
-    \qecho '### Foreign Tables'
+    \qecho '### 🌐 Foreign Tables'
     \qecho
     \qecho '```sql'
     \i tables_foreign.sql
@@ -300,27 +300,27 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
-\qecho '## Indexes'
+\qecho '## 📇 Indexes'
 \qecho
 
-\qecho '### Unused (at these instance only)'
+\qecho '### 📦 Unused (at these instance only)'
 \qecho
 \i index_poor.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '### Duplicated'
+    \qecho '### 👯 Duplicated'
     \qecho
     \i index_dup.sql
     \qecho
 
-    \qecho '### Foreign Key without indexes'
+    \qecho '### 🔗 Foreign Key without indexes'
     \qecho
     \i index_missing_in_fk.sql
     \qecho
 
-    \qecho '### Foreign Key without index CREATE'
+    \qecho '### 🛠️ Foreign Key without index CREATE'
     \qecho
     \i index_missing_in_fk_create.sql
     \qecho
@@ -335,55 +335,55 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby  
-    \qecho '## Maintenance'
+    \qecho '## 🛠️ Maintenance'
 
-    \qecho '### Objects with individual adjustments'
+    \qecho '### ⚙️ Objects with individual adjustments'
     \qecho
     \i object_options.sql 
     \qecho
 
-    \qecho '### Analyze'
+    \qecho '### 🧐 Analyze'
     \qecho
     \i autovacuum_analyze.sql
     \qecho
 
-    \qecho '#### Analyze Adjusts'
+    \qecho '### ⚙️ Analyze Adjusts'
     \qecho
     \qecho '```sql'
     \i autovacuum_analyze_adjust.sql
     \qecho '```'
     \qecho
 
-    \qecho '### Vacuum'
+    \qecho '### 🧹 Vacuum'
     \qecho
     \i autovacuum_vacuum.sql
     \qecho
 
-    \qecho '#### Vacuum Adjusts'
+    \qecho '### ⚙️ Vacuum Adjusts'
     \qecho
     \qecho '```sql'
     \i autovacuum_vacuum_adjust.sql
     \qecho '```'
     \qecho
 
-    \qecho '### Vacuum "to prevent wraparound"'
+    \qecho '### 🛡️ Vacuum "to prevent wraparound"'
     \qecho
     \i vacuum_wraparound.sql
     \qecho
 
-    \qecho '### Fillfactor'
+    \qecho '### 📈 Fillfactor'
     \qecho
     \i fillfactor.sql
     \qecho
   \endif
 \endif
 
-\qecho '## Functions'
+\qecho '## ⚙️ Functions'
 \qecho
 \i functions.sql
 \qecho
 
-\qecho '## pg_stat_statement'
+\qecho '## 📊 pg_stat_statement'
 \qecho
 
 \i statements.sql

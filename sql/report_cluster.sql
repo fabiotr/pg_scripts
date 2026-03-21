@@ -36,7 +36,7 @@ SELECT
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho '# Report for cluster'
+\qecho '# 🐘 Report for cluster'
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
@@ -44,17 +44,17 @@ SELECT
 \qecho
 
 
-\qecho '# Index'
+\qecho '# 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '# Cluster'
+\qecho '# 🏘️ Cluster'
 \qecho
 
 \if :svp_not_dbaas
-  \qecho '## Compilation options'
+  \qecho '## ⚙️ Compilation options'
   \qecho
   \qecho '| Info | Value'
   \qecho '|---|---|'
@@ -62,13 +62,13 @@ SELECT
   \qecho
 \endif
 
-\qecho '## Preset options'
+\qecho '## ⚙️ Preset options'
 \qecho
 \i internal.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## Shared Memory use'
+  \qecho '## 🧊 Shared Memory use'
   \qecho
   \i shared_buffers_stats.sql
   \qecho
@@ -77,148 +77,148 @@ SELECT
 \if :svp_not_standby
   \if :svp_not_aurora
     \if :svp_pg_17
-      \qecho '## Background Workers'
+      \qecho '## 👷 Background Workers'
       \qecho
       \i bgwriter.sql
       \qecho
     \endif
   \endif 
 
-  \qecho '## Checkpoints'
+  \qecho '## 🏁 Checkpoints'
   \qecho
   \i checkpoints.sql
   \qecho
 
   \if :svp_not_aurora
-    \qecho '## Write Ahead Log (WAL)'
+    \qecho '## 📝 Write Ahead Log (WAL)'
     \qecho
     \i wal.sql
     \qecho
 
-    \qecho '## Archiver'
+    \qecho '## 📦 Archiver'
     \qecho
     \i archives.sql
     \qecho
   \endif
 \endif
 
-\qecho '## WAL files'
+\qecho '## 📝 WAL files'
 \qecho
 \i ls_wal.sql
 \qecho
 
-\qecho '## Temp files'
+\qecho '## 🌪️ Temp files'
 \qecho
 \i ls_temp.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## Log files'
+  \qecho '## 📝 Log files'
   \qecho
   \i ls_logs.sql
   \qecho
 \endif
 
 \if :svp_not_dbaas
-  \qecho '## Backup'
+  \qecho '## 💾 Backup'
   \qecho
   \i backup.sql
   \qecho
 \endif
 
-\qecho '## I/O Cluster'
+\qecho '## 🔌 I/O Cluster'
 \qecho 
 \i io_cluster.sql
 \qecho
 
-\qecho '## SLRU'
+\qecho '## 🚄 SLRU'
 \qecho
 \i slru_stats.sql
 \qecho
 
-\qecho '## Configurations'
+\qecho '## ⚙️ Configurations'
 \qecho
 
 \if :svp_not_gcp
-  \qecho '### pg_hba.conf'
+  \qecho '### 🔒 pg_hba.conf'
   \qecho
   \i pg_hba.sql
   \qecho
 \endif
 
-\qecho '### Authentication configurations'
+\qecho '### 🔑 Authentication configurations'
 \qecho 
 \i conf_auth.sql
 \qecho
 
-\qecho '### SSL configurations'
+\qecho '### 🔒 SSL configurations'
 \qecho
 \i conf_ssl.sql
 \qecho
 
-\qecho '### Log configurations'
+\qecho '### 📝 Log configurations'
 \qecho
 \i conf_logs.sql
 \qecho
 
-\qecho '### Resource configurations'
+\qecho '### 💎 Resource configurations'
 \qecho
 \i conf_resource.sql
 \qecho
 
-\qecho '### Other configurations'
+\qecho '### ⚙️ Other configurations'
 \qecho
 \i conf_others.sql
 \qecho
 
-\qecho '## Connections'
+\qecho '## 🔌 Connections'
 \qecho
 
-\qecho '### Connections Total'
+\qecho '### 📊 Connections Total'
 \qecho
 \i connections_tot.sql
 \qecho
 
-\qecho '### Connections by User'
+\qecho '### 👤 Connections by User'
 \qecho 
 \i connections_by_user.sql
 \qecho
 
-\qecho '### Connections SSL'
+\qecho '### 🔒 Connections SSL'
 \qecho
 \i connections_ssl.sql
 \qecho
 
-\qecho '### Connections GSS'
+\qecho '### 🔑 Connections GSS'
 \qecho
 \i connections_gss.sql
 \qecho
 
-\qecho '### Connections Running'
+\qecho '### 🏃 Connections Running'
 \qecho
 \i connections_running.sql
 \qecho
 
-\qecho '### Prepared Transactions (Two Phase Commit)'
+\qecho '### ⏳ Prepared Transactions (Two Phase Commit)'
 \qecho
 \i prepared_transactions.sql
 \qecho
 
 \if :svp_not_standby
-  \qecho '## Roles'
+  \qecho '## 👥 Roles'
   \qecho
 
-  \qecho '### Roles with high privileges'
+  \qecho '### 🔑 Roles with high privileges'
   \qecho
   \i user_priv.sql
   \qecho
 
-  \qecho '### Roles with options'
+  \qecho '### ⚙️ Roles with options'
   \qecho
   \i user_options.sql
   \qecho
 
-  \qecho '### Granted roles'
+  \qecho '### 🤝 Granted roles'
   \qecho
   \i user_granted_roles.sql
   \qecho
@@ -227,26 +227,26 @@ SELECT
 \if :svp_pg_90
   \if :svp_recovery
 
-    \qecho '## Replication slave'
+    \qecho '## 📥 Replication slave'
     \qecho
     
-    \qecho '### Replica conf'
+    \qecho '### ⚙️ Replica conf'
     \qecho
     \i conf_replica.sql
     \qecho
-    \qecho '### Recovery conf'
+    \qecho '### ⚙️ Recovery conf'
     \i conf_recovery.sql
     \qecho
 	
     \if :svp_pg_91
-      \qecho '### Conflicts'
+      \qecho '### 💥 Conflicts'
       \qecho
       \i database_standby_conflicts.sql
       \qecho
     \endif
 
     \if :svp_not_aurora
-      \qecho '### WAL receiver'
+      \qecho '### 📥 WAL receiver'
       \qecho
       \i wal_receiver.sql
       \qecho
@@ -254,26 +254,26 @@ SELECT
   \endif
 
   \if :svp_master
-    \qecho '## Replication master'
+    \qecho '## 📤 Replication master'
     \qecho
 
-    \qecho '### Master conf'
+    \qecho '### ⚙️ Master conf'
     \qecho
     \i conf_master.sql
     \qecho
 	
-    \qecho '### Replication stats'
+    \qecho '### 📊 Replication stats'
     \qecho
     \i replication_stats.sql
     \qecho
 
     \if :svp_pg_95
-	  \qecho '### Replication Slots'
+	  \qecho '### 🎰 Replication Slots'
       \qecho
       \i replication_slots.sql
       \qecho
 
-      \qecho '### Replication origins'
+      \qecho '### 📍 Replication origins'
       \qecho
       \i replication_origin.sql
       \qecho
@@ -282,45 +282,45 @@ SELECT
 \endif
 
 \if :svp_not_standby
-  \qecho '## Tablespaces'
+  \qecho '## 📂 Tablespaces'
   \qecho
   \i tablespaces.sql
   \qecho
 
 
-  \qecho '## Databases on cluster'
+  \qecho '## 📊 Databases on cluster'
   \qecho
   \i database_size.sql
   \qecho
 \endif
 
-\qecho '## Statements from cluster'
+\qecho '## 📊 Statements from cluster'
 \qecho
 
 \qecho
 \if :svp_pg_14
-  \qecho '### Statements total on cluster'
+  \qecho '### 📊 Statements total on cluster'
   \qecho
   \i statements_group_total.sql
   \qecho
 
-  \qecho '### Statements total grouped by database'
+  \qecho '### 📊 Statements total grouped by database'
   \qecho 
   \i statements_group_database_total.sql
   \qecho
 
-  \qecho '### Statements resume from cluster by time'
+  \qecho '### 📊 Statements resume from cluster by time'
   \qecho
   \i statements_group_database_resume.sql
   \qecho
 \else
-  \qecho '### Statements from cluster by time'
+  \qecho '### 📊 Statements from cluster by time'
   \qecho
   \i statements_group_database_time.sql
   \qecho
 \endif
 
-\qecho '### Statements from cluster by temp'
+\qecho '### 📊 Statements from cluster by temp'
 \qecho
 \i statements_group_database_temp.sql
 \qecho

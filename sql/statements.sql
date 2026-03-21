@@ -48,7 +48,7 @@ SELECT
 
 \qecho
 \qecho '### Statements resume by total time'
-\echo
+\qecho
 
 \if   :svp_pg_18
   \ir statements_resume_18+.sql
