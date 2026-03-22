@@ -149,9 +149,9 @@ SELECT
 \elif :svp_pg_95
   \ir statements_calls_95+.sql
 \elif :svp_pg_94
-  \ir statements_call_94+.sql
+  \ir statements_calls_94+.sql
 \elif :svp_pg_84
-  \ir statements_call_84+.sql
+  \ir statements_calls_84+.sql
 \else
   \qecho - pg_stat_statements is not supported on version :svp_server_version
 \endif
