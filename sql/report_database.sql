@@ -84,7 +84,7 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Security Labels'
     \qecho
-    \i security_labes.sql
+    \i security_labels.sql
     \qecho
  
   \endif
@@ -244,7 +244,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Tables with unused space cleanup'
     \qecho
+    \qecho '```sql'
     \i vacuum_full_or_cluster.sql
+    \qecho '```'
     \qecho
 	
     \qecho '### Tables without PK'
@@ -322,7 +324,9 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Foreign Key without index CREATE'
     \qecho
+    \qecho '```sql'
     \i index_missing_in_fk_create.sql
+    \qecho '```'
     \qecho
   \endif
 \endif
