@@ -44,17 +44,17 @@ SELECT
 \qecho
 
 
-\qecho '# 📑 Index'
+\qecho '# Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '# 🏢 Cluster'
+\qecho '# Cluster'
 \qecho
 
 \if :svp_not_dbaas
-  \qecho '## 🛠️ Compilation options'
+  \qecho '## Compilation options'
   \qecho
   \qecho '| Info | Value'
   \qecho '|---|---|'
@@ -62,13 +62,13 @@ SELECT
   \qecho
 \endif
 
-\qecho '## ⚙️ Preset options'
+\qecho '## Preset options'
 \qecho
 \i internal.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## 🧠 Shared Memory use'
+  \qecho '## Shared Memory use'
   \qecho
   \i shared_buffers_stats.sql
   \qecho
@@ -77,66 +77,66 @@ SELECT
 \if :svp_not_standby
   \if :svp_not_aurora
     \if :svp_pg_17
-      \qecho '## 👷 Background Workers'
+      \qecho '## Background Workers'
       \qecho
       \i bgwriter.sql
       \qecho
     \endif
   \endif 
 
-  \qecho '## 🏁 Checkpoints'
+  \qecho '## Checkpoints'
   \qecho
   \i checkpoints.sql
   \qecho
 
   \if :svp_not_aurora
-    \qecho '## 📝 Write Ahead Log (WAL)'
+    \qecho '## Write Ahead Log (WAL)'
     \qecho
     \i wal.sql
     \qecho
 
-    \qecho '## 📦 Archiver'
+    \qecho '## Archiver'
     \qecho
     \i archives.sql
     \qecho
   \endif
 \endif
 
-\qecho '## 📜 WAL files'
+\qecho '## WAL files'
 \qecho
 \i ls_wal.sql
 \qecho
 
-\qecho '## 🗑️ Temp files'
+\qecho '## Temp files'
 \qecho
 \i ls_temp.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## 📄 Log files'
+  \qecho '## Log files'
   \qecho
   \i ls_logs.sql
   \qecho
 \endif
 
 \if :svp_not_dbaas
-  \qecho '## 💾 Backup'
+  \qecho '## Backup'
   \qecho
   \i backup.sql
   \qecho
 \endif
 
-\qecho '## 📉 I/O Cluster'
+\qecho '## I/O Cluster'
 \qecho 
 \i io_cluster.sql
 \qecho
 
-\qecho '## 🖇️ SLRU'
+\qecho '## SLRU'
 \qecho
 \i slru_stats.sql
 \qecho
 
-\qecho '## 🛠️ Configurations'
+\qecho '## Configurations'
 \qecho
 
 \if :svp_not_gcp
@@ -171,7 +171,7 @@ SELECT
 \i conf_others.sql
 \qecho
 
-\qecho '## 🔌 Connections'
+\qecho '## Connections'
 \qecho
 
 \qecho '### Connections Total'
@@ -205,7 +205,7 @@ SELECT
 \qecho
 
 \if :svp_not_standby
-  \qecho '## 👤 Roles'
+  \qecho '## Roles'
   \qecho
 
   \qecho '### Roles with high privileges'
@@ -227,7 +227,7 @@ SELECT
 \if :svp_pg_90
   \if :svp_recovery
 
-    \qecho '## 📡 Replication slave'
+    \qecho '## Replication slave'
     \qecho
     
     \qecho '### Replica conf'
@@ -254,7 +254,7 @@ SELECT
   \endif
 
   \if :svp_master
-    \qecho '## 📤 Replication master'
+    \qecho '## Replication master'
     \qecho
 
     \qecho '### Master conf'
@@ -282,19 +282,19 @@ SELECT
 \endif
 
 \if :svp_not_standby
-  \qecho '## 🏗️ Tablespaces'
+  \qecho '## Tablespaces'
   \qecho
   \i tablespaces.sql
   \qecho
 
 
-  \qecho '## 🐘 Databases on cluster'
+  \qecho '## Databases on cluster'
   \qecho
   \i database_size.sql
   \qecho
 \endif
 
-\qecho '## 📖 Statements from cluster'
+\qecho '## Statements from cluster'
 \qecho
 
 \qecho

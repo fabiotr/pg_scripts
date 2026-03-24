@@ -28,15 +28,15 @@ net.ipv4.tcp_fin_timeout=5
 # sysctl.conf (ajustes em ambientes muito grandes)
 # só ajustar se encontrar erros no log do PostgreSQL
 
-Out of Memory: Killed process 12345 (postgres).
+# Out of Memory: Killed process 12345 (postgres).
 
 # Ajustar shmmax e shmall
-FATAL:  could not create shared memory segment: Invalid argument
-DETAIL:  Failed system call was shmget(key=5440001, size=4011376640, 03600).
+# FATAL:  could not create shared memory segment: Invalid argument
+# DETAIL:  Failed system call was shmget(key=5440001, size=4011376640, 03600).
 
 # Ajustar semáforos
-FATAL:  could not create semaphores: No space left on device
-DETAIL:  Failed system call was semget(5440126, 17, 03600).
+# FATAL:  could not create semaphores: No space left on device
+# DETAIL:  Failed system call was semget(5440126, 17, 03600).
 
 # Até a versão 9.2 o ajuste do shmmax e shmall era obrigatório, depois só é necessário em ambientes muito grandes.
 # shmmax = 1/2 da RAM of shmmax
@@ -59,6 +59,8 @@ net.core.somaxconn = 256
 
 # Limits (ajustes em ambientes muito grandes)
 # só ajustar se encontrar erros no log do PostgreSQL
+
+# Out of Memory: Killed process 12345 (postgres).
 
 # Método antigo:
 # /etc/security/limits.conf
