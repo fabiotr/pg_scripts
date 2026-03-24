@@ -32,15 +32,15 @@ net.ipv4.tcp_fin_timeout=5
 ```
 Out of Memory: Killed process 12345 (postgres).
 ```
-**Action**: lower PostgreSQL shared_buffers and/or work_mem
+  - **Action**: lower PostgreSQL `shared_buffers` and/or `work_mem`
 
 - Semaphores error
 ```
 FATAL:  could not create semaphores: No space left on device
 DETAIL:  Failed system call was semget(5440126, 17, 03600).
 ```
-**Action**: Raise semaphores on sysctl
-Tipical number:
+  - **Action**: Raise semaphores on sysctl
+  - Tipical number:
 ```
 kernel.sem = 250 512000 100 2048
 ```
@@ -50,9 +50,9 @@ kernel.sem = 250 512000 100 2048
 FATAL:  could not create shared memory segment: Invalid argument
 DETAIL:  Failed system call was shmget(key=5440001, size=4011376640, 03600).
 ```
-**Action**: Raise shmmax and shmall on sysctl
-
-  - Until PostgreSQL 9.2 you need to change always shmmax and shmall. How calculate shmmax and shmall:
+  - **Action**: Raise shmmax and shmall on sysctl
+  - Until PostgreSQL 9.2 you need to change always shmmax and shmall. 
+  - How calculate shmmax and shmall:
 ```shell
 # Script to calculate shmmax and shmall values
 page_size=`getconf PAGE_SIZE`
@@ -63,7 +63,7 @@ shmmax=`expr $shmall \* $page_size`
 echo kernel.shmmax = $shmmax
 echo kernel.shmall = $shmall
 ```
-Example on 32GB RAM server:
+  - Example on 32GB RAM server:
 ```
 kernel.shmmax = 17179869184
 kernel.shmall = 4194304
@@ -73,8 +73,8 @@ kernel.shmall = 4194304
 ```
 ERROR:  could not open shared memory segment "/PostgreSQL.1477116630": Too many open files in system
 ```
-**Action**: Raise `fs.file-max`
-Tipical number:
+  - **Action**: Raise `fs.file-max`
+  - Tipical number:
 ```
 fs.file-max = 312139770
 ```
@@ -84,16 +84,18 @@ fs.file-max = 312139770
 io_setup() failed: Resource temporarily unavailable
 failed to create aio context: Resource temporarily unavailable
 ```
-**Action**: Raise `fs.aio-max-nr`
-Tipical number:
+  - **Action**: Raise `fs.aio-max-nr`
+  - Tipical number:
 ```
 fs.aio-max-nr = 1048576
 ```
+
 - Network errors
-  - TCP handshake latency 
-  - Connection Refused errors when PostgreSQL `max_connections` not reached
-**Action**: Raise `net.core.somaxconn`
-Tipical number:
+  * TCP handshake latency 
+  * Connection Refused errors when PostgreSQL `max_connections` not reached
+
+  - **Action**: Raise `net.core.somaxconn`
+  - Tipical number:
 ```
 net.core.somaxconn = 256
 ```
@@ -112,7 +114,7 @@ ERROR: could not open file "base/16384/12456": Too many open files;
 ```shell
 restorecon -Fvv /etc/security/limits.d/30-postgresql.conf
 ```
-Tipical values
+  - Tipical values
 ```
 postgres soft nofile 65535
 postgres hard nofile 65535
@@ -153,12 +155,11 @@ grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 cat /proc/meminfo | grep Huge
 ```
 - Change PostgreSQL `huge_pages`
-**Caution**: Remember to change PostgreSQL `huge_pages` parameter to `on` only after reboot server and check if Huge pages is avaliable at Linux
-
-# No postgresql.conf ajustar o parâmetro "huge_pages". O default é 'try', mudar para 'on';
+  - **Caution**: Remember to change PostgreSQL `huge_pages` parameter to `on` only after reboot server and check if Huge pages is avaliable at Linux
 ```sql
 ALTER SYSTEM SET huge_pages TO on;
 ```
+
 - Start PostgreSQL and check Huge Pages again
 ```
 systemctl start postgresql
