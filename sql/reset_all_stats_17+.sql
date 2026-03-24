@@ -1,12 +1,18 @@
-SELECT 
-  pg_stat_reset_shared(), 
-  pg_stat_reset(), 
-  pg_stat_statements_reset(),
+SELECT
+  pg_stat_reset() AS :svp_db,
+  pg_stat_reset_shared() AS shared,
   CASE WHEN (SELECT CASE WHEN count(1) = 0 THEN TRUE END FROM pg_database WHERE datname = 'rdsadmin')
-       THEN pg_stat_reset_replication_slot(NULL) END,
+    THEN pg_stat_reset_replication_slot(NULL) END AS replication_slot,
   CASE WHEN (SELECT CASE WHEN count(1) = 0 THEN TRUE END FROM pg_database WHERE datname = 'rdsadmin')
-        THEN pg_stat_reset_subscription_stats(NULL) END
-\gset
+    THEN pg_stat_reset_subscription_stats(NULL) END AS subscription
+\gset svp_
+
+\if :svp_lib
+  \if :svp_ext
+    SELECT pg_stat_statements_reset() AS statements
+    \gset svp_
+  \endif
+\endif
 
 \set QUIET off
 ANALYZE;
@@ -19,6 +25,11 @@ ANALYZE;
 SELECT datname AS database, stats_reset FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY datname;
 SELECT slot_name, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;
 SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDER BY subname;
+\if :svp_lib
+  \if :svp_ext
+    SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM pg_stat_statements_info;
+  \endif
+\endif
 SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
 UNION
 SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
@@ -32,6 +43,4 @@ UNION
 SELECT DISTINCT 'checkpointer' AS shared_stat, stats_reset FROM pg_stat_checkpointer
 UNION
 SELECT DISTINCT 'slru / ' || name AS shared_stat, stats_reset FROM pg_stat_slru
-UNION
-SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM pg_stat_statements_info
 ORDER BY 2,1;

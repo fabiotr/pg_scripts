@@ -1,9 +1,9 @@
 \set QUIET on
 \timing off
 \pset footer off
+
 SET client_min_messages TO warning ;
-SET pg_stat_statements.track TO 'none';
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
 
 SELECT
          current_setting('server_version_num')::int >=  80200  AS pg_82
@@ -26,11 +26,23 @@ SELECT
         ,current_setting('server_version_num')::int >= 170000  AS pg_17
         ,current_setting('server_version_num')::int >= 180000  AS pg_18
         ,current_setting('server_version') AS server_version
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
+	,current_database() AS db
 \gset svp_
+
+\if :svp_pg_91
+  SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END AS ext FROM pg_extension WHERE extname = 'pg_stat_statements'
+  \gset svp_
+  \if :svp_ext
+    SET pg_stat_statements.track TO 'none';
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+  \endif
+\endif
 
 \qecho
 \qecho '*** Resetting all stats ***'
 \qecho
+
 
 \if :svp_pg_17
   \ir reset_all_stats_17+.sql
@@ -50,7 +62,11 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
-RESET pg_stat_statements.track;
+\if :svp_pg_91
+  \if :svp_ext
+    RESET pg_stat_statements.track;
+  \endif
+\endif 
 RESET client_min_messages;
 \pset footer on
 \timing on
