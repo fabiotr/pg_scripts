@@ -2,7 +2,6 @@ SELECT
   pg_stat_reset_shared('archiver'), 
   pg_stat_reset_shared('bgwriter'), 
   pg_stat_reset(), 
-  pg_stat_statements_reset(),
   pg_stat_reset_slru('CommitTs'), 
   pg_stat_reset_slru('MultiXactMember'), 
   pg_stat_reset_slru('MultiXactOffset'), 
@@ -11,7 +10,13 @@ SELECT
   pg_stat_reset_slru('Subtrans'), 
   pg_stat_reset_slru('Xact'), 
   pg_stat_reset_slru('other')
-\gset
+\gset svp_
+
+\if :svp_lib
+  \if :svp_ext
+    SELECT pg_stat_statements_reset() AS statements;
+  \endif
+\endif
 
 \set QUIET off
 ANALYZE;
