@@ -36,7 +36,7 @@ SELECT
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho '# Report for cluster'
+\qecho '# 🐘 Cluster Report'
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
@@ -44,13 +44,13 @@ SELECT
 \qecho
 
 
-\qecho '# Index'
+\qecho '## 📌 Table of Contents'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '# Cluster'
+\qecho '## 🖥️ Cluster'
 \qecho
 
 \if :svp_not_dbaas
@@ -136,7 +136,7 @@ SELECT
 \i slru_stats.sql
 \qecho
 
-\qecho '## Configurations'
+\qecho '## ⚙️ Configurations'
 \qecho
 
 \if :svp_not_gcp
@@ -171,7 +171,7 @@ SELECT
 \i conf_others.sql
 \qecho
 
-\qecho '## Connections'
+\qecho '## 🔌 Connections'
 \qecho
 
 \qecho '### Connections Total'
@@ -294,7 +294,7 @@ SELECT
   \qecho
 \endif
 
-\qecho '## Statements from cluster'
+\qecho '## ⏱️ Query Statistics'
 \qecho
 
 \qecho

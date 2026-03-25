@@ -35,20 +35,20 @@ SET pg_stat_statements.track TO none;
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho # Report for database :DBNAME
+\qecho # 🐘 Database Report: :DBNAME
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
 \qecho - Version:  :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# Index'
+\qecho '## 📌 Table of Contents'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '## Database stats'
+\qecho '## 📊 Database Stats'
 \qecho
 \i database_stats.sql
 \qecho
@@ -387,7 +387,7 @@ SET pg_stat_statements.track TO none;
 \i functions.sql
 \qecho
 
-\qecho '## pg_stat_statement'
+\qecho '## ⏱️ Query Statistics'
 \qecho
 
 \i statements.sql
