@@ -35,32 +35,32 @@ SET pg_stat_statements.track TO none;
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho # Report for database :DBNAME
-\qecho - Date:     :svp_date
-\qecho - Host:     :HOST
-\qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho '# 🐘 Report for database :DBNAME'
+\qecho '- Date:     :svp_date'
+\qecho '- Host:     :HOST'
+\qecho '- Port:     :PORT'
+\qecho '- Version:  :SERVER_VERSION_NAME'
 \qecho
 
-\qecho '# Index'
+\qecho '## 📌 Table of Contents'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
 
-\qecho '## Database stats'
+\qecho '## 📊 Database stats'
 \qecho
 \i database_stats.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '## Extensions'
+    \qecho '## 🧩 Extensions'
     \qecho
     \i extensions.sql
     \qecho
 
-    \qecho '## Roles'
+    \qecho '## 👤 Roles'
     \qecho
 
     \qecho '### Default privileges'
@@ -94,7 +94,7 @@ SET pg_stat_statements.track TO none;
 \if :svp_pg_10
   \if :svp_publication
 
-    \qecho '## Logical Replication publications'
+    \qecho '## 📡 Logical Replication publications'
     \qecho
 
     \qecho '### Publications'
@@ -115,7 +115,7 @@ SET pg_stat_statements.track TO none;
 
   \if :svp_subscription
 
-    \qecho '## Logical Replication subscriptions'
+    \qecho '## 📥 Logical Replication subscriptions'
     \qecho
 
     \qecho '### Subscriptions'
@@ -131,7 +131,7 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
-\qecho '## I/O'
+\qecho '## 💾 I/O'
 \qecho
 
 \qecho '### I/O on tables (heap)'
@@ -164,7 +164,7 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '## Database DML'
+    \qecho '## 📝 Database DML'
     \qecho
 
     \qecho '#### DML (INSERT, UPDATE, DELETE) stats'
@@ -188,28 +188,28 @@ SET pg_stat_statements.track TO none;
     \qecho
 
 
-    \qecho '## Tablespaces objects'
+    \qecho '## 📁 Tablespaces objects'
     \qecho 
     \i tablespace_objects.sql
     \qecho
 
 
-    \qecho '## Schemas'
+    \qecho '## 🗂️ Schemas'
     \qecho
     \i schemas.sql
     \qecho
 
-    \qecho '## Views'
+    \qecho '## 👓 Views'
     \qecho
     \i views.sql
     \qecho
 
-    \qecho '## Top objects'
+    \qecho '## 🔝 Top objects'
     \qecho
     \i object_size.sql
     \qecho
 
-    \qecho '## Triggers'
+    \qecho '## 🔫 Triggers'
     \qecho
 
     \qecho '### Event Triggers'
@@ -218,7 +218,7 @@ SET pg_stat_statements.track TO none;
     \qecho
 
 
-    \qecho '## Tables'
+    \qecho '## 📋 Tables'
     \qecho
 
     \qecho '### Table sizes'
@@ -302,7 +302,7 @@ SET pg_stat_statements.track TO none;
 \endif
 
 
-\qecho '## Indexes'
+\qecho '## 📇 Indexes'
 \qecho
 
 \qecho '### Unused (at these instance only)'
@@ -339,7 +339,7 @@ SET pg_stat_statements.track TO none;
 
 \if :svp_pg_90
   \if :svp_not_standby  
-    \qecho '## Maintenance'
+    \qecho '## 🛠️ Maintenance'
 
     \qecho '### Objects with individual adjustments'
     \qecho
@@ -382,12 +382,12 @@ SET pg_stat_statements.track TO none;
   \endif
 \endif
 
-\qecho '## Functions'
+\qecho '## ⚙️ Functions'
 \qecho
 \i functions.sql
 \qecho
 
-\qecho '## pg_stat_statement'
+\qecho '## 🔍 pg_stat_statement'
 \qecho
 
 \i statements.sql
