@@ -26,7 +26,7 @@ net.ipv4.tcp_fin_timeout=5
 ```
 
 ## sysctl (very large databases recommendations)
-**Change if you find this erros on PostgreSQL or Linux logs**
+**Change if you find these errors on PostgreSQL or Linux logs**
 
 - Out of memmoy killer
 ```
