@@ -27,7 +27,7 @@ SELECT
         ,current_setting('server_version_num')::int >= 180000  AS pg_18
         ,current_setting('server_version') AS server_version
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
-	,CASE WHEN (SELECT CASE WHEN count(1) = 0 THEN TRUE END FROM pg_database WHERE datname = 'rdsadmin') AS not_aws_rds
+	,(SELECT CASE WHEN count(1) = 0 THEN TRUE END FROM pg_database WHERE datname = 'rdsadmin') AS not_aws_rds
 	,current_database() AS db
 \gset svp_
 
