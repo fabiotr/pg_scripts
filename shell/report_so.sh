@@ -3,10 +3,10 @@
 
 file_dest=/tmp/so.md
 
-echo "# SO report for $HOSTNAME"                                     > $file_dest
+echo "# 🐘 SO report for $HOSTNAME"                                     > $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## CPU"                                                       >> $file_dest
+echo "## 📊 CPU"                                                       >> $file_dest
 echo '```'                                                          >> $file_dest
 lscpu | grep 'Architecture'                                         >> $file_dest
 lscpu | grep 'Byte Order'                                           >> $file_dest
@@ -25,7 +25,7 @@ lscpu | grep 'CPU(s):' | grep -v NUMA                               >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Network"                                                   >> $file_dest
+echo "## 🚀 Network"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
 #/sbin/ifconfig | grep inet | grep -v '127.0.0.1' | grep -v '::1'   >> $file_dest
 #ip a | grep inet | grep -v '127.0.0.1' | grep -v '::1/128'         >> $file_dest
@@ -45,13 +45,13 @@ done
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Memory"                                                    >> $file_dest
+echo "## 📊 Memory"                                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 free -h                                                             >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Huge Pages"                                                >> $file_dest
+echo "## 🚀 Huge Pages"                                                >> $file_dest
 echo "### THP defrag"                                               >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /sys/kernel/mm/transparent_hugepage/defrag                      >> $file_dest
@@ -80,7 +80,7 @@ cat /proc/meminfo | grep -i 'HugePages'                             >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Discs"                                                     >> $file_dest
+echo "## 📂 Disks"                                                     >> $file_dest
 echo "### fstab"                                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 cat /etc/fstab | grep -v '#'                                        >> $file_dest
@@ -93,7 +93,7 @@ df -hT | grep -v '/run' | grep -v '/sys' | grep -v 'devtmpfs'       >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## Linux"                                                     >> $file_dest
+echo "## 🛡️ Linux"                                                     >> $file_dest
 echo "### Distro"                                                   >> $file_dest
 echo '```'                                                          >> $file_dest
 hostnamectl | grep "Operating System"                               >> $file_dest

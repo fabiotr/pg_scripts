@@ -29,7 +29,7 @@ SELECT
 \gset svp_
 
 \qecho
-\qecho '## Statements'
+\qecho '## 📊 Statements'
 \qecho
 
 \qecho '### Statements total'
