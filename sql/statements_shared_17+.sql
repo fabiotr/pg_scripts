@@ -36,5 +36,5 @@ FROM
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
     datname = current_database()
-ORDER BY shared_blks_read + shared_blks_written DESC
+ORDER BY coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) DESC
 LIMIT 10;
