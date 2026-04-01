@@ -26,7 +26,7 @@ net.ipv4.tcp_fin_timeout=5
 ```
 
 ## sysctl (very large databases recommendations)
-**Change if you find this erros on PostgreSQL or Linux logs**
+**Change if you find thise errors on PostgreSQL or Linux logs**
 
 - Out of memmoy killer
 ```
@@ -40,7 +40,7 @@ FATAL:  could not create semaphores: No space left on device
 DETAIL:  Failed system call was semget(5440126, 17, 03600).
 ```
   - **Action**: Raise semaphores on sysctl
-  - Tipical number:
+  - Typical number:
 ```
 kernel.sem = 250 512000 100 2048
 ```
@@ -56,7 +56,7 @@ DETAIL:  Failed system call was shmget(key=5440001, size=4011376640, 03600).
 ```shell
 # Script to calculate shmmax and shmall values
 page_size=`getconf PAGE_SIZE`
-# shmmax = 1/2  of avaliable RAM
+# shmmax = 1/2  of available RAM
 phys_pages=`getconf _PHYS_PAGES`
 shmall=`expr $phys_pages / 2`
 shmmax=`expr $shmall \* $page_size`
@@ -74,7 +74,7 @@ kernel.shmall = 4194304
 ERROR:  could not open shared memory segment "/PostgreSQL.1477116630": Too many open files in system
 ```
   - **Action**: Raise `fs.file-max`
-  - Tipical number:
+  - Typical number:
 ```
 fs.file-max = 312139770
 ```
@@ -95,7 +95,7 @@ fs.aio-max-nr = 1048576
   * Connection Refused errors when PostgreSQL `max_connections` not reached
 
   - **Action**: Raise `net.core.somaxconn`
-  - Tipical number:
+  - Typical number:
 ```
 net.core.somaxconn = 256
 ```
@@ -114,7 +114,7 @@ ERROR: could not open file "base/16384/12456": Too many open files;
 ```shell
 restorecon -Fvv /etc/security/limits.d/30-postgresql.conf
 ```
-  - Tipical values
+  - Typical values
 ```
 postgres soft nofile 65535
 postgres hard nofile 65535
@@ -155,7 +155,7 @@ grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 cat /proc/meminfo | grep Huge
 ```
 - Change PostgreSQL `huge_pages`
-  - **Caution**: Remember to change PostgreSQL `huge_pages` parameter to `on` only after reboot server and check if Huge pages is avaliable at Linux
+  - **Caution**: Remember to change PostgreSQL `huge_pages` parameter to `on` only after reboot server and check if Huge pages is available at Linux
 ```sql
 ALTER SYSTEM SET huge_pages TO on;
 ```
@@ -197,7 +197,7 @@ blockdev --report
 ```
 - Adjust to new value (from 4096 to 16384)
 - Edit `/etc/rc.local`
-- Tipical value:
+- Typical value:
 ```
 blockdev --setra 4096 /dev/sda1
 ```
