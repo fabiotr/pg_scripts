@@ -1,4 +1,9 @@
 #!/bin/sh
+
+##
+## Please configure awscli and variables bellow before run this
+##
+
 export INSTANCE_IDENTIFIER=db_name_identifier
 export LOGS_DESTINATION=/mnt/logs
 
