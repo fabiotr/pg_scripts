@@ -226,6 +226,11 @@ SET pg_stat_statements.track TO none;
     \i tables_size.sql
     \qecho
 
+    \qecho '### Tables with TOAST'
+    \qecho
+    \i tables_with_toast.sql
+    \qecho
+
     \qecho '### Tables unlogged'
     \qecho
     \i tables_unlogged.sql

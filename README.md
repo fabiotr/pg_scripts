@@ -121,6 +121,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | Database | `tables_size.sql`                 | PG >= 9.5     | Top 20 tables by size                         | [`pg_table_size()`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT) function |
 | Database | `tables_unlogged.sql`             | PG >= 9.3     | List of unlogged tables                       | [`pg_class`](https://www.postgresql.org/docs/current/catalog-pg-class.html) |
 | Database | `tables_update.sql`               |               | Top 10 tables with more UPDATEs               | [`pg_stat_user_tables`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ALL-TABLES-VIEW) |
+| Database | `tables_with_toast.sql`           | PG >= 9.5     | Top 20 tables with TOAST                      | [`pg_class`](https://www.postgresql.org/docs/current/catalog-pg-class.html) |
 | Database | `tablespaces.sql`                 |               | Tablespace inventory                          | [`pg_tablespace`](https://www.postgresql.org/docs/current/catalog-pg-tablespace.html) |
 | Database | `tablespace_objects.sql`          | PG >= 9.4     | Number of objects by type for each tablespace | [`pg_tablespace`](https://www.postgresql.org/docs/current/catalog-pg-tablespace.html) |
 | Database | `trigger_events.sql`              | PG >= 9.3     | Event Triggers                                | [`pg_event_trigger`](https://www.postgresql.org/docs/current/catalog-pg-event-trigger.html) |
