@@ -7,7 +7,7 @@ echo "# SO report for $HOSTNAME"                                     > $file_des
 echo ""                                                             >> $file_dest
 
 echo "## CPU"                                                       >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 lscpu | grep 'Architecture'                                         >> $file_dest
 lscpu | grep 'Byte Order'                                           >> $file_dest
 lscpu | grep 'Vendor ID'                                            >> $file_dest
@@ -26,7 +26,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "## Network"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 #/sbin/ifconfig | grep inet | grep -v '127.0.0.1' | grep -v '::1'   >> $file_dest
 #ip a | grep inet | grep -v '127.0.0.1' | grep -v '::1/128'         >> $file_dest
 printf "%-12s | %-8s | %-18s | %-28s\n" "Interface" "State" "IPv4/Mask" "IPv6/Mask"            >> $file_dest
@@ -46,26 +46,26 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "## Memory"                                                    >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 free -h                                                             >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "## Huge Pages"                                                >> $file_dest
 echo "### THP defrag"                                               >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 cat /sys/kernel/mm/transparent_hugepage/defrag                      >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### THP enabled"                                             >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 cat /sys/kernel/mm/transparent_hugepage/enabled                     >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### VmPeak"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 if [ -e /proc/"$(pgrep -o postgres)"/status ]; then
   grep ^VmPeak /proc/"$(pgrep -o postgres)"/status                  >> $file_dest
 else
@@ -75,27 +75,27 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Pages:"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 cat /proc/meminfo | grep -i 'HugePages'                             >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "## Discs"                                                     >> $file_dest
 echo "### fstab"                                                    >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 cat /etc/fstab | grep -v '#'                                        >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Partitions"                                               >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 df -hT | grep -v '/run' | grep -v '/sys' | grep -v 'devtmpfs'       >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "## Linux"                                                     >> $file_dest
 echo "### Distro"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 hostnamectl | grep "Operating System"                               >> $file_dest
 hostnamectl | grep "Kernel"                                         >> $file_dest
 hostnamectl | grep "Virtualization"                                 >> $file_dest
@@ -111,7 +111,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### sysctl.d"                                                 >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 ls /etc/sysctl.d | grep .conf | while read FILE
 do 
   grep -vHE '^(#|;|[[:space:]]*$)' /etc/sysctl.d/$FILE              >> $file_dest             
@@ -126,7 +126,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### limits.d:"                                                >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 ls /etc/security/limits.d | grep .conf | while read FILE
 do 
   grep -vHE '^(#|;|[[:space:]]*$)' /etc/security/limits.d/$FILE     >> $file_dest             
@@ -144,7 +144,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Scheduler"                                                >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 echo "Device      | Scheduler"                                      >> $file_dest
 echo "------------+----------"                                      >> $file_dest
 for disk_path in /sys/block/*/queue/scheduler; do
@@ -158,19 +158,19 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### Crontab ($USER)"                                          >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 crontab -l | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'        >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/crontab)"                                   >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 cat /etc/crontab | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)'  >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Crontab (/etc/cron.d)"                                    >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
 
@@ -178,7 +178,7 @@ echo '```'                                                          >> $file_des
 echo "### PostgreSQL related packages"                              >> $file_dest
 # Red Hat like Linux
 if [ -f /etc/redhat-release ]; then
-  echo '```'                                                        >> $file_dest
+  echo '```text'                                                    >> $file_dest
   rpm -qa | grep postgres                                           >> $file_dest
   rpm -qa | grep pgbackrest                                         >> $file_dest
   rpm -qa | grep pgbadger                                           >> $file_dest
@@ -188,7 +188,7 @@ fi
 
 # Debian like Linux
 if [ -f /etc/debian_version ]; then
-  echo '```'                                                        >> $file_dest
+  echo '```text'                                                    >> $file_dest
   dpkg -l | grep postgres                                           >> $file_dest
   dpkg -l | grep pgbackrest                                         >> $file_dest
   dpkg -l | grep pgbadger                                           >> $file_dest
@@ -198,20 +198,20 @@ fi
 echo ""                                                             >> $file_dest
 
 echo "### Locale"                                                   >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 localectl | grep 'System Locale'                                    >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Timezone"                                                 >> $file_dest
-echo '```'                                                          >> $file_dest
+echo '```text'                                                      >> $file_dest
 echo `timedatectl | grep 'Time zone'`                               >> $file_dest
 timedatectl | grep 'System clock synchronized'                      >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
 echo "### Environment Variables"                                    >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 env | grep USER                                                     >> $file_dest
 env | grep HOME                                                     >> $file_dest
 env | grep ^PATH                                                    >> $file_dest
@@ -221,7 +221,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### .pgpass"                                                  >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 if [ -n "$PGPASSFILE" ]; then
   if [ -f "$PGPASSFILE" ]; then
     echo "Enviroment file: $PGPASSFILE"                             >> $file_dest
@@ -239,7 +239,7 @@ echo '```'                                                          >> $file_des
 echo ""                                                             >> $file_dest
 
 echo "### .pg_service.conf"                                         >> $file_dest
-echo '```bash'                                                          >> $file_dest
+echo '```bash'                                                      >> $file_dest
 if [ -n "$PGSERVICEFILE" ]; then
   if [ -f "$PGSERVICEFILE" ]; then
     echo "Enviroment file: $PGSERVICEFILE"                          >> $file_dest
