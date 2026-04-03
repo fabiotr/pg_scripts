@@ -32,8 +32,8 @@ What makes this repository essential for managing PostgreSQL instances:
 
 To ensure these scripts run correctly, please check the following prerequisites:
 
-- [x] **PostgreSQL 8.2+**: While most scripts work PostgreSQL 8.2 to the current version (PostgreSQL 18 now). Unfortunately some of them will not work on older versions because some features did not exist on them.
-- [x] **psql** client: The standard PostgreSQL command-line tool. Most of thise scripts use meta-commands from psql to format output or to choose the correct version of PostgreSQL you are running. Of course you can take the SQL script manually and run in any PostgreSQL compatible client.
+- [x] **PostgreSQL 8.2+**: While most scripts work with PostgreSQL 8.2 up to the current version (PostgreSQL 18 now). Unfortunately, some of them will not work on older versions because some features did not exist on them.
+- [x] **psql** client: The standard PostgreSQL command-line tool. Most of these scripts use meta-commands from psql to format output or to choose the correct version of PostgreSQL you are running. Of course, you can take the SQL script manually and run in any PostgreSQL compatible client.
 - [x] **Superuser Access**: Many scripts require access to system catalogs and stats views. 
 - [x] **pgstattuple**: Some scripts use this extension to provide information about tables and indexes health.
 - [x] **pg_stat_statements**: For performance analysis scripts (like query tracking), ensure this extension is enabled in your `postgresql.conf`:
