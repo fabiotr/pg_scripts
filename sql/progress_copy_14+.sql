@@ -6,12 +6,12 @@ SELECT
   c.relnamespace::regnamespace || '.' || c.relname AS table,
   command,
   type,
-  pg_size_pretty(bytes_total)                                                         AS "Size total",
-  pg_size_pretty(bytes_processed)                                                     AS "Size copied",
-  trunc(bytes_processed::numeric * 100 / bytes_total::numeric, 1)                     AS "% Copied",
-  reltuples                                                                           AS "Rows Total",
-  trunc((tuples_processed::numeric * 100) / (reltuples - tuples_excluded)::numeric,1) AS "% Rows Copied",
-  trunc(tuples_excluded::numeric * 100 / reltuples::numeric)                          AS "% Rows excluded"
+  pg_size_pretty(bytes_total)                                                                    AS "Size total",
+  pg_size_pretty(bytes_processed)                                                                AS "Size copied",
+  trunc(bytes_processed::numeric * 100     / nullif(bytes_total,0)::numeric, 1)                  AS "% Copied",
+  reltuples                                                                                      AS "Rows Total",
+  trunc((tuples_processed::numeric * 100) / nullif(reltuples - tuples_excluded,0)::numeric,1)    AS "% Rows Copied",
+  trunc(tuples_excluded::numeric * 100    / nullif(reltuples,0)::numeric)                        AS "% Rows excluded"
 FROM
   pg_stat_progress_copy p
   JOIN pg_stat_activity a using (pid)
