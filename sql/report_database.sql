@@ -10,6 +10,7 @@ SET client_min_messages TO WARNING;
 --Vars
 SELECT
      current_date                                          AS date    
+    ,current_setting('server_version')                     AS server_version
     ,current_setting('server_version_num')::int >=  90000  AS pg_90
     ,current_setting('server_version_num')::int >=  90100  AS pg_91
     ,current_setting('server_version_num')::int >=  90500  AS pg_95
@@ -39,7 +40,7 @@ SET pg_stat_statements.track TO none;
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho - Version:  :svp_server_version
 \qecho
 
 \qecho '# 📌 Index'

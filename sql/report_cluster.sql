@@ -23,6 +23,7 @@ SELECT
     ,current_setting('server_version_num')::int >= 120000  AS pg_12
     ,current_setting('server_version_num')::int >= 140000  AS pg_14
     ,current_setting('server_version_num')::int >= 170000  AS pg_17
+    ,current_setting('server_version')                     AS server_version
     ,current_date                                          AS date
 \gset svp_
 
@@ -40,7 +41,7 @@ SELECT
 \qecho - Date:     :svp_date
 \qecho - Host:     :HOST
 \qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho - Version:  :svp_server_version
 \qecho
 
 
@@ -50,11 +51,11 @@ SELECT
 \qecho
 
 
-\qecho '# 📊 Cluster'
+\qecho '## 📊 Cluster stats'
 \qecho
 
 \if :svp_not_dbaas
-  \qecho '## Compilation options'
+  \qecho '### 🛠️ Compilation options'
   \qecho
   \qecho '| Info | Value'
   \qecho '|---|---|'
@@ -62,13 +63,13 @@ SELECT
   \qecho
 \endif
 
-\qecho '## Preset options'
+\qecho '### ⚙️ Preset options'
 \qecho
 \i internal.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## Shared Memory use'
+  \qecho '### 📊 Shared Memory use'
   \qecho
   \i shared_buffers_stats.sql
   \qecho
