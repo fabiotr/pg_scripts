@@ -24,4 +24,6 @@
 
 \qecho Tables Maintenance Commands
 \qecho
+\qecho '```sql'
 \ir vacuum_wraparound_table_clean.sql
+\qecho '```'
