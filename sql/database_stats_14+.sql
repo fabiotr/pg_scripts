@@ -6,7 +6,7 @@ SELECT
     pg_size_pretty(trunc((current_setting('block_size')::bigint * blks_read) / reset_days)::bigint)                          AS "Read/Day",
     trim(to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'000D99') || ' %') 			     AS "Cache hit",
     trim(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                             ,'000D99') || ' %') AS "Rows feth/return",
-    trim(to_char(100* tup_returned::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows SELECT",
+    trim(to_char(100* tup_fetched::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows SELECT",
     trim(to_char(100* tup_inserted::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows INSERT",
     trim(to_char(100* tup_updated::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows UPDATE",
     trim(to_char(100* tup_deleted::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows DELETE",
