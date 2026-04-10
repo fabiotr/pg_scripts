@@ -7,9 +7,9 @@
 \timing off
 SET lc_numeric = 'C';
 SELECT
-    'ALTER TABLE ' 
-        || n.nspname || '.' || c.relname 
-        || ' SET(autovacuum_analyze_scale_factor = ' 
+    'ALTER TABLE "' 
+        || n.nspname || '"."' || c.relname 
+        || '" SET(autovacuum_analyze_scale_factor = ' 
         || CASE 
                 WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'0D99999')
                 WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'0D9999')
