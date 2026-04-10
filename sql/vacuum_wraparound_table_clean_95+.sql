@@ -1,5 +1,5 @@
 SELECT 
-    'VACUUM ' || n.nspname || '.' || c.relname || '; --' AS command,
+    'VACUUM "' || n.nspname || '"."' || c.relname || '"; --' AS command,
     greatest(age(c.relfrozenxid), age(t.relfrozenxid)) AS "Current Age",
     pg_size_pretty(pg_table_size(c.oid)) AS "Size"
 FROM 
@@ -23,7 +23,7 @@ WHERE
     )
 UNION
 SELECT 
-    'VACUUM ' || n.nspname || '.' || c.relname || '; --' AS command,
+    'VACUUM "' || n.nspname || '"."' || c.relname || '"; --' AS command,
     greatest(mxid_age(c.relminmxid), mxid_age(t.relminmxid)) AS "Current Age",
     pg_size_pretty(pg_table_size(c.oid)) AS "Size"
 FROM 
