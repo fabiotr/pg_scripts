@@ -1,6 +1,6 @@
-SELECT 'CREATE INDEX CONCURRENTLY ON ' || 
-       n.nspname || '.' || c.conrelid::regclass || 
-       ' (' || string_agg(a.attname, ',' ORDER BY x.n) || ');' AS command
+SELECT 'CREATE INDEX CONCURRENTLY ON "' || 
+       n.nspname || '"."' || c.conrelid::regclass || 
+       '" ("' || string_agg(a.attname, '", "' ORDER BY x.n) || '");' AS command
 FROM
     pg_constraint c
     JOIN pg_namespace n ON n.oid = c.connamespace 

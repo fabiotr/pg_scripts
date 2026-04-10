@@ -1,6 +1,6 @@
 SELECT 
-    CASE WHEN n.nspname = 'pg_catalog' THEN 'REINDEX INDEX ' ELSE 'REINDEX INDEX CONCURRENTLY ' END || 
-	n.nspname || '.' || c.relname || '; --' AS command
+    CASE WHEN n.nspname = 'pg_catalog' THEN 'REINDEX INDEX ' ELSE 'REINDEX INDEX CONCURRENTLY "' END || 
+	n.nspname || '"."' || c.relname || '"; --' AS command
     --pg_size_pretty(index_size) AS "Index Size",
     --ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
     --trunc(avg_leaf_density::numeric,1)   AS "Avg Leaf Density",
