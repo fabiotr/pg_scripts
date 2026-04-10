@@ -19,5 +19,4 @@ WHERE
     AND n.nspname !~ '^pg_toast'
     AND pg_catalog.pg_table_is_visible(c.oid)
     AND (avg_leaf_density <= 70 OR leaf_fragmentation >= 20)
-ORDER BY index_size DESC
-\gexec
+ORDER BY index_size DESC;
