@@ -268,16 +268,18 @@ SELECT
     \qecho
 
     \if :svp_pg_95
-	  \qecho '### Replication Slots'
+      \qecho '### Replication Slots'
       \qecho
       \i replication_slots.sql
       \qecho
 
-      \qecho '### Replication origins'
-      \qecho
-      \i replication_origin.sql
-      \qecho
-	\endif
+      \if :svp_not_gcp
+        \qecho '### Replication origins'
+        \qecho
+        \i replication_origin.sql
+        \qecho
+      \endif
+    \endif
   \endif
 \endif
 
