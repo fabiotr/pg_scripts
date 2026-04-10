@@ -3,11 +3,11 @@ SELECT
     pg_size_pretty(pg_database_size(d.datname)) 											  AS "Size",
     trim(to_char(100 * xact_rollback::NUMERIC / (xact_rollback + xact_commit),'000D99') || ' %') 					  AS "Rollback",
     trim(to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'000D99') || ' %') 					  AS "Cache hit",
-    trim(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                             ,'000D99') || ' %') 		  AS "Rows feth/return",
-    trim(to_char(100* tup_returned::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') 		  AS "Rows SELECT",
-    trim(to_char(100* tup_inserted::NUMERIC   / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') 		  AS "Rows INSERT",
-    trim(to_char(100* tup_updated::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') 		  AS "Rows UPDATE",
-    trim(to_char(100* tup_deleted::NUMERIC    / (tup_returned + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') 		  AS "Rows DELETE",
+    trim(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                            ,'000D99') || ' %') 		  AS "Rows feth/return",
+    trim(to_char(100* tup_fetched::NUMERIC    / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows SELECT",
+    trim(to_char(100* tup_inserted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows INSERT",
+    trim(to_char(100* tup_updated::NUMERIC    / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows UPDATE",
+    trim(to_char(100* tup_deleted::NUMERIC    / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'000D99') || ' %') AS "Rows DELETE",
     CASE deadlocks  WHEN 0 THEN NULL ELSE 
 	trim(to_char(deadlocks::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'999G990D9')) END 	  AS "Deadlocks  / Day",
     CASE checksum_failures WHEN 0 THEN NULL ELSE 
