@@ -44,7 +44,7 @@ SELECT
 \qecho
 
 
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
