@@ -42,7 +42,7 @@ SET pg_stat_statements.track TO none;
 \qecho - Version:  :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
@@ -299,9 +299,7 @@ SET pg_stat_statements.track TO none;
 
     \qecho '### Foreign Tables'
     \qecho
-    \qecho '```sql'
     \i tables_foreign.sql
-    \qecho '```'
     \qecho
   \endif
 \endif
