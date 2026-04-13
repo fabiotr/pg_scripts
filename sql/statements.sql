@@ -19,7 +19,7 @@ SELECT
        	,current_setting('server_version_num')::int >= 110000  AS pg_11
        	,current_setting('server_version_num')::int >= 120000  AS pg_12
        	,current_setting('server_version_num')::int >= 130000  AS pg_13
-       	,current_setting('server_version_num')::int >= 140000  AS pg_14
+       	gcurrent_setting('server_version_num')::int >= 140000  AS pg_14
        	,current_setting('server_version_num')::int >= 150000  AS pg_15
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
@@ -105,6 +105,20 @@ SELECT
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+
+\qecho
+\qecho '### Statements by local I/O'
+\qecho 
+\if :svp_pg_17
+  \ir statements_local_17+.sql
+\elif :svp_pg_14
+  \ir statements_local_14+.sql
+\elif :svp_pg_92
+  \ir statements_local_92+.sql
+\else 
+  \qecho - Not supported on version :svp_server_version
+\endif
+
 
 \if :svp_not_aurora
   \qecho
