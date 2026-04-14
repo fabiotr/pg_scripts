@@ -36,13 +36,13 @@ SET pg_stat_statements.track TO none;
 
 --Report
 \qecho '# 🐘 Report for database :DBNAME'
-\qecho - Date:     :svp_date
-\qecho - Host:     :HOST
-\qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho '- Date:     ' :svp_date
+\qecho '- Host:     ' :HOST
+\qecho '- Port:     ' :PORT
+\qecho '- Version:  ' :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
