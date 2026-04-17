@@ -42,7 +42,7 @@ SET pg_stat_statements.track TO none;
 \qecho - Version:  :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
