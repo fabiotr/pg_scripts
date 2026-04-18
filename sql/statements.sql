@@ -4,6 +4,7 @@
 \x off
 
 --Variaveis de configuração */
+-- Configuration variables
 SELECT 
  	 current_setting('server_version_num')::int >=  80200  AS pg_82
        	,current_setting('server_version_num')::int >=  80300  AS pg_83
@@ -19,7 +20,7 @@ SELECT
        	,current_setting('server_version_num')::int >= 110000  AS pg_11
        	,current_setting('server_version_num')::int >= 120000  AS pg_12
        	,current_setting('server_version_num')::int >= 130000  AS pg_13
-       	gcurrent_setting('server_version_num')::int >= 140000  AS pg_14
+	,current_setting('server_version_num')::int >= 140000  AS pg_14
        	,current_setting('server_version_num')::int >= 150000  AS pg_15
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
@@ -29,10 +30,7 @@ SELECT
 \gset svp_
 
 \qecho
-\qecho '## Statements'
-\qecho
-
-\qecho '### Statements total'
+\qecho '### 📊 Statements total'
 \qecho
 \pset xheader_width 1
 \x on
@@ -41,13 +39,13 @@ SELECT
 \elif :svp_pg_14
   \ir statements_total_14+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 \x off
 \pset xheader_width full
 
 \qecho
-\qecho '### Statements resume by total time'
+\qecho '### 📊 Statements summary by total time'
 \qecho
 
 \if   :svp_pg_18
@@ -57,11 +55,11 @@ SELECT
 \elif :svp_pg_14
   \ir statements_resume_14+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by execution time'
+\qecho '### 🚀 Statements by execution time'
 \qecho
 
 \if   :svp_pg_17
@@ -77,11 +75,11 @@ SELECT
 \elif :svp_pg_84
   \ir statements_time_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by plan time'
+\qecho '### 🛠️ Statements by plan time'
 \qecho
 
 \if :svp_pg_17
@@ -89,11 +87,11 @@ SELECT
 \elif :svp_pg_14
   \ir statements_plan_14+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by shared I/O'
+\qecho '### 📊 Statements by shared I/O'
 \qecho 
 
 \if :svp_pg_17
@@ -103,11 +101,11 @@ SELECT
 \elif :svp_pg_92
   \ir statements_shared_92+.sql
 \else
-  \qecho - Not supported on version :svp_server_version
+  \qecho '- Not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by local I/O'
+\qecho '### 📊 Statements by local I/O'
 \qecho 
 \if :svp_pg_17
   \ir statements_local_17+.sql
@@ -116,13 +114,13 @@ SELECT
 \elif :svp_pg_92
   \ir statements_local_92+.sql
 \else 
-  \qecho - Not supported on version :svp_server_version
+  \qecho '- Not supported on version' :SERVER_VERSION_NAME
 \endif
 
 
 \if :svp_not_aurora
   \qecho
-  \qecho '### Statements by WAL'
+  \qecho '### 🚀 Statements by WAL'
   \qecho 
 
   \if :svp_pg_18
@@ -134,14 +132,14 @@ SELECT
   \elif :svp_pg_13
     \ir statements_wal_13+.sql
   \else
-    \qecho - Not supported on version :svp_server_version
+    \qecho '- Not supported on version' :SERVER_VERSION_NAME
   \endif
 \endif
 
 \if :svp_jit
   \if :svp_pg_11
     \qecho
-    \qecho '### Statements by Jit'
+    \qecho '### ✨ Statements by JIT'
     \qecho
     
     \if :svp_pg_17
@@ -153,7 +151,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by calls'
+\qecho '### 📊 Statements by calls'
 \qecho
 
 \if :svp_pg_14
@@ -167,11 +165,11 @@ SELECT
 \elif :svp_pg_84
   \ir statements_calls_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by rows'
+\qecho '### 📊 Statements by rows'
 \qecho
 
 \if :svp_pg_14
@@ -185,11 +183,11 @@ SELECT
 \elif :svp_pg_84
   \ir statements_rows_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by rows per call'
+\qecho '### 📊 Statements by rows per call'
 \qecho
 
 \if :svp_pg_14
@@ -203,11 +201,11 @@ SELECT
 \elif :svp_pg_84
   \ir statements_rows_call_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Statements by temp files'
+\qecho '### 🛠️ Statements by temp files'
 \qecho
 
 \if   :svp_pg_17
@@ -223,11 +221,11 @@ SELECT
 \elif :svp_pg_92
   \ir statements_temp_92+.sql
 \else
-  \qecho - pg_stat_statements with temp data is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements with temp data is not supported on version' :SERVER_VERSION_NAME
 \endif
 
 \qecho
-\qecho '### Top5 statements by total time with full SQL'
+\qecho '### 🔥 Top 5 statements by total time with full SQL'
 \qecho
 
 \pset xheader_width 1
@@ -241,7 +239,7 @@ SELECT
 \elif :svp_pg_84
   \ir statements_top5_84+.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho '- pg_stat_statements is not supported on version' :SERVER_VERSION_NAME
 \endif
 \qecho
 \x off
