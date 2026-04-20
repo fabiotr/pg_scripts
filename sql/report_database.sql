@@ -35,14 +35,14 @@ SET pg_stat_statements.track TO none;
 \o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho '# 🐘 Report for database :DBNAME'
-\qecho - Date:     :svp_date
-\qecho - Host:     :HOST
-\qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho '# 🐘 Report for database ' :DBNAME
+\qecho '- Date:     ' :svp_date
+\qecho '- Host:     ' :HOST
+\qecho '- Port:     ' :PORT
+\qecho '- Version:  ' :SERVER_VERSION_NAME
 \qecho
 
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
@@ -70,19 +70,19 @@ SET pg_stat_statements.track TO none;
   \endif
 \endif
 
-\qecho '### Owner X Connections'
+\qecho '### 📊 Owner X Connections'
 \qecho
 \i user_owners_x_connections.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '### Row level security'
+    \qecho '### 🛡️ Row level security'
     \qecho
     \i security_policies.sql
     \qecho
 
-    \qecho '### Security Labels'
+    \qecho '### 🛡️ Security Labels'
     \qecho
     \i security_labels.sql
     \qecho
