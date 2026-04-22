@@ -4,21 +4,28 @@ SELECT
   pg_stat_reset_shared('wal') AS wal, 
   pg_stat_reset_shared('archiver') AS archiver, 
   pg_stat_reset_shared('bgwriter') AS bgwriter, 
-  pg_stat_reset() AS :svp_db, 
-  pg_stat_reset_slru('CommitTs') AS slru_commit_ts,
-  pg_stat_reset_slru('MultiXactMember') AS slru_multixact_member,
-  pg_stat_reset_slru('MultiXactOffset') AS slru_multixact_offset,
-  pg_stat_reset_slru('Notify') AS slru_notify,
-  pg_stat_reset_slru('Serial') AS slru_serial,
-  pg_stat_reset_slru('Subtrans') AS slru_subtrans,
-  pg_stat_reset_slru('Xact') AS slru_xact,
-  pg_stat_reset_slru('other') AS slru_other
+  pg_stat_reset() AS :svp_db
 \gset
 
-\if :svp_not_aws_rds
-  SELECT
-    pg_stat_reset_replication_slot(NULL) AS replication_slot,
-    pg_stat_reset_subscription_stats(NULL) AS subscription
+\if :not_gcp
+  SELECT 
+    pg_stat_reset_slru('CommitTs') AS slru_commit_ts,
+    pg_stat_reset_slru('MultiXactMember') AS slru_multixact_member,
+    pg_stat_reset_slru('MultiXactOffset') AS slru_multixact_offset,
+    pg_stat_reset_slru('Notify') AS slru_notify,
+    pg_stat_reset_slru('Serial') AS slru_serial,
+    pg_stat_reset_slru('Subtrans') AS slru_subtrans,
+    pg_stat_reset_slru('Xact') AS slru_xact,
+    pg_stat_reset_slru('other') AS slru_other
+  \gset
+\endif
+
+\if :svp_not_rds
+  \if :svp_gcp
+    SELECT pg_stat_reset_replication_slot(NULL) AS replication_slot
+    \gset svp_
+  \endif
+  SELECT pg_stat_reset_subscription_stats(NULL) AS subscription
   \gset svp_
 \endif
 
@@ -29,9 +36,11 @@ SELECT
   \endif
 \endif
 
-\set QUIET off
-ANALYZE;
-\set QUIET on
+\if :svp_not_standby
+  \set QUIET off
+  ANALYZE;
+  \set QUIET on
+\endif
 
 \qecho
 \qecho '*** Show current stats_reset ***'

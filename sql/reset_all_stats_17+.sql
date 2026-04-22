@@ -3,10 +3,12 @@ SELECT
   pg_stat_reset_shared() AS shared
 \gset svp_
 
-\if :svp_not_aws_rds
-  SELECT
-    pg_stat_reset_replication_slot(NULL) AS replication_slot,
-    pg_stat_reset_subscription_stats(NULL) AS subscription
+\if :svp_not_rds
+  \if :svp_not_gcp
+    SELECT pg_stat_reset_replication_slot(NULL) AS replication_slot
+    \gset svp_
+  \endif
+  SELECT pg_stat_reset_subscription_stats(NULL) AS subscription
   \gset svp_
 \endif
 
@@ -17,9 +19,11 @@ SELECT
   \endif
 \endif
 
-\set QUIET off
-ANALYZE;
-\set QUIET on
+\if :svp_not_standby
+  \set QUIET off
+  ANALYZE;
+  \set QUIET on
+\endif
 
 \qecho
 \qecho '*** Show current stats_reset ***'
