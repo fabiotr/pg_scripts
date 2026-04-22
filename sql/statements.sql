@@ -110,7 +110,15 @@ SELECT
 \qecho '### Statements by local I/O'
 \qecho 
 \if :svp_pg_17
-  \ir 
+  \ir statements_local_17+.sql
+\elif :svp_pg_14
+  \ir statements_local_14+.sql
+\elif :svp_pg_92
+  \ir statements_local_92+.sql
+\else 
+  \qecho - Not supported on version :svp_server_version
+\endif
+
 \if :svp_not_aurora
   \qecho
   \qecho '### Statements by WAL'
