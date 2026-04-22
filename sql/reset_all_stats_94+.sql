@@ -11,9 +11,11 @@ SELECT
 \endif
 
 
-\set QUIET off
-ANALYZE;
-\set QUIET on
+\if :svp_not_standby
+  \set QUIET off
+  ANALYZE;
+  \set QUIET on
+\endif
 
 \qecho
 \qecho '*** Show current stats_reset ***'

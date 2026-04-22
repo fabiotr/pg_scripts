@@ -8,5 +8,6 @@ SELECT
   \gset svp_
 \endif 
 
-ANALYZE;
-
+\if :svp_not_standby
+  ANALYZE;
+\endif
