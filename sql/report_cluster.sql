@@ -37,20 +37,16 @@ SELECT
 
 --Report
 \qecho '# 🐘 Report for cluster'
-\qecho - Date:     :svp_date
-\qecho - Host:     :HOST
-\qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho '- Date:     ' :svp_date
+\qecho '- Host:     ' :HOST
+\qecho '- Port:     ' :PORT
+\qecho '- Version:  ' :SERVER_VERSION_NAME
 \qecho
 
 
 \qecho '# 📌 Index'
 \qecho
 \qecho [[_TOC_]]
-\qecho
-
-
-\qecho '# 📊 Cluster'
 \qecho
 
 \if :svp_not_dbaas
@@ -301,28 +297,28 @@ SELECT
 
 \qecho
 \if :svp_pg_14
-  \qecho '### Statements total on cluster'
+  \qecho '### 📊 Statements total on cluster'
   \qecho
   \i statements_group_total.sql
   \qecho
 
-  \qecho '### Statements total grouped by database'
+  \qecho '### 📊 Statements total grouped by database'
   \qecho 
   \i statements_group_database_total.sql
   \qecho
 
-  \qecho '### Statements resume from cluster by time'
+  \qecho '### 📊 Statements summary from cluster by time'
   \qecho
   \i statements_group_database_resume.sql
   \qecho
 \else
-  \qecho '### Statements from cluster by time'
+  \qecho '### 🚀 Statements from cluster by time'
   \qecho
   \i statements_group_database_time.sql
   \qecho
 \endif
 
-\qecho '### Statements from cluster by temp'
+\qecho '### 🛠️ Statements from cluster by temp'
 \qecho
 \i statements_group_database_temp.sql
 \qecho
