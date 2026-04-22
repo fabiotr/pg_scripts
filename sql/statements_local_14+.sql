@@ -22,5 +22,3 @@ WHERE
     --datname = current_database()
 ORDER BY local_blks_read + local_blks_written + local_blks_dirtied DESC
 LIMIT 20;
-\timing on
-\set QUIET off
