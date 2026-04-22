@@ -31,5 +31,3 @@ WHERE
     datname = current_database()
 ORDER BY local_blks_read + local_blks_written DESC
 LIMIT 10;
-\timing on
-\set QUIET off
