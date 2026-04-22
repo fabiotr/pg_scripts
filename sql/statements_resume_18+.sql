@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by total_exec_time + total_plan_time desc) "N",
+    row_number() over(order by total_exec_time + total_plan_time desc) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'99D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
