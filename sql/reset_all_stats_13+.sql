@@ -2,7 +2,7 @@ SELECT
   pg_stat_reset_shared('archiver'), 
   pg_stat_reset_shared('bgwriter'), 
   pg_stat_reset() 
-\gset_svp_
+\gset svp_
 
 \if :svp_not_gcp
   SELECT  
