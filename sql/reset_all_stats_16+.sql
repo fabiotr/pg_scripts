@@ -7,7 +7,7 @@ SELECT
   pg_stat_reset() AS :svp_db
 \gset
 
-\if :not_gcp
+\if :svp_not_gcp
   SELECT 
     pg_stat_reset_slru('CommitTs') AS slru_commit_ts,
     pg_stat_reset_slru('MultiXactMember') AS slru_multixact_member,
@@ -21,7 +21,7 @@ SELECT
 \endif
 
 \if :svp_not_rds
-  \if :svp_gcp
+  \if :svp_not_gcp
     SELECT pg_stat_reset_replication_slot(NULL) AS replication_slot
     \gset svp_
   \endif
