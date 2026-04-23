@@ -37,24 +37,19 @@ SELECT
 
 --Report
 \qecho '# 🐘 Report for cluster'
-\qecho - Date:     :svp_date
-\qecho - Host:     :HOST
-\qecho - Port:     :PORT
-\qecho - Version:  :SERVER_VERSION_NAME
+\qecho '- Date:     ' :svp_date
+\qecho '- Host:     ' :HOST
+\qecho '- Port:     ' :PORT
+\qecho '- Version:  ' :SERVER_VERSION_NAME
 \qecho
 
-
-\qecho '# 📌 Index'
+\qecho '## 📌 Index'
 \qecho
 \qecho [[_TOC_]]
 \qecho
 
-
-\qecho '# 📊 Cluster'
-\qecho
-
 \if :svp_not_dbaas
-  \qecho '## Compilation options'
+  \qecho '## 🛠️ Compilation options'
   \qecho
   \qecho '| Info | Value'
   \qecho '|---|---|'
@@ -62,13 +57,13 @@ SELECT
   \qecho
 \endif
 
-\qecho '## Preset options'
+\qecho '## ⚙️ Preset options'
 \qecho
 \i internal.sql
 \qecho
 
 \if :svp_not_gcp
-  \qecho '## Shared Memory use'
+  \qecho '## 📊 Shared Memory use'
   \qecho
   \i shared_buffers_stats.sql
   \qecho
@@ -311,7 +306,7 @@ SELECT
   \i statements_group_database_total.sql
   \qecho
 
-  \qecho '### Statements resume from cluster by time'
+  \qecho '### Statements summary from cluster by time'
   \qecho
   \i statements_group_database_resume.sql
   \qecho

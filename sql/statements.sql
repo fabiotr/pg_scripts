@@ -28,11 +28,7 @@ SELECT
 	,current_setting('jit') AS jit
 \gset svp_
 
-\qecho
-\qecho '## Statements'
-\qecho
-
-\qecho '### Statements total'
+\qecho '### 📊 Statements total'
 \qecho
 \pset xheader_width 1
 \x on
@@ -47,7 +43,7 @@ SELECT
 \pset xheader_width full
 
 \qecho
-\qecho '### Statements resume by total time'
+\qecho '### 📊 Statements summary by total time'
 \qecho
 
 \if   :svp_pg_18
@@ -61,7 +57,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by execution time'
+\qecho '### 🚀 Statements by execution time'
 \qecho
 
 \if   :svp_pg_17
@@ -81,7 +77,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by plan time'
+\qecho '### 🚀 Statements by plan time'
 \qecho
 
 \if :svp_pg_17
@@ -93,7 +89,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by shared I/O'
+\qecho '### 📊 Statements by shared I/O'
 \qecho 
 
 \if :svp_pg_17
@@ -107,7 +103,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by local I/O'
+\qecho '### 📊 Statements by local I/O'
 \qecho 
 \if :svp_pg_17
   \ir statements_local_17+.sql
@@ -121,7 +117,7 @@ SELECT
 
 \if :svp_not_aurora
   \qecho
-  \qecho '### Statements by WAL'
+  \qecho '### 🚀 Statements by WAL'
   \qecho 
 
   \if :svp_pg_18
@@ -140,7 +136,7 @@ SELECT
 \if :svp_jit
   \if :svp_pg_11
     \qecho
-    \qecho '### Statements by Jit'
+    \qecho '### ✨ Statements by Jit'
     \qecho
     
     \if :svp_pg_17
@@ -152,7 +148,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by calls'
+\qecho '### ✨ Statements by calls'
 \qecho
 
 \if :svp_pg_14
@@ -170,7 +166,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by rows'
+\qecho '### ✨ Statements by rows'
 \qecho
 
 \if :svp_pg_14
@@ -188,7 +184,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by rows per call'
+\qecho '### ✨ Statements by rows per call'
 \qecho
 
 \if :svp_pg_14
@@ -206,7 +202,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Statements by temp files'
+\qecho '### 📊 Statements by temp files'
 \qecho
 
 \if   :svp_pg_17
@@ -226,7 +222,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '### Top5 statements by total time with full SQL'
+\qecho '### 🔥 Top5 statements by total time with full SQL'
 \qecho
 
 \pset xheader_width 1
