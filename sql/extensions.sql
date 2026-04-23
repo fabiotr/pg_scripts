@@ -25,8 +25,8 @@ SELECT
 \gset svp_
 
 
-\if :svp_pg_90
-  \ir extensions_90+.sql
+\if :svp_pg_91
+  \ir extensions_91+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
