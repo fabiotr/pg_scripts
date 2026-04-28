@@ -24,7 +24,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-        ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
+        ,NOT pg_is_in_recovery()                               AS not_standby
+	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
 	,current_setting('jit') AS jit
 	,current_setting('pg_stat_statements.track_planning') AS plan
 \gset svp_
@@ -124,21 +125,23 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
-\if :svp_not_aurora
-  \qecho
-  \qecho '### Statements by WAL'
-  \qecho 
+\if :svp_not_standby
+  \if :svp_not_aurora
+    \qecho
+    \qecho '### Statements by WAL'
+    \qecho 
 
-  \if :svp_pg_18
-    \ir statements_wal_18+.sql
-  \elif :svp_pg_17
-    \ir statements_wal_17+.sql
-  \elif :svp_pg_14
-    \ir statements_wal_14+.sql
-  \elif :svp_pg_13
-    \ir statements_wal_13+.sql
-  \else
-    \qecho - Not supported on version :svp_server_version
+    \if :svp_pg_18
+      \ir statements_wal_18+.sql
+    \elif :svp_pg_17
+      \ir statements_wal_17+.sql
+    \elif :svp_pg_14
+      \ir statements_wal_14+.sql
+    \elif :svp_pg_13
+      \ir statements_wal_13+.sql
+    \else
+      \qecho - Not supported on version :svp_server_version
+    \endif
   \endif
 \endif
 
