@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by calls  DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END "N",
+    row_number() over(order by calls/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END "N",
     trim(to_char(calls*100/sum(calls) OVER (),'99D99') || '%') AS "Calls_%",
     --datname AS "DB",
     userid::regrole AS "User",
@@ -19,5 +19,5 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT stats_reset, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
-ORDER BY calls DESC
+ORDER BY calls/since_days DESC
 LIMIT 10;

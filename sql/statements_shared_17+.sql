@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    row_number() OVER (ORDER BY (coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0))/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char((shared_blks_read + shared_blks_written) * 100 / sum(shared_blks_read + shared_blks_written) OVER (),'99D99') || '%') AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -36,5 +36,5 @@ FROM
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
     datname = current_database()
-ORDER BY coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) DESC
+ORDER BY (coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0))/since_days DESC
 LIMIT 10;

@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY total_plan_time DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    row_number() OVER (ORDER BY total_plan_time/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char(total_plan_time*100/sum(total_plan_time) OVER (),'09D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -29,5 +29,5 @@ FROM
 WHERE 
     total_plan_time > 0 AND
     datname = current_database()
-ORDER BY total_plan_time DESC
+ORDER BY total_plan_time / since_days DESC
 LIMIT 10;

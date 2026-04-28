@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC) || 
+    row_number() OVER (ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time)/since_days DESC) || 
         CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char((jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
     sum(jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'99D99') || '%') AS "Jit %",
@@ -30,5 +30,5 @@ FROM
 WHERE
     jit_functions > 0 AND
     datname = current_database()
-ORDER BY jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC
+ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) / since_days DESC
 LIMIT 10;
