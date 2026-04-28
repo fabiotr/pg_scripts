@@ -24,5 +24,5 @@ FROM
     (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
 AND ((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) > 500000 --500 KB
-ORDER BY (coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0))/since_days DESg
+ORDER BY (coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0))/since_days DESC
 LIMIT 10;
