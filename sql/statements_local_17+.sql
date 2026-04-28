@@ -1,5 +1,5 @@
 SELECT
-row_number() over(order by local_blks_read + local_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+row_number() over(order by (local_blks_read + local_blks_written)/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char((local_blks_read + local_blks_written) * 100 / sum(local_blks_read + local_blks_written) OVER (),'99D99') || '%') AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -29,5 +29,5 @@ FROM
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 AND
     datname = current_database()
-ORDER BY local_blks_read + local_blks_written DESC
+ORDER BY (local_blks_read + local_blks_written) / since_days DESC
 LIMIT 10;

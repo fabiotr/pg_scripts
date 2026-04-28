@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY rows DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    row_number() OVER (ORDER BY rows/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char(rows*100/sum(rows) OVER (),'99D99') || '%') AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -17,5 +17,5 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT stats_reset, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
-ORDER BY rows DESC
+ORDER BY rows / since_days DESC
 LIMIT 10;

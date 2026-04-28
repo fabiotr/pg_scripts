@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY total_exec_time DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    row_number() OVER (ORDER BY total_exec_time/since_days DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'99D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -24,5 +24,5 @@ FROM
     JOIN pg_database AS d ON d.oid = s.dbid,
     (SELECT stats_reset, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
-ORDER BY total_exec_time DESC
+ORDER BY total_exec_time/since_days DESC
 LIMIT 10;
