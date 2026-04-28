@@ -24,7 +24,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-        ,NOT pg_is_in_recovery()                               AS not_standby
+        ,current_setting('track_io_timing')                    AS track_io
+	,NOT pg_is_in_recovery()                               AS not_standby
 	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
 	,current_setting('jit') AS jit
 	,current_setting('pg_stat_statements.track_planning') AS plan
@@ -95,34 +96,43 @@ SELECT
     \qecho - pg_stat_statements is not supported on version :svp_server_version
   \endif
 \else
-  \qecho - pg_stat_statements plan is not enabled
+  \qecho - pg_stat_statements.track_plan is not enabled
 \endif 
 
 \qecho
 \qecho '### Statements by shared I/O'
 \qecho 
 
-\if :svp_pg_17
-  \ir statements_shared_17+.sql
-\elif :svp_pg_14
-  \ir statements_shared_14+.sql
-\elif :svp_pg_92
-  \ir statements_shared_92+.sql
+\if :svp_track_io
+  \if :svp_pg_17
+    \ir statements_shared_17+.sql
+  \elif :svp_pg_14
+    \ir statements_shared_14+.sql
+  \elif :svp_pg_92
+    \ir statements_shared_92+.sql
+  \else
+    \qecho - Not supported on version :svp_server_version
+  \endif
 \else
-  \qecho - Not supported on version :svp_server_version
+  \qecho - track_io_timing is not enabled
 \endif
 
 \qecho
 \qecho '### Statements by local I/O'
 \qecho 
-\if :svp_pg_17
-  \ir statements_local_17+.sql
-\elif :svp_pg_14
-  \ir statements_local_14+.sql
-\elif :svp_pg_92
-  \ir statements_local_92+.sql
-\else 
-  \qecho - Not supported on version :svp_server_version
+
+\if :svp_track_io
+  \if :svp_pg_17
+    \ir statements_local_17+.sql
+  \elif :svp_pg_14
+    \ir statements_local_14+.sql
+  \elif :svp_pg_92
+    \ir statements_local_92+.sql
+  \else 
+    \qecho - Not supported on version :svp_server_version
+  \endif
+\else
+  \qecho - track_io_timing is not enabled
 \endif
 
 \if :svp_not_standby
