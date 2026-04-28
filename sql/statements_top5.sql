@@ -25,7 +25,9 @@ SELECT
 \gset svp_
 
 
-\if :svp_pg_13
+\if :svp_pg_17
+  \ir statements_top5_17+.sql
+\elif :svp_pg_13
   \ir statements_top5_13+.sql
 \elif :svp_pg_96
   \ir statements_top5_96+.sql
