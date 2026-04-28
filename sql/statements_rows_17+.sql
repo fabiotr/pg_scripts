@@ -1,6 +1,6 @@
 SELECT
     row_number() OVER (ORDER BY rows/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char(rows*100/sum(rows) OVER (),'99D99') || '%') AS "Rows_%",
+    trim(to_char((rows/since_days)*100/sum(rows/since_days) OVER (),'99D99') || '%') AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
