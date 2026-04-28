@@ -30,5 +30,5 @@ FROM
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 AND
     datname = current_database()
-ORDER BY (local_blks_read + local_blks_written) / since_days DESC
+ORDER BY (coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) / since_days DESC
 LIMIT 10;
