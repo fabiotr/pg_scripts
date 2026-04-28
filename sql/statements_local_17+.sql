@@ -1,7 +1,7 @@
 SELECT
     row_number() over(order by (coalesce(local_blks_read,0) + coalesce(local_blks_written,0))/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
     trim(to_char(((coalesce(local_blks_read,0) + coalesce(local_blks_written,0))/since_days) * 100 / 
-        sum((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)/since_days) OVER (),'99D99') || '%') AS "I/O %",
+        sum((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)/since_days)) OVER (),'99D99') || '%') AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
