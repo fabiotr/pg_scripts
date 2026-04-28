@@ -26,6 +26,7 @@ SELECT
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
         ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
 	,current_setting('jit') AS jit
+	,current_setting('pg_stat_statements.track_planning') AS plan
 \gset svp_
 
 \qecho
@@ -84,13 +85,17 @@ SELECT
 \qecho '### Statements by plan time'
 \qecho
 
-\if :svp_pg_17
-  \ir statements_plan_17+.sql
-\elif :svp_pg_14
-  \ir statements_plan_14+.sql
+\if :svp_plan
+  \if :svp_pg_17
+    \ir statements_plan_17+.sql
+  \elif :svp_pg_14
+    \ir statements_plan_14+.sql
+  \else
+    \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \endif
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
-\endif
+  \qecho - pg_stat_statements plan is not enabled
+\endif 
 
 \qecho
 \qecho '### Statements by shared I/O'
@@ -148,7 +153,11 @@ SELECT
     \elif :svp_pg_15
       \ir statements_jit_15+.sql
     \endif
+  \else 
+    \qecho - Not supported on version :svp_server_version
   \endif
+\else 
+  \qecho - JIT in not enabled
 \endif
 
 \qecho
@@ -231,7 +240,9 @@ SELECT
 
 \pset xheader_width 1
 \x on
-\if :svp_pg_13 
+\if :svp_pg_17
+  \ir statements_top5_17+.sql
+\elif :svp_pg_13 
   \ir statements_top5_13+.sql
 \elif :svp_pg_95
   \ir statements_top5_95+.sql
