@@ -18,7 +18,7 @@ SELECT
 \endif
 
 \qecho
-\qecho '*** Show current stats_reset ***'
+\qecho '*** Current stats_reset ***'
 \qecho
 
 SELECT datname AS database, stats_reset FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY datname;
