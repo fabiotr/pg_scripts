@@ -211,22 +211,24 @@ SELECT
     \endif
   \endif
 
+    \qecho
+    \qecho '### Statements by Jit'
+    \qecho
+  
   \if :svp_jit
-    \if :svp_pg_11
-      \qecho
-      \qecho '### Statements by Jit'
-      \qecho
-    
-      \if :svp_pg_17
-        \ir statements_jit_17+.sql
-      \elif :svp_pg_15
-        \ir statements_jit_15+.sql
-      \endif
+    \if :svp_pg_17
+      \ir statements_jit_17+.sql
+    \elif :svp_pg_15
+      \ir statements_jit_15+.sql
     \else 
       \qecho '- pg_stat_statements JIT is not supported on version' :svp_server_version
     \endif
   \else 
-    \qecho '- JIT in not enabled on this cluster'
+    \if :svp_pg_11
+      \qecho '- JIT in not enabled on this cluster'
+    \else
+      \qecho '- JIT is not supported on version' :svp_server_version
+    \endif
   \endif
 
   \qecho
