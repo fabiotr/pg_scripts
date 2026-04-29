@@ -174,6 +174,7 @@ SELECT
       \qecho '- track_io_timing is not enabled on this cluster'
     \else
       \qecho '- track_io_timing is not supported on version' :svp_server_version
+    \endif
   \endif
 
   \qecho
