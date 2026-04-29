@@ -25,11 +25,12 @@ SELECT
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version')                     AS server_version
-	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on') AS track_io
-        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on') AS plan
-        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on') AS jit
-        ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')                               AS not_aurora
-        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%')        AS lib
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on')   AS track_io
+        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on')   AS plan
+        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track'          AND setting = 'none') AS track_disabled
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on')   AS jit
+        ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')                                 AS not_aurora
+        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%')          AS lib
 \gset svp_
 
 \if :svp_pg_90
@@ -42,42 +43,49 @@ SELECT
 -- Check if pg_stat_statements is installed
 \if :svp_pg_84
   \if :svp_lib
-    \if :svp_pg_91
-      SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END AS not_ext FROM pg_extension WHERE extname = 'pg_stat_statements'
-      \gset svp_
-      \if :svp_not_ext
-        \if :svp_not_standby
-          CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-  	\set svp_run_ok TRUE
+    \if :svp_track_disabled
+      \qecho '# WARNING'
+      \qecho 'pg_stat_statements.track is disabled'
+      \qecho
+      \set svp_run_ok FALSE
+    \else
+      \if :svp_pg_91
+        SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END AS not_ext FROM pg_extension WHERE extname = 'pg_stat_statements'
+        \gset svp_
+        \if :svp_not_ext
+          \if :svp_not_standby
+            CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+            \set svp_run_ok TRUE
+          \else
+            \qecho '# WARNING'
+            \qecho 'pg_stat_statemens is not installed in this database and can not be installed on Standby cluster'
+            \qecho 'Please install it on Master cluster first'
+            \qecho
+            \set svp_run_ok FALSE
+          \endif
         \else
-          \qecho '# WARNING'
-          \qecho 'pg_stat_statemens is not installed in this database and can not be installed on Standby cluster'
-          \qecho 'Please install it on Master cluster first'
-          \qecho
-          \set svp_run_ok FALSE
+          \set svp_run_ok TRUE
         \endif
       \else
-        \set svp_run_ok TRUE
+        SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END AS not_statements FROM pg_class WHERE relname = 'pg_stat_statements'
+        \gset svp_
+        \if svp_not_statements
+          \qecho '# WARNING'
+          \qecho 'pg_stat_staements is not installed in this database'
+          \qecho 'Please install it first'
+          \qecho
+          \set svp_run_ok FALSE
+        \else
+          \set svp_run_ok TRUE
+        \endif
       \endif
     \else
-      SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END AS not_statements FROM pg_class WHERE relname = 'pg_stat_statements'
-      \gset svp_
-      \if svp_not_statements
-        \qecho '# WARNING'
-        \qecho 'pg_stat_staements is not installed in this database'
-        \qecho 'Please install it first'
-        \qecho
-        \set svp_run_ok FALSE
-      \else
-        \set svp_run_ok TRUE
-      \endif
+      \qecho '# WARINING'
+      \qecho 'pg_stat_statements is not installed on this cluster'
+      \qecho 'Please configure shared_preload_libraries and reboot cluster first'
+      \qecho
+      \set svp_run_ok FALSE
     \endif
-  \else
-    \qecho '# WARINING'
-    \qecho 'pg_stat_statements is not installed on this cluster'
-    \qecho 'Please configure shared_preload_libraries and reboot cluster first'
-    \qecho
-    \set svp_run_ok FALSE
   \endif
 \else
   \qecho '# WARNING'
@@ -87,6 +95,7 @@ SELECT
 \endif
 
 \if :svp_run_ok
+  SET pg_stat_statements.track = none;
   \qecho
   \qecho '## Statements'
   \qecho
@@ -346,6 +355,7 @@ SELECT
   \endif
   \qecho
 
+  RESET set pg_stat_statements.track;
 \else
   \qecho 
   \qecho 'Execution of pg_stat_statements scripts was aborted'
