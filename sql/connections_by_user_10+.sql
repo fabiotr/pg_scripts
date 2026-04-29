@@ -1,4 +1,11 @@
-SELECT  usename, state, count(1), avg(current_timestamp - query_start) avg_query, max(current_timestamp - query_start) max_query, avg(current_timestamp - xact_start) avg_xact, max(current_timestamp - xact_start) max_xact
+SELECT  
+  usename AS "User", 
+  state AS "Status", 
+  count(1) AS "Qt", 
+  avg(current_timestamp - query_start) AS "Avg query", 
+  max(current_timestamp - query_start) AS "Max query", 
+  avg(current_timestamp - xact_start)  AS "Avg xact", 
+  max(current_timestamp - xact_start)  AS "Max xact"
 FROM pg_stat_activity
 WHERE
     backend_type = 'client backend' AND
