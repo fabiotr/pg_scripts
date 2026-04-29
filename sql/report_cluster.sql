@@ -311,9 +311,9 @@ SELECT
   \i statements_group_database_total.sql
   \qecho
 
-  \qecho '### Statements resume from cluster by time'
+  \qecho '### Statements summary from cluster by time'
   \qecho
-  \i statements_group_database_resume.sql
+  \i statements_group_database_summary.sql
   \qecho
 \else
   \qecho '### Statements from cluster by time'
