@@ -170,7 +170,7 @@ SELECT
       \qecho '- pg_stat_statements SHARED I/O is not supported on version' :svp_server_version
     \endif
   \else
-    \qecho - track_io_timing is not enabled
+    \qecho '- track_io_timing is not enabled on this cluster'
   \endif
 
   \qecho
