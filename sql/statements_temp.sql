@@ -36,6 +36,8 @@ SELECT
   \ir statements_temp_94+.sql
 \elif :svp_pg_92
   \ir statements_temp_92+.sql
+\elif :svp_pg_90
+  \ir statements_temp_90+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
