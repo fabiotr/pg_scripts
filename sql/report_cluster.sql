@@ -179,6 +179,11 @@ SELECT
 \i connections_tot.sql
 \qecho
 
+\qecho '### Connections by Database'
+\qecho
+\i connections_by_database.sql
+\qecho
+
 \qecho '### Connections by User'
 \qecho 
 \i connections_by_user.sql
