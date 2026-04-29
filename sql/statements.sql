@@ -25,11 +25,11 @@ SELECT
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version')                     AS server_version
-	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing') AS track_io
-	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning') AS plan
-	,(SELECT CASE WHEN count(1) = 1   THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit') AS jit
-	,(SELECT CASE WHEN count(1) = 0   THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
-	,(SELECT CASE WHEN count(1) = 1   THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on') AS track_io
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on') AS plan
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on') AS jit
+	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')                               AS not_aurora
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%')        AS lib
 \gset svp_
 
 \if :svp_pg_90
