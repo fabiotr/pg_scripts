@@ -1,6 +1,6 @@
 SELECT                                  
-    row_number() OVER (ORDER BY wal_bytes DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char(wal_bytes * 100 / sum(wal_bytes) OVER (),'99D99') || '%') AS "WAL %",
+    row_number() OVER (ORDER BY wal_bytes/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    trim(to_char(wal_bytes * 100 / sum(wal_bytes/since_days) OVER (),'99D99') || '%') AS "WAL %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
@@ -24,5 +24,5 @@ FROM
 WHERE
     wal_bytes > 0 AND 
     datname = current_database()
-ORDER BY wal_bytes DESC
+ORDER BY wal_bytes/since_days DESC
 LIMIT 10;
