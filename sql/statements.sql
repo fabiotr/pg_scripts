@@ -14,7 +14,7 @@ SELECT
        	,current_setting('server_version_num')::int >=  90300  AS pg_93
        	,current_setting('server_version_num')::int >=  90400  AS pg_94
        	,current_setting('server_version_num')::int >=  90500  AS pg_95
-       	,current_setting('server_version_n/um')::int >=  90600  AS pg_96
+       	,current_setting('server_version_num')::int >=  90600  AS pg_96
        	,current_setting('server_version_num')::int >= 100000  AS pg_10
        	,current_setting('server_version_num')::int >= 110000  AS pg_11
        	,current_setting('server_version_num')::int >= 120000  AS pg_12
@@ -24,8 +24,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-        ,current_setting('server_version')                     AS server_version
-        ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on') AS track_io
+	,current_setting('server_version')                     AS server_version
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on') AS track_io
         ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on') AS plan
         ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on') AS jit
         ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')                               AS not_aurora
