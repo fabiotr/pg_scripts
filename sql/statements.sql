@@ -14,7 +14,7 @@ SELECT
        	,current_setting('server_version_num')::int >=  90300  AS pg_93
        	,current_setting('server_version_num')::int >=  90400  AS pg_94
        	,current_setting('server_version_num')::int >=  90500  AS pg_95
-       	,current_setting('server_version_num')::int >=  90600  AS pg_96
+       	,current_setting('server_version_n/um')::int >=  90600  AS pg_96
        	,current_setting('server_version_num')::int >= 100000  AS pg_10
        	,current_setting('server_version_num')::int >= 110000  AS pg_11
        	,current_setting('server_version_num')::int >= 120000  AS pg_12
@@ -27,9 +27,9 @@ SELECT
 	,current_setting('server_version')                     AS server_version
 	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing') AS track_io
 	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning') AS plan
-	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit') AS jit
-	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
-	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
+	,(SELECT CASE WHEN count(1) = 1   THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit') AS jit
+	,(SELECT CASE WHEN count(1) = 0   THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
+	,(SELECT CASE WHEN count(1) = 1   THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
 \gset svp_
 
 \if :svp_pg_90
@@ -136,7 +136,7 @@ SELECT
   \elif :svp_pg_84
     \ir statements_time_84+.sql
   \else
-    \qecho - pg_stat_statements is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements TOTAL is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -149,10 +149,10 @@ SELECT
     \elif :svp_pg_14
       \ir statements_plan_14+.sql
     \else
-      \qecho - pg_stat_statements is not supported on version :svp_server_version
+      \qecho '- pg_stat_statements PLAN is not supported on version' :svp_server_version
     \endif
   \else
-    \qecho - pg_stat_statements.track_plan is not enabled
+    \qecho '- pg_stat_statements.track_planning is not enabled on this cluster'
   \endif 
 
   \qecho
@@ -167,7 +167,7 @@ SELECT
     \elif :svp_pg_92
       \ir statements_shared_92+.sql
     \else
-      \qecho - Not supported on version :svp_server_version
+      \qecho '- pg_stat_statements SHARED I/O is not supported on version' :svp_server_version
     \endif
   \else
     \qecho - track_io_timing is not enabled
@@ -185,16 +185,16 @@ SELECT
     \elif :svp_pg_92
       \ir statements_local_92+.sql
     \else 
-      \qecho - Not supported on version :svp_server_version
+      \qecho '- pg_stat_statements LOCAL I/O is not supported on version' :svp_server_version
     \endif
   \else
-    \qecho - track_io_timing is not enabled
+    \qecho '- track_io_timing is not enabled on this cluster'
   \endif
 
   \if :svp_not_standby
     \if :svp_not_aurora
       \qecho
-      \qecho '### Statements by WAL'
+      \qecho '### Statements by WAL I/O'
       \qecho 
 
       \if :svp_pg_18
@@ -206,7 +206,7 @@ SELECT
       \elif :svp_pg_13
         \ir statements_wal_13+.sql
       \else
-        \qecho - Not supported on version :svp_server_version
+        \qecho '- pg_stat_statements WAL I/O is not supported on version' :svp_server_version
       \endif
     \endif
   \endif
@@ -223,10 +223,10 @@ SELECT
         \ir statements_jit_15+.sql
       \endif
     \else 
-      \qecho - Not supported on version :svp_server_version
+      \qecho '- pg_stat_statements JIT is not supported on version' :svp_server_version
     \endif
   \else 
-    \qecho - JIT in not enabled
+    \qecho '- JIT in not enabled on this cluster'
   \endif
 
   \qecho
@@ -244,7 +244,7 @@ SELECT
   \elif :svp_pg_84
     \ir statements_calls_84+.sql
   \else
-    \qecho - pg_stat_statements is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements CALLS is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -262,7 +262,7 @@ SELECT
   \elif :svp_pg_84
     \ir statements_rows_84+.sql
   \else
-    \qecho - pg_stat_statements is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements ROWS is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -280,7 +280,7 @@ SELECT
   \elif :svp_pg_84
     \ir statements_rows_call_84+.sql
   \else
-    \qecho - pg_stat_statements is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements CALLS is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -302,7 +302,7 @@ SELECT
   \elif :svp_pg_90
     \ir statements_temp_90+.sql
   \else
-    \qecho - pg_stat_statements with temp data is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements TEMP FILES is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -325,13 +325,13 @@ SELECT
   \elif :svp_pg_84
     \ir statements_top5_84+.sql
   \else
-    \qecho - pg_stat_statements is not supported on version :svp_server_version
+    \qecho '- pg_stat_statements TOP5 is not supported on version' :svp_server_version
   \endif
   \qecho
 
 \else
   \qecho 
-  \qecho 'Execution of pg_stat_statements scripts aborted'
+  \qecho 'Execution of pg_stat_statements scripts was aborted'
   \qecho
 \endif
 
