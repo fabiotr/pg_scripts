@@ -285,6 +285,8 @@ SELECT
     \ir statements_temp_94+.sql
   \elif :svp_pg_92
     \ir statements_temp_92+.sql
+  \elif :svp_pg_90
+    \ir statements_temp_90+.sql
   \else
     \qecho - pg_stat_statements with temp data is not supported on version :svp_server_version
   \endif
@@ -293,7 +295,10 @@ SELECT
   \qecho '### Top5 statements by total time with full SQL'
   \qecho
 
-  \pset xheader_width 1
+  \if :svp_pg_16
+    \pset xheader_width 1
+  \endif
+
   \x on
   \if :svp_pg_17
     \ir statements_top5_17+.sql
@@ -317,7 +322,10 @@ SELECT
 \endif
 
 \x off
-\pset xheader_width full
+\if :svp_pg_16
+  \pset xheader_width full
+\endif 
+
 \timing on
 \set QUIET off
 
