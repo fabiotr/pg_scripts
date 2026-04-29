@@ -357,7 +357,6 @@ SELECT
 
   RESET pg_stat_statements.track;
 \else
-  \qecho 
   \qecho 'Execution of pg_stat_statements scripts was aborted'
   \qecho
 \endif
