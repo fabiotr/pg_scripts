@@ -63,6 +63,8 @@ SELECT
   \ir reset_all_stats_13+.sql
 \elif :svp_pg_94
   \ir reset_all_stats_94+.sql
+\elif :svp_pg_91
+  \ir reset_all_stats_91+.sql
 \elif :svp_pg_90
   \ir reset_all_stats_90+.sql
 \else
