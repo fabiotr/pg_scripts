@@ -24,13 +24,19 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-        ,current_setting('track_io_timing')                    AS track_io
-	,NOT pg_is_in_recovery()                               AS not_standby
-	,current_setting('jit')                                AS jit
-	,current_setting('pg_stat_statements.track_planning')  AS plan
+	,(SELECT CASE setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing') AS track_io
+	,(SELECT CASE setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning') AS plan
+	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit') AS jit
 	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
 \gset svp_
+
+\if :svp_pg_90
+  SELECT NOT pg_is_in_recovery() AS not_standby
+  \gset svp_
+\else
+  \set svp_not_standby FALSE
+\endif
 
 -- Check if pg_stat_statements is installed
 \if :svp_lib
