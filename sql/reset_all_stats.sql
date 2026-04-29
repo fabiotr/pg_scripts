@@ -31,17 +31,17 @@ SELECT
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
         ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                AS not_gcp
         ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                     AS not_rds
+	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')          AS not_aurora
 \gset svp_
 
-\if :svp_pg_91
-  SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END AS ext FROM pg_extension WHERE extname = 'pg_stat_statements'
-  \gset svp_
-  \if :svp_ext
-    \if :svp_not_gcp
-      SET pg_stat_statements.track TO 'none';
-    \endif
-    \if :svp_not_standby
-      CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+\if :svp_lib
+  \if :svp_pg_91
+    SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END AS ext FROM pg_extension WHERE extname = 'pg_stat_statements'
+    \gset svp_
+    \if :svp_ext
+      \if :svp_not_gcp
+        SET pg_stat_statements.track TO 'none';
+      \endif
     \endif
   \endif
 \endif
@@ -69,13 +69,16 @@ SELECT
   \qecho - Not supported on version :svp_server_version
 \endif
 
-\if :svp_pg_91
-  \if :svp_ext
-    \if :svp_not_gcp
-      RESET pg_stat_statements.track;
+\if :svp_lib
+  \if :svp_pg_91
+    \if :svp_ext
+      \if :svp_not_gcp
+        RESET pg_stat_statements.track;
+      \endif
     \endif
-  \endif
-\endif 
+  \endif 
+\endif
+
 RESET client_min_messages;
 \pset footer on
 \timing on
