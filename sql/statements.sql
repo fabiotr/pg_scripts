@@ -93,7 +93,11 @@ SELECT
 
   \qecho '### Statements total'
   \qecho
-  \pset xheader_width 1
+
+  \if :svp_pg_92
+    \pset xheader_width 1
+  \endif
+
   \x on
   \if :svp_pg_17
     \ir statements_total_17+.sql
@@ -103,7 +107,10 @@ SELECT
     \qecho '- pg_stat_statements TOTAL is not supported on version' :svp_server_version
   \endif
   \x off
-  \pset xheader_width full
+
+  \if :svp_pg_92
+    \pset xheader_width full
+  \endif
 
   \qecho
   \qecho '### Statements summary by total time'
@@ -319,7 +326,7 @@ SELECT
   \qecho '### Top5 statements by total time with full SQL'
   \qecho
 
-  \if :svp_pg_16
+  \if :svp_pg_92
     \pset xheader_width 1
   \endif
 
@@ -346,7 +353,7 @@ SELECT
 \endif
 
 \x off
-\if :svp_pg_16
+\if :svp_pg_92
   \pset xheader_width full
 \endif 
 
