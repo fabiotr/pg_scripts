@@ -4,9 +4,11 @@ SELECT
 \gset svp_
 
 \if :svp_lib
-  SELECT pg_stat_statements_reset() AS statements
-  \gset svp_
-\endif 
+  \if :svp_ext
+    SELECT pg_stat_statements_reset() AS statements
+    \gset svp_
+  \endif
+\endif
 
 \if :svp_not_standby
   ANALYZE;
