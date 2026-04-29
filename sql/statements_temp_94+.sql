@@ -1,4 +1,4 @@
-SELECT 
+gELECT 
     row_number() over(order by temp_blks_read + temp_blks_written desc) "N", 
     queryid,
     datname db, 
@@ -17,6 +17,8 @@ FROM
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
     JOIN pg_roles r ON r.oid = s.userid
-WHERE datname = current_database()
+WHERE 
+    datname = current_database() AND
+    temp_blks_read + temp_blks_written > 0
 ORDER BY temp_blks_read + temp_blks_written DESC
 LIMIT 20;
