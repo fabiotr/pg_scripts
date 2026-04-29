@@ -26,11 +26,11 @@ SELECT
 
 
 \if :svp_pg_18
-  \ir statements_group_database_resume_18+.sql
+  \ir statements_group_database_summary_18+.sql
 \elif :svp_pg_17
-  \ir statements_group_database_resume_17+.sql
+  \ir statements_group_database_summary_17+.sql
 \elif :svp_pg_14
-  \ir statements_group_database_resume_14+.sql
+  \ir statements_group_database_summary_14+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
