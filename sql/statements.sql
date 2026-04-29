@@ -79,13 +79,13 @@ SELECT
           \set svp_run_ok TRUE
         \endif
       \endif
-    \else
-      \qecho '# WARINING'
-      \qecho 'pg_stat_statements is not installed on this cluster'
-      \qecho 'Please configure shared_preload_libraries and reboot cluster first'
-      \qecho
-      \set svp_run_ok FALSE
     \endif
+  \else 
+    \qecho '# WARINING'
+    \qecho 'pg_stat_statements is not installed on this cluster'
+    \qecho 'Please configure shared_preload_libraries and reboot cluster first'
+    \qecho
+    \set svp_run_ok FALSE
   \endif
 \else
   \qecho '# WARNING'
