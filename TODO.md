@@ -2,5 +2,5 @@
 - Create an autovacuum script based on new PG 18 columns in pg_stat_user_tables to see how long autovacuum is taking in each table.
 - Create a new connections_running script to show memory and WAL use for each user session based on new PG 18 function pg_stat_get_backend_io() and pg_stat_get_backend_wal()
 - Create a script to use pg_backend_memory_contexts
-- Update tables_partition.sql using pg_partioned_table 
+- Update tables_partition.sql using pg_partitioned_table 
 - Update object_privileges_list.sql with new PG 18 function pg_get_acl()
