@@ -170,7 +170,10 @@ SELECT
       \qecho '- pg_stat_statements SHARED I/O is not supported on version' :svp_server_version
     \endif
   \else
-    \qecho '- track_io_timing is not enabled on this cluster'
+    \if :svp_pg_92
+      \qecho '- track_io_timing is not enabled on this cluster'
+    \else
+      \qecho '- track_io_timing is not supported on version' :svp_server_version
   \endif
 
   \qecho
@@ -188,7 +191,11 @@ SELECT
       \qecho '- pg_stat_statements LOCAL I/O is not supported on version' :svp_server_version
     \endif
   \else
-    \qecho '- track_io_timing is not enabled on this cluster'
+    \if :svp_pg_92
+      \qecho '- track_io_timing is not enabled on this cluster'
+    \else
+      \qecho '- track_io_timing is not supported on version' :svp_server_version
+    \endif
   \endif
 
   \if :svp_not_standby
