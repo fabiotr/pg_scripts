@@ -24,8 +24,8 @@ SELECT
        	,current_setting('server_version_num')::int >= 160000  AS pg_16
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
-	,(SELECT CASE setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing') AS track_io
-	,(SELECT CASE setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning') AS plan
+	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing') AS track_io
+	,(SELECT CASE WHEN setting = 'on' THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning') AS plan
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit') AS jit
 	,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id') AS not_aurora
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END WHERE current_setting('shared_preload_libraries') LIKE '%pg_stat_statements%') AS lib
