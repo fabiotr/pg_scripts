@@ -1,4 +1,4 @@
-gELECT 
+SELECT 
     row_number() over(order by temp_blks_read + temp_blks_written desc) "N", 
     queryid,
     datname db, 
