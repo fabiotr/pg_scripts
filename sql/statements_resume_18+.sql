@@ -1,6 +1,6 @@
 SELECT
-    row_number() over(order by total_exec_time + total_plan_time desc) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'99D99') || '%') AS "load_%",
+    row_number() over(order by (total_exec_time + total_plan_time)/since_days desc) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    trim(to_char(((total_exec_time + total_plan_time)/since_dayes) * 100 / sum((total_exec_time + total_plan_time)/since_days) OVER (),'99D99') || '%') AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
@@ -33,5 +33,5 @@ WHERE
     datname = current_database() AND
     total_exec_time + total_plan_time > 0 AND
     calls > 0
-ORDER BY total_exec_time + total_plan_time DESC
+ORDER BY (total_exec_time + total_plan_time)/since_days DESC
 LIMIT 20;
