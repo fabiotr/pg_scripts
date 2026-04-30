@@ -25,6 +25,7 @@ SELECT
 	,current_setting('server_version_num')::int >= 170000  AS pg_17
 	,current_setting('server_version_num')::int >= 180000  AS pg_18
 	,current_setting('server_version')                     AS server_version
+	,(SELECT rolsuper FROM pg_roles WHERE rolname = user)  AS rol_super
 	,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on')   AS track_io
         ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on')   AS plan
         ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track'          AND setting = 'none') AS track_disabled
@@ -95,7 +96,9 @@ SELECT
 \endif
 
 \if :svp_run_ok
-  SET pg_stat_statements.track = none;
+  \if :svp_rol_super
+    SET pg_stat_statements.track = none;
+  \endif
   \qecho
   \qecho '## Statements'
   \qecho
@@ -354,8 +357,9 @@ SELECT
     \qecho '- pg_stat_statements TOP5 is not supported on version' :svp_server_version
   \endif
   \qecho
-
-  RESET pg_stat_statements.track;
+  \if :svp_rol_super
+    RESET pg_stat_statements.track;
+  \endif
 \else
   \qecho 'Execution of pg_stat_statements scripts was aborted'
   \qecho
