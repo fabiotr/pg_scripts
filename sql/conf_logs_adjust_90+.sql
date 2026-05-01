@@ -71,7 +71,7 @@ WHERE
         (name = 'log_line_prefix'                   AND source IN ('default', 'configuration file') AND (
             setting NOT LIKE '%%u%' OR  setting NOT LIKE '%%p%'
                 OR  (setting NOT LIKE '%%h%' AND setting NOT LIKE '%%r%')
-                OR  (setting NOT LIKE '%%t%' AND setting NOT LIKE '%%m%')) OR
+                OR  (setting NOT LIKE '%%t%' AND setting NOT LIKE '%%m%'))) OR
         (name = 'log_lock_waits'                    AND source IN ('default', 'configuration file') AND setting != 'on') OR
         (name = 'log_lock_failures'                 AND source IN ('default', 'configuration file') AND setting != 'on') OR
         (name = 'log_recovery_conflict_waits'       AND source IN ('default', 'configuration file') AND setting != 'on') OR
