@@ -32,7 +32,7 @@ SELECT
 \elif :svp_pg_90
   \ir conf_logs_adjust_90+.sql
 \elif :svp_pg_82
-  \if conf_logs_adjust_82+.sql
+  \ir conf_logs_adjust_82+.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
