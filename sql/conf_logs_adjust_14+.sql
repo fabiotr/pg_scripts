@@ -49,7 +49,7 @@ SELECT
         WHEN name = 'pg_stat_statements.save'           THEN $$ALTER SYSTEM RESET pg_stat_statements.save;$$
     END || ' -- ' AS "Command",
     setting       AS "Current value",
-    source        AS "Source"
+    source || CASE source WHEN 'configuration file' THEN ' ' || sourcefile || ' +' || sourceline AS "Source"
 FROM pg_settings
 WHERE 
         (name = 'log_destination'                   AND source IN ('default', 'configuration file') AND setting != 'stderr') OR
