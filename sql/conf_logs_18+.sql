@@ -3,7 +3,7 @@
 SELECT
     CASE
         WHEN name = 'log_destination'               	AND source IN ('default', 'configuration file') AND setting = 'stderr'                          THEN 'OK'
-	WHEN name = 'logging_collector'             	AND source IN ('default', 'configuration file')                                                 THEN '--'
+	WHEN name = 'logging_collector'             	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'log_directory'                 	AND source IN ('default', 'configuration file')                                                 THEN '--'
 	WHEN name = 'log_filename'                  	AND source IN ('default', 'configuration file')                                                 THEN '--'
 	WHEN name = 'log_file_mode'                 	AND source IN ('default', 'configuration file')                                                 THEN '--'
