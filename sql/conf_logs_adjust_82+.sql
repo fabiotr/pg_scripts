@@ -29,8 +29,8 @@ SELECT
         WHEN name = 'log_timezone'                      THEN $$log_timezone = '$$ || current_setting('TimeZone') || $$'$$
         WHEN name = 'lc_messages'                       THEN $$lc_messages = 'C'$$
         WHEN name = 'track_activities'                  THEN $$track_activities = ON$$
-        WHEN name = 'track_activity_query_size'         THEN $track_activity_query_size = 8192$$
-        WHEN name = 'track_counts'                      THEN $track_counts = ON$$
+        WHEN name = 'track_activity_query_size'         THEN $$track_activity_query_size = 8192$$
+        WHEN name = 'track_counts'                      THEN $$track_counts = ON$$
         WHEN name = 'track_io_timing'                   THEN $$track_io_timing = ON$$
         WHEN name = 'track_wal_io_timing'               THEN $$track_wal_io_timing = ON$$
         WHEN name = 'track_cost_delay_timing'           THEN $$track_cost_delay_timing = ON$$
