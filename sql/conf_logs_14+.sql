@@ -1,5 +1,3 @@
-\set QUIET on
-\timing off
 SELECT
     CASE
         WHEN name = 'log_destination'               	AND source IN ('default', 'configuration file') AND setting = 'stderr'                          THEN 'OK'
@@ -25,15 +23,15 @@ SELECT
 	WHEN name = 'debug_pretty_print'            	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK' 
 	WHEN name = 'log_autovacuum_min_duration'   	AND source IN ('default', 'configuration file') AND setting = '0'                               THEN 'OK'
 	WHEN name = 'log_checkpoints'               	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
-	WHEN name = 'log_connections'               	AND source IN ('default', 'configuration file') AND setting NOT IN ('off','')                   THEN 'OK'
+	WHEN name = 'log_connections'               	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'log_disconnections'            	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'log_duration'                  	AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
 	WHEN name = 'log_error_verbosity'           	AND source IN ('default', 'configuration file') AND setting != 'TERSE'                          THEN 'OK'
 	WHEN name = 'log_hostname'                  	AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
-	WHEN name = 'log_line_prefix'               	AND source IN ('default', 'configuration file') AND setting  LIKE '%%u%' AND setting LIKE '%%p%' 
-													AND (setting LIKE '%%h%' OR setting LIKE '%%r%') 
-													AND (setting LIKE '%%t%' OR setting LIKE '%%m%')
-													AND  setting LIKE '%%Q%'                        THEN 'OK'
+        WHEN name = 'log_line_prefix'                   AND source IN ('default', 'configuration file') AND setting  LIKE '%%u%' AND setting LIKE '%%p%'
+                                                                                                        AND (setting LIKE '%%h%' OR setting LIKE '%%r%')
+                                                                                                        AND (setting LIKE '%%t%' OR setting LIKE '%%m%')
+                                                                                                        AND  setting LIKE '%%Q%'                        THEN 'OK'
 	WHEN name = 'log_lock_waits'                	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'log_lock_failures'                 AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'log_recovery_conflict_waits'   	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
@@ -45,7 +43,7 @@ SELECT
 
 	WHEN name = 'TimeZone'                      	AND source IN ('default', 'configuration file')                                                 THEN '--'
         WHEN name = 'log_timezone'                  	AND source IN ('default', 'configuration file') AND setting = current_setting('TimeZone')       THEN 'OK'
-        WHEN name = 'lc_messages'                   	AND source IN ('default', 'configuration file') AND setting IN ('C', 'C.UTF-8', 'en_US.UTF-8', 'en_US.UTF8', 'C.UTF8')  THEN 'OK'
+        WHEN name = 'lc_messages'                   	AND source IN ('default', 'configuration file') AND setting IN ('C', 'C.UTF-8', 'en_US.UTF-8','en_US.UTF8', 'C.UTF8')  THEN 'OK'
 
 	WHEN name = 'track_activities'              	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'track_activity_query_size'     	AND source IN ('default', 'configuration file') AND to_number(setting, '99999') >= 1024         THEN 'OK'
@@ -85,5 +83,3 @@ WHERE name IN (
 	'compute_query_id', 'log_statement_stats', 'log_parser_stats', 'log_planner_stats', 'log_executor_stats', 
 	'shared_preload_libraries', 'pg_stat_statements.track', 'pg_stat_statements.track_planning', 'pg_stat_statements.track_utility', 'pg_stat_statements.save', 'pg_stat_statements.max')
 ORDER BY category, name;
-\timing on
-\set QUIET off
