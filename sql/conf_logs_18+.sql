@@ -25,7 +25,7 @@ SELECT
 	WHEN name = 'debug_pretty_print'            	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK' 
 	WHEN name = 'log_autovacuum_min_duration'   	AND source IN ('default', 'configuration file') AND setting = '0'                               THEN 'OK'
 	WHEN name = 'log_checkpoints'               	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
-	WHEN name = 'log_connections'               	AND source IN ('default', 'configuration file') AND setting NOT IN ('', 'receipt')              THEN 'OK'
+	WHEN name = 'log_connections'               	AND source IN ('default', 'configuration file') AND setting NOT IN ('off','')                   THEN 'OK'
         WHEN name = 'log_disconnections'            	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'log_duration'                  	AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
 	WHEN name = 'log_error_verbosity'           	AND source IN ('default', 'configuration file') AND setting != 'TERSE'                          THEN 'OK'
