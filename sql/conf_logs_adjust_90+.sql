@@ -48,7 +48,7 @@ SELECT
         WHEN name = 'pg_stat_statements.save'           THEN $$pg_stat_statements.save = ON$$
     END || ' -- ' AS "Command",
     setting       AS "Current value",
-    source || CASE source WHEN 'configuration file' THEN ' ' || sourcefile || ' +' || sourceline END AS "Source"
+    CASE source WHEN 'configuration file' THEN ' ' || sourcefile || ' +' || sourceline ELSE source END AS "Source"
 FROM pg_settings
 WHERE 
         (name = 'log_destination'                   AND source IN ('default', 'configuration file') AND setting != 'stderr') OR
