@@ -10,7 +10,7 @@ SELECT
 	WHEN name = 'log_truncate_on_rotation'		AND source IN ('default', 'configuration file')                                                 THEN '--'
 		
 	WHEN name = 'log_min_messages'              	AND source IN ('default', 'configuration file') AND setting NOT IN ('panic', 'fatal', 'error')  THEN 'OK'
-	WHEN name = 'log_min_error_statement'       	AND source IN ('default', 'configuration file')                                                 THEN '--'
+	WHEN name = 'log_min_error_statement'       	AND source IN ('default', 'configuration file') AND setting NOT IN ('panic', 'fatal', 'error')  THEN 'OK'
 	WHEN name = 'log_min_duration_statement'    	AND source IN ('default', 'configuration file') AND setting != '-1'                             THEN 'OK'
 	WHEN name = 'log_min_duration_sample'       	AND source IN ('default', 'configuration file')                                                 THEN '--'
 	WHEN name = 'log_statement_sample_rate'     	AND source IN ('default', 'configuration file')                                                 THEN '--'
