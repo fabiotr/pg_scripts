@@ -46,9 +46,9 @@ SELECT
         WHEN name = 'pg_stat_statements.track_utility'  THEN $$pg_stat_statements.track_utility = ON$$
         WHEN name = 'pg_stat_statements.track_planning' THEN $$pg_stat_statements.track_planning = ON$$
         WHEN name = 'pg_stat_statements.save'           THEN $$pg_stat_statements.save = ON$$
-    END || ' -- 'AS "Command",
-    setting AS "value",
-    source
+    END || ' -- ' AS "Command",
+    setting       AS "Current value",
+    source        AS "Source"
 FROM pg_settings
 WHERE 
         (name = 'log_destination'                   AND source IN ('default', 'configuration file') AND setting != 'stderr') OR
