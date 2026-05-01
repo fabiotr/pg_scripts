@@ -30,7 +30,10 @@ SELECT
 	WHEN name = 'log_duration'                  	AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
 	WHEN name = 'log_error_verbosity'           	AND source IN ('default', 'configuration file') AND setting != 'TERSE'                          THEN 'OK'
 	WHEN name = 'log_hostname'                  	AND source IN ('default', 'configuration file') AND setting = 'off'                             THEN 'OK'
-	WHEN name = 'log_line_prefix'               	AND source IN ('default', 'configuration file')                                                 THEN '--'
+	WHEN name = 'log_line_prefix'               	AND source IN ('default', 'configuration file') AND setting  LIKE '%%u%' AND setting LIKE '%%p%' 
+													AND (setting LIKE '%%h%' OR setting LIKE '%%r%') 
+													AND (setting LIKE '%%t%' OR setting LIKE '%%m%')
+													AND  setting LIKE '%%Q%'                        THEN 'OK'
 	WHEN name = 'log_lock_waits'                	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
         WHEN name = 'log_lock_failures'                 AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
 	WHEN name = 'log_recovery_conflict_waits'   	AND source IN ('default', 'configuration file') AND setting = 'on'                              THEN 'OK'
