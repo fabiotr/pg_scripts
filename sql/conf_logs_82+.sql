@@ -37,7 +37,7 @@ SELECT
 	WHEN name = 'log_parameter_max_length'      	AND source IN ('default', 'configuration file') AND setting = '-1'                               THEN 'OK'
 	WHEN name = 'log_parameter_max_length_on_error' AND source IN ('default', 'configuration file') AND setting = '0'                                THEN 'OK'
 	WHEN name = 'log_statement'                 	AND source IN ('default', 'configuration file') AND setting = 'ddl'                              THEN 'OK'
-	WHEN name = 'log_replication_commands'          AND source IN ('default', 'configuration file')                                                  THEN '--'
+	WHEN name = 'log_replication_commands'          AND source IN ('default', 'configuration file') AND setting = 'on'                               THEN 'OK'
 	WHEN name = 'log_temp_files'                	AND source IN ('default', 'configuration file') AND setting = '0'                                THEN 'OK'
 
 	WHEN name = 'TimeZone'                      	AND source IN ('default', 'configuration file')                                                  THEN '--'
