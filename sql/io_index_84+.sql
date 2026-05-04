@@ -12,5 +12,5 @@ SELECT
 FROM 
 	pg_statio_all_indexes 
 WHERE schemaname != 'pg_toast'
-ORDER BY coalesce(idx_blks_hit,0) + coalesce(idx_blks_read,0) DESC 
+ORDER BY idx_blks_read DESC 
 LIMIT 10;

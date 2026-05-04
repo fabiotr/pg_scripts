@@ -17,8 +17,5 @@ SELECT schemaname, relname,
 FROM 
     pg_statio_all_tables
     JOIN (SELECT datname, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
-ORDER BY  coalesce(toast_blks_hit,0) + coalesce(toast_blks_read,0) + tidx_blks_hit + tidx_blks_read DESC NULLS LAST
---ORDER BY  heap_blks_hit  + heap_blks_read DESC NULLS LAST
---ORDER BY  toast_blks_hit  + toast_blks_read DESC NULLS LAST
---ORDER BY  tidx_blks_hit  + tidx_blks_read DESC NULLS LAST
+ORDER BY  coalesce(toast_blks_read,0) + tidx_blks_read DESC NULLS LAST
 LIMIT 10;

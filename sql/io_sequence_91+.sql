@@ -9,5 +9,5 @@ SELECT
 FROM 
 	pg_statio_all_sequences 
 	JOIN (SELECT datname, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
-ORDER BY blks_hit + blks_read DESC 
+ORDER BY blks_read DESC 
 LIMIT 10;
