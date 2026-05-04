@@ -9,5 +9,5 @@ SELECT
 	trunc(100 * heap_blks_read / sum(heap_blks_read) OVER(),1) AS "Read/Tot %"
 FROM pg_statio_all_tables
 WHERE schemaname != 'pg_toast'
-ORDER BY coalesce(heap_blks_hit,0) + coalesce(heap_blks_read,0) DESC 
+ORDER BY heap_blks_read DESC 
 LIMIT 10;
