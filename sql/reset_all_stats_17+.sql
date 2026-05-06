@@ -1,5 +1,5 @@
 SELECT
-  pg_stat_reset() AS :svp_db,
+  pg_stat_reset() AS :"svp_db",
   pg_stat_reset_shared() AS shared
 \gset svp_
 
