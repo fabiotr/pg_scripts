@@ -4,7 +4,7 @@ SELECT
   pg_stat_reset_shared('wal') AS wal, 
   pg_stat_reset_shared('archiver') AS archiver, 
   pg_stat_reset_shared('bgwriter') AS bgwriter, 
-  pg_stat_reset() AS :"svp_db"
+  pg_stat_reset()
 \gset
 
 \if :svp_not_gcp
