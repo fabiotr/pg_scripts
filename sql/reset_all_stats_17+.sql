@@ -39,7 +39,7 @@ SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDE
 \endif
 
 \if :svp_not_aurora
-  SELECT 'wal' AS shared_stat, stats_reset FROM pg_stat_wal
+  SELECT 'wal' AS shared_stat, stats_reset FROM pg_stat_wal;
 \endif
 
 SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
