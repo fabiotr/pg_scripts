@@ -1,4 +1,3 @@
--- Kill all sessions with an wait_event_type, except for 'Client'
 SELECT
     pid,
     usename AS "User",
@@ -10,11 +9,7 @@ SELECT
     pg_terminate_backend(pid) "Killed?"
 FROM 
     pg_stat_activity AS a
-    JOIN pg_wait_events w ON w.type = a.wait_event_type
-WHERE 
-    a.pid != pg_backend_pid() AND
-    a.state = 'active' AND
-    a.backend_type = 'client backend' AND
-    type != 'Client' AND
-    query_start < current_timestamp - INTERVAL '1 second'
-ORDER BY query_start;
+    JOIN (SELECT unnest(pg_blocking_pids(pid)) AS blocking_pid FROM pg_stat_activity WHERE array_length(pg_blocking_pids(pid),1) > 0) AS b ON b.blocking_pid = a.pid
+WHERE backend_type = 'client backend'
+ORDER BY xact_start
+LIMIT 1;
