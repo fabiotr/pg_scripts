@@ -20,7 +20,7 @@ SELECT
 		CASE rolbypassrls   WHEN FALSE THEN '' ELSE ' BYPASSRLS '     END ||
 		CASE rolconnlimit   WHEN -1 THEN '' ELSE ' CONNECTION LIMIT ' || rolconnlimit  END ||
 		--CASE WHEN rolpassword IS NULL THEN '' ELSE ' PASSWORD ' || rolpassword END ||
-		CASE WHEN rolvaliduntil IS NULL THEN '' ELSE ' VALID UNTIL '  || rolvaliduntil END || 
+		CASE WHEN rolvaliduntil IS NULL THEN '' ELSE ' VALID UNTIL '  || quote_literal(rolvaliduntil) END || 
 		';' AS command
 FROM 
 	pg_roles AS r 
