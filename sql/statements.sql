@@ -96,9 +96,9 @@ SELECT
 \endif
 
 \if :svp_run_ok
-  \if :svp_rol_super
-    SET pg_stat_statements.track = none;
-  \endif
+  --\if :svp_rol_super
+  --  SET pg_stat_statements.track = none;
+  --\endif
   \qecho
   \qecho '## Statements'
   \qecho
@@ -357,9 +357,9 @@ SELECT
     \qecho '- pg_stat_statements TOP5 is not supported on version' :svp_server_version
   \endif
   \qecho
-  \if :svp_rol_super
-    RESET pg_stat_statements.track;
-  \endif
+  --\if :svp_rol_super
+    --RESET pg_stat_statements.track;
+  --\endif
 \else
   \qecho 'Execution of pg_stat_statements scripts was aborted'
   \qecho
