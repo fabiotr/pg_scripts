@@ -8,5 +8,6 @@ FROM
     JOIN pg_am a        ON a.oid = ic.relam 
     JOIN pg_class c     ON i.indrelid = c.oid 
     JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE indisvalid
 GROUP BY i.indrelid, c.relname, n.nspname, i.indkey, ic.relam, i.indclass, i.indoption, i.indexprs, i.indpred
 HAVING COUNT(*) > 1;
