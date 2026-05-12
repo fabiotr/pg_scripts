@@ -14,20 +14,7 @@ echo ""                                                             >> $file_des
 
 echo "## 📊 CPU"                                                    >> $file_dest
 echo '```text'                                                      >> $file_dest
-lscpu | grep 'Architecture'                                         >> $file_dest
-lscpu | grep 'Byte Order'                                           >> $file_dest
-lscpu | grep 'Vendor ID'                                            >> $file_dest
-lscpu | grep 'Model name'                                           >> $file_dest
-lscpu | grep 'CPU MHz'                                              >> $file_dest
-lscpu | grep 'BogoMIPS'                                             >> $file_dest
-lscpu | grep 'L1d'                                                  >> $file_dest
-lscpu | grep 'L1i'                                                  >> $file_dest
-lscpu | grep 'L2'                                                   >> $file_dest
-lscpu | grep 'L3'                                                   >> $file_dest
-lscpu | grep 'Thread(s) per core'                                   >> $file_dest
-lscpu | grep 'Core(s) per socket'                                   >> $file_dest
-lscpu | grep 'Socket(s)'                                            >> $file_dest
-lscpu | grep 'CPU(s):' | grep -v NUMA                               >> $file_dest
+lscpu | grep -E '(^Architecture:|^Byte Order:|^Vendor ID:|^Model name:|^CPU MHz|^BogoMIPS:|^L1d cache:|^L1i cache:|^L2 cache:|^L3 cache:|^Thread\(s\) per core:|^Core\(s\) per socket:|^Socket\(s\)|^CPU\(s\):)'                                                >> $file_dest
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
