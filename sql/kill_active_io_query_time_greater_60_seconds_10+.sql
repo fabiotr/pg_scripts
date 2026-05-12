@@ -13,5 +13,5 @@ WHERE
     state = 'active' AND
     backend_type = 'client backend' AND
     wait_event_type = 'IO' AND
-    query_start < current_timestamp - INTERVAL '60 SECONDS';
+    query_start < current_timestamp - INTERVAL '60 SECONDS'
 ORDER BY query_start;
