@@ -22,7 +22,9 @@ SELECT
         ,current_setting('server_version') AS server_version
 \gset svp_
 
-\if :svp_pg_93
+\if :svp_pg_10
+  \ir sequence_setval_10+.sql
+\elif :svp_pg_93
   \ir sequence_setval_93+.sql
 \else
   \qecho - Not supported on version :svp_server_version
