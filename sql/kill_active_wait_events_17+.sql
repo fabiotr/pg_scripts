@@ -15,5 +15,6 @@ WHERE
     a.pid != pg_backend_pid() AND
     a.state = 'active' AND
     a.backend_type = 'client backend' AND
-    type != 'Client'
+    type != 'Client' AND
+    query_start < current_timestamp - INTERVAL '1 second'
 ORDER BY query_start;
