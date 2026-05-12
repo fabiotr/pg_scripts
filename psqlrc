@@ -18,7 +18,7 @@
 \getenv home HOME
 \cd :home/pg_scripts/sql
 
-SELECT current_setting('transaction_read_only')::boolean AS is_reader \gset
+SELECT pg_is_in_recovery() AS is_reader \gset
 \if :is_reader
     \set PROMPT1 '%[%033[1;4;33m%]%m%[%033[1;24;38;5;105m%] R%[%033[0m%] %[%033[1;3;96m%]%n@%/%[%033[0m%]%R%# '
 \else
@@ -26,5 +26,5 @@ SELECT current_setting('transaction_read_only')::boolean AS is_reader \gset
 \endif
 
 \x auto
-\timing
+\timing on
 \set QUIET OFF
