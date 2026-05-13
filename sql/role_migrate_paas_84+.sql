@@ -1,13 +1,19 @@
--- Script para migrar usuários de um cluster para outro. 
--- Util quando for importar um dump em um novo cluster
+
+-- Script to migrate roles from one cluster to another.
+-- Useful when importing a dump into a new cluster.
 --
--- Quando tiver acesso a pg_autid utilize o pg_dumpall:
+-- WARNING 
+-- This script is deprecated since pg_dumpall on PG 11 released the option --no-role-passwords
+--
+-- Before PG 11, you can use this script:
+--
+-- If you have access to pg_authid, use pg_dumpall instead:
 -- pg_dumpall -r > roles.sql
 --
--- Quando não tiver acesso a pg_authid utilizar a versão com a pg_roles (sem senha)
+-- If you do not have access to pg_authid, use the pg_roles variant...
 
 
--- Cria usuários
+-- Create roles
 SELECT 
 	'CREATE ROLE "' || rolname        || '"' || ';' || CHR(10) ||
 	'ALTER ROLE  "' || rolname        || '"' ||
@@ -33,7 +39,7 @@ ORDER BY rolname;
 
 
 
--- Ajusta pertencimento a outras roles
+-- Set roles membership
 SELECT 
 	'GRANT ' || m.rolname || 
 	' TO ' || r.rolname || 
@@ -45,7 +51,7 @@ FROM
 WHERE r.rolname NOT LIKE 'pg_%'
 ;
 
--- Ajusta parâmetros adicionais
+-- Set additional role parameters
 SELECT 
 	'ALTER ROLE "' || 
 	rolname	|| '" ' || 
