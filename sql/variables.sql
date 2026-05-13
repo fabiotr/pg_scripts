@@ -32,7 +32,7 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on')   AS plan
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track'          AND setting = 'none') AS track_disabled
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on')   AS jit
-    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_class    WHERE relname = 'pg_stat_statements'                                   AS not_statements
+    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_class    WHERE relname = 'pg_stat_statements')                                  AS not_statements
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'shared_preload_libraries'          AND setting LIKE '%pg_stat_statements%') AS lib
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname IN ('cloudsqladmin', 'rdsadmin'))                        AS not_dbaas
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                                       AS not_gcp
