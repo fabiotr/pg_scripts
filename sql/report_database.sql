@@ -1,29 +1,16 @@
-\set QUIET on
-\timing off
 -- WARNING
 -- psql must be >= pg10 to run this script
+\ir variables.sql
 
 --Setup
 SET client_encoding TO 'UTF8';
 SET client_min_messages TO WARNING;
 \r
---Vars
-SELECT
-     current_date                                          AS date    
-    ,current_setting('server_version_num')::int >=  90000  AS pg_90
-    ,current_setting('server_version_num')::int >=  90100  AS pg_91
-    ,current_setting('server_version_num')::int >=  90500  AS pg_95
-    ,current_setting('server_version_num')::int >= 100000  AS pg_10
-    ,current_setting('server_version_num')::int >= 120000  AS pg_12
-    ,current_setting('server_version_num')::int <  120000  AS under_pg_12
-    ,NOT pg_is_in_recovery()                               AS not_standby
-    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_publication) AS publication
-    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_subscription) AS subscription
-\gset svp_
-
-\if :svp_not_standby
-  CREATE EXTENSION IF NOT EXISTS pgstattuple;
-  CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+\if :svp_pg_91
+  \if :svp_not_standby
+    CREATE EXTENSION IF NOT EXISTS pgstattuple;
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+  \endif
 \endif
 SET pg_stat_statements.track TO none;
 
