@@ -3,7 +3,8 @@ SELECT
     name AS "conf",
     setting AS "value",
     boot_val AS "default",
-    unit
+    unit,
+    source
 FROM pg_settings
 WHERE
     source = 'configuration file' AND
