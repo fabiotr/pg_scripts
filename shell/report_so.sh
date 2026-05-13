@@ -209,7 +209,9 @@ env | grep USER                                                     >> $file_des
 env | grep HOME                                                     >> $file_dest
 env | grep ^PATH                                                    >> $file_dest
 env | grep ^PG | grep -v PGPASSWORD                                 >> $file_dest
-if [ -n "$PGPASSWORD" ]; then echo 'PGPASSWORD=*****';fi            >> $file_dest
+if [ -n "$PGPASSWORD" ]; then 
+  echo 'PGPASSWORD=*****'                                           >> $file_dest
+fi
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
