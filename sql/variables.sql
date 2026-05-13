@@ -1,8 +1,6 @@
 -- Don't show any annoyng messages now
 \set QUIET on
 \timing off
-\pset footer off
-SET client_min_messages TO warning ;
 
 -- Set configuration variables
 SELECT
@@ -34,6 +32,7 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on')   AS plan
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track'          AND setting = 'none') AS track_disabled
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'jit'                               AND setting = 'on')   AS jit
+    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_class    WHERE relname = 'pg_stat_statements'                                   AS not_statements
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'shared_preload_libraries'          AND setting LIKE '%pg_stat_statements%') AS lib
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname IN ('cloudsqladmin', 'rdsadmin'))                        AS not_dbaas
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                                       AS not_gcp
@@ -56,6 +55,7 @@ SELECT
   SELECT 
      (SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_stat_replication) AS master
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_extension WHERE extname = 'pg_stat_statements') AS ext
+    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_extension WHERE extname = 'pg_stat_statements') AS not_ext
   \gset svp_
 \else
   \set svp_master FALSE

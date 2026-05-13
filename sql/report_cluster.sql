@@ -1,31 +1,9 @@
 -- WARNING
 -- psql must be >= pg10 to run this script
+\ir variables.sql
 
 --Setup
-\set QUIET on
-\timing off
 SET client_encoding TO 'UTF8';
---SET pg_stat_statements.track TO none;
---Vars
-SELECT
-     (SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname IN ('cloudsqladmin', 'rdsadmin')) AS not_dbaas
-    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                AS not_gcp
-    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                     AS not_rds
-    ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')          AS not_aurora
-    ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_stat_replication)                                        AS master
-    ,NOT pg_is_in_recovery()                               AS not_standby
-    ,pg_is_in_recovery()                                   AS recovery
-    ,current_setting('logging_collector')                  AS logging_collector
-    ,current_setting('server_version')                     AS server_version
-    ,current_setting('server_version_num')::int >=  90000  AS pg_90
-    ,current_setting('server_version_num')::int >=  90100  AS pg_91
-    ,current_setting('server_version_num')::int >=  90500  AS pg_95
-    ,current_setting('server_version_num')::int >= 120000  AS pg_12
-    ,current_setting('server_version_num')::int >= 140000  AS pg_14
-    ,current_setting('server_version_num')::int >= 170000  AS pg_17
-    ,current_date                                          AS date
-\gset svp_
-
 
 \pset footer off
 \pset null ' - '
