@@ -1,16 +1,14 @@
 #!/bin/env bash
 
-# Onde está meu PSQL
+# Find psql binary location
 PSQL=$(which psql)
 PSQL_OPTS=" -t -c "
 
-#Executa SQL e retorna  lista dos bancos de dados existentes
+#Run psql and execute SQL that returns the list of existing databases
 function list_db_names () {
-  "$PSQL" "$PSQL_OPTS" "SELECT datname from pg_database WHERE datname NOT IN ('postgres', 'template0', 'template1')"
+  "$PSQL" "$PSQL_OPTS" "SELECT datname FROM pg_database WHERE datname !='postgres' AND datistemplate = FALSE"
 }
 
-
-
-## Itera sobre a lista em databases.sql e executa o script em comando.sql para cada base
+## Iterates over the database list and runs comando.sql against each database
 PSQL_OPTS=" -t -f "
 list_db_names | while read LINHA; do "$PSQL" "$PSQL_OPTS" comando.sql "$LINHA"; done
