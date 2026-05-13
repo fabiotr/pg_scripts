@@ -1,7 +1,13 @@
 \set QUIET ON
 \set COMP_KEYWORD_CASE upper
 \pset null '(null)'
-\pset xheader_width 1
+SELECT current_setting('server_version_num')::int >=  90200  AS pg_92
+\gset svp_
+\if :svp_pg_92
+    \pset xheader_width 1
+    \getenv home HOME
+    \cd :home/pg_scripts/sql
+\endif
 
 --\set HISTFILE ~/.psql_history-:HOST
 --\set PROMPT1 '%m %/%R%#%x '
@@ -15,11 +21,9 @@
 --SET transaction_timeout = '60min';
 --SET statement_timeout = '60s';
 
-\getenv home HOME
-\cd :home/pg_scripts/sql
-
-SELECT pg_is_in_recovery() AS is_reader \gset
-\if :is_reader
+SELECT pg_is_in_recovery() AS is_reader 
+\gset svp
+\if :svp_is_reader
     \set PROMPT1 '%[%033[1;4;33m%]%m%[%033[1;24;38;5;105m%] R%[%033[0m%] %[%033[1;3;96m%]%n@%/%[%033[0m%]%R%# '
 \else
     \set PROMPT1 '%[%033[1;4;31m%]%m%[%033[1;24;38;5;216m%] W%[%033[0m%] %[%033[1;3;96m%]%n@%/%[%033[0m%]%R%# '
