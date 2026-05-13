@@ -1,4 +1,4 @@
---Referência: https://wiki.postgresql.org/wiki/Locale_data_changes
+--Reference: https://wiki.postgresql.org/wiki/Locale_data_changes
 --Debian check: dpkg -s libc-bin
 --Red Hat check: rpm -qa | grep glibc
 
