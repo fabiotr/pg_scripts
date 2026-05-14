@@ -1,24 +1,28 @@
 SELECT 
-        s.subname AS subscription, 
-        s.subpublications AS publication,
-        s.subowner::regrole AS owner,
-        s.subenabled AS enabled,
-        ss.pid,
-	ss.leader_pid,
-	ss.relid::regclass AS table,
-        ss.last_msg_send_time,
-        ss.last_msg_receipt_time,
-        ss.latest_end_time,
-        sss.apply_error_count,
-        sss.sync_error_count,
-	sss.confl_insert_exists,
-	sss.confl_update_origin_differs,
-	sss.confl_update_exists,
-	sss.confl_update_missing,
-	sss.confl_delete_origin_differs,
-	sss.confl_delete_missing,
-	sss.confl_multiple_unique_conflicts,
-        sss.stats_reset
+    s.subname AS subscription, 
+    s.subpublications AS publication,
+    s.subowner::regrole AS owner,
+    s.subenabled AS enabled,
+    ss.pid,
+    ss.leader_pid,
+    ss.relid::regclass AS table,
+    ss.last_msg_send_time,
+    ss.last_msg_receipt_time,
+    ss.latest_end_time,
+    sss.apply_error_count,
+    sss.sync_error_count,
+    sss.confl_insert_exists,
+    CASE WHEN current_setting('track_commit_timestamp')::boolean
+        THEN coalesce(sss.confl_update_origin_differs,0)
+        ELSE NULL END AS confl_update_origin_differs,
+    sss.confl_update_exists,
+    sss.confl_update_missing,
+    CASE WHEN current_setting('track_commit_timestamp')::boolean
+	THEN coalesce(sss.confl_delete_origin_differs)
+        ELSE NULL END AS confl_delete_origin_differs,
+    sss.confl_delete_missing,
+    sss.confl_multiple_unique_conflicts,
+    sss.stats_reset
 FROM 
         pg_subscription                      AS s
         LEFT JOIN pg_stat_subscription       AS ss  ON s.oid = ss.subid 
