@@ -11,7 +11,7 @@ SELECT
     to_char(age(a.backend_xid), 'FM999G999G999')             AS xid_age,
     to_char(age(a.backend_xmin),'FM999G999G999')             AS xmin_age,
     CASE
-        WHEN pg_is_in_recovery() THEN ''
+        WHEN pg_is_in_recovery() THEN 'N/A'
         ELSE to_char(txid_current()::text::int8 - txid_snapshot_xmin(txid_current_snapshot())::text::int8,'FM999G999G999') 
 	END AS "XIDs blk",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query

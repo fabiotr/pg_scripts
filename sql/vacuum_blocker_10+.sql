@@ -6,7 +6,10 @@ SELECT
     status AS "Status",
     to_char(age,'FM999G999G999') AS "Age",
     to_char(current_timestamp - duration,'HH24:MI:SS') AS "Duration",
-    to_char(coalesce(txid_current_if_assigned(), txid_current())::text::int8 - txid_snapshot_xmin(txid_current_snapshot())::text::int8,'FM999G999G999') AS "Xids blocking vacuum"
+    CASE
+        WHEN pg_is_in_recovery() THEN 'N/A'
+        ELSE to_char(coalesce(txid_current_if_assigned(), txid_current())::text::int8 - txid_snapshot_xmin(txid_current_snapshot())::text::int8,'FM999G999G999') 
+	END AS "Xids blocking vacuum"
 FROM
     (SELECT
         'Query'           AS origin,
