@@ -4,7 +4,7 @@ SELECT
 --    pg_get_userbyid(c.relowner) AS "Owner",
     --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
     pg_size_pretty(index_size) AS "Index Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
+    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
     trunc(avg_leaf_density::numeric,1)   AS "Avg Leaf Density",
     trunc(leaf_fragmentation::numeric,1) AS "Leaf Fragmentation",
     tree_level AS "Tree Level",

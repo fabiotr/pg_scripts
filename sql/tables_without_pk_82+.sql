@@ -14,7 +14,7 @@ SELECT
     WHEN 'I' THEN 'partitioned index'
     WHEN 'm' THEN 'materialized view'
   END AS "Type",
-  to_char(reltuples,'999G999G999G999') AS "Rows",
+  to_char(reltuples,'FM999G999G999G999') AS "Rows",
   pg_size_pretty(pg_relation_size(c.oid)) AS "Size"
 FROM
   pg_class AS c

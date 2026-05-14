@@ -1,12 +1,12 @@
 SELECT
     row_number() OVER (ORDER BY rows/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char((rows/since_days)*100/sum(rows/since_days) OVER (),'99D99') || '%') AS "Rows_%",
+    to_char((rows/since_days)*100/sum(rows/since_days) OVER (),'FM99D99') || '%' AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    to_char(calls::numeric / since_days::numeric,'999G999G990D9') AS "Calls/Day",
-    to_char(rows::numeric  / since_days::numeric,'9G999G999G999') AS "Rows/Day", 
-    to_char(rows::numeric/calls::numeric,'999G990D9') AS "Rows/Call",
+    to_char(calls::numeric / since_days::numeric,'FM999G999G990D9') AS "Calls/Day",
+    to_char(rows::numeric  / since_days::numeric,'FM9G999G999G999') AS "Rows/Day", 
+    to_char(rows::numeric/calls::numeric,'FM999G990D9') AS "Rows/Call",
     to_char(((total_exec_time + total_plan_time) / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
     CASE WHEN stats_since - stats_reset < (current_timestamp - stats_reset) / 50
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",

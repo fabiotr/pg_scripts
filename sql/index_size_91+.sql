@@ -12,7 +12,7 @@ SELECT
         WHEN 't' THEN 'temporary'
     END AS persistence,
     pg_get_userbyid(c.relowner) AS "Owner",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
+    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
     pg_size_pretty(pg_relation_size(i.indrelid)) AS "Table Size",
     pg_size_pretty(pg_relation_size(i.indexrelid)) AS "Index Size",
     trunc(100 * pg_relation_size(i.indexrelid) / nullif(pg_relation_size(i.indrelid),0),1) AS "Ind/Table %"

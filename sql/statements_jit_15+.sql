@@ -1,17 +1,17 @@
 SELECT
     row_number() OVER (ORDER BY jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC) || 
         CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    trim(to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
-    sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'99D99') || '%') AS "Jit %",
+    to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
+    sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'FM99D99') || '%' AS "Jit %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
-    to_char(calls::numeric                  / reset_days::numeric, '999G999G990D9') AS "Calls/Day",
-    to_char(jit_functions::numeric          / calls::numeric,      '999G999G990D9') AS "Jit/Call",
-    to_char(jit_functions::numeric          / reset_days::numeric, '999G999G990D9') AS "Jit/Day",
-    to_char(jit_inlining_count::numeric     / reset_days::numeric, '999G999G990D9') AS "Inlinings/Day",
-    to_char(jit_optimization_count::numeric / reset_days::numeric, '999G999G990D9') AS "Optimizations/Day",
-    to_char(jit_emission_count::numeric     / reset_days::numeric, '999G999G990D9') AS "Emissions/Day",
+    to_char(calls::numeric                  / reset_days::numeric, 'FM999G999G990D9') AS "Calls/Day",
+    to_char(jit_functions::numeric          / calls::numeric,      'FM999G999G990D9') AS "Jit/Call",
+    to_char(jit_functions::numeric          / reset_days::numeric, 'FM999G999G990D9') AS "Jit/Day",
+    to_char(jit_inlining_count::numeric     / reset_days::numeric, 'FM999G999G990D9') AS "Inlinings/Day",
+    to_char(jit_optimization_count::numeric / reset_days::numeric, 'FM999G999G990D9') AS "Optimizations/Day",
+    to_char(jit_emission_count::numeric     / reset_days::numeric, 'FM999G999G990D9') AS "Emissions/Day",
     to_char((total_exec_time + total_plan_time / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Query Time/Day",
     to_char((jit_generation_time               / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Generation/Day",
     to_char((jit_inlining_time                 / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Inlining/Day",

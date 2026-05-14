@@ -1,6 +1,6 @@
 SELECT 
     row_number() over(order by (total_exec_time + total_plan_time)/since_days DESC) "N", 
-    trim(to_char(((total_exec_time + total_plan_time)/since_days) * 100/sum((total_exec_time + total_plan_time)/since_days) OVER (),'99D99') || '%') AS "load_%",
+    to_char(((total_exec_time + total_plan_time)/since_days) * 100/sum((total_exec_time + total_plan_time)/since_days) OVER (),'FM99D99') || '%' AS "load_%",
     queryid id, 
     CASE WHEN stats_since - stats_reset < (current_timestamp - stats_reset) / 50
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",

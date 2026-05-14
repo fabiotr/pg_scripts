@@ -14,7 +14,7 @@ SELECT
         END AS "Type",
     pg_get_userbyid(c.relowner) AS "Owner",
     pg_size_pretty(pg_relation_size(c.oid)) AS "Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows"--,
+    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows"--,
     --pg_size_pretty(trunc(pg_table_size(c.oid) / c.reltuples)::numeric) AS "Row size"
 FROM pg_class c
      LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace

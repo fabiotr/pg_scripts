@@ -1,20 +1,20 @@
 SELECT
     d.datname                                                                                                                             AS "Database",
     pg_size_pretty(pg_database_size(d.datname))                                                                                           AS "Size",
-    trim(to_char(100 * xact_rollback::NUMERIC / (xact_rollback + xact_commit),'FM000D99') || ' %')                                        AS "Rollback",
-    trim(to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'FM000D99') || ' %')                                        AS "Cache hit",
-    trim(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                            ,'FM000D99') || ' %')             AS "Rows fetch/return",
-    trim(to_char(100 * tup_fetched::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %')             AS "Rows SELECT",
-    trim(to_char(100 * tup_inserted::NUMERIC  / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %')             AS "Rows INSERT",
-    trim(to_char(100 * tup_updated::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %')             AS "Rows UPDATE",
-    trim(to_char(100 * tup_deleted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %')             AS "Rows DELETE",
+    to_char(100 * xact_rollback::NUMERIC / (xact_rollback + xact_commit),'FM000D99') || ' %'                                        AS "Rollback",
+    to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'FM000D99') || ' %'                                        AS "Cache hit",
+    to_char(100 * tup_fetched::NUMERIC   / tup_returned                                            ,'FM000D99') || ' %'             AS "Rows fetch/return",
+    to_char(100 * tup_fetched::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %'             AS "Rows SELECT",
+    to_char(100 * tup_inserted::NUMERIC  / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %'             AS "Rows INSERT",
+    to_char(100 * tup_updated::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %'             AS "Rows UPDATE",
+    to_char(100 * tup_deleted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %'             AS "Rows DELETE",
     CASE deadlocks  WHEN 0 THEN NULL ELSE
-        trim(to_char(deadlocks::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9')) END         AS "Deadlocks  / Day",
+        to_char(deadlocks::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9') END         AS "Deadlocks  / Day",
     CASE checksum_failures WHEN 0 THEN NULL ELSE
-        trim(to_char(checksum_failures::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)), 'FM999G999D9')) END AS "Checksum fail / Day",
+        to_char(checksum_failures::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)), 'FM999G999D9') END AS "Checksum fail / Day",
     checksum_last_failure                                                                                                                 AS "Last Checksum fail",
     CASE temp_files WHEN 0 THEN NULL ELSE
-        trim(to_char(temp_files::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9')) END         AS "Temp file  / Day",
+        to_char(temp_files::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9') END         AS "Temp file  / Day",
     CASE temp_files WHEN 0 THEN NULL ELSE
         trim(pg_size_pretty(temp_bytes   / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24))::BIGINT))     END           AS "Temp bytes / Day",
     date_trunc('second', blk_read_time   / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND') AS "Read time  / Day",

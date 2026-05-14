@@ -1,10 +1,10 @@
 SELECT
     t.schemaname "Schema", 
     t.relname "Table", 
-    to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(EPOCH FROM current_timestamp - d.stats_reset)::numeric/(60*60*24)), '999G999G999G999') "Upd+Del/Day", 
-    to_char(t.n_live_tup, '999G999G999G999') "Live", 
+    to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(EPOCH FROM current_timestamp - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999') "Upd+Del/Day", 
+    to_char(t.n_live_tup, 'FM999G999G999G999') "Live", 
     pg_size_pretty(pg_table_size(t.relid)) "Size",
-    to_char(t.n_dead_tup, '999G999G999G999') "Dead",
+    to_char(t.n_dead_tup, 'FM999G999G999G999') "Dead",
     CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END "Dead Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END "D%", 
     trunc(to_number(coalesce(c.scale,s.setting),'99.999') * 100,3) "S%",

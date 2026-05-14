@@ -3,9 +3,9 @@ SELECT
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    to_char(calls/since_days,'999G999G999') AS "Calls/Day",
-    to_char((rows/since_days),'999G999G999') AS "Rows/Day",
-    to_char(rows/calls,'999G999') AS "Rows/Call",
+    to_char(calls/since_days,'FM999G999G999') AS "Calls/Day",
+    to_char((rows/since_days),'FM999G999G999') AS "Rows/Day",
+    to_char(rows/calls,'FM999G999') AS "Rows/Call",
     to_char(((total_exec_time + total_plan_time) / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
     CASE WHEN stats_since - stats_reset < (current_timestamp - stats_reset) / 50
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",

@@ -9,11 +9,11 @@ SELECT
         || n.nspname || '"."' || c.relname 
         || '" SET(autovacuum_vacuum_scale_factor = ' 
         || CASE 
-                WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'0D99999')
-                WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'0D9999')
-                WHEN c.scale < '0.01'   THEN to_char(round(c.scale,3),'0D999')
-                WHEN c.scale < '0.1'    THEN to_char(round(c.scale,2),'0D99')
-                ELSE                         to_char(round(c.scale,1),'0D9')
+                WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'FM0D99999')
+                WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'FM0D9999')
+                WHEN c.scale < '0.01'   THEN to_char(round(c.scale,3),'FM0D999')
+                WHEN c.scale < '0.1'    THEN to_char(round(c.scale,2),'FM0D99')
+                ELSE                         to_char(round(c.scale,1),'FM0D9')
            END 
         || '); --' AS "Command", 
     coalesce(t.scale,s.scale) AS current,

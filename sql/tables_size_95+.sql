@@ -15,7 +15,7 @@ SELECT
     c.relpages,
     pg_size_pretty(pg_total_relation_size(c.oid)) AS "Total Size",
     pg_size_pretty(pg_table_size(c.oid)) AS "Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
+    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
     pg_size_pretty(trunc(pg_table_size(c.oid) / nullif(c.reltuples,0))::numeric) AS "Avg Row Size"
     --pg_size_pretty(approx_free_space) AS "Free Size",
     --coalesce(fillfactor::integer,100) AS "Fillfactor",
