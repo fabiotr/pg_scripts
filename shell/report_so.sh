@@ -1,5 +1,4 @@
-
-#!/bin/sh
+#!/bin/env bash
 
 file_dest=/tmp/so.md
 
