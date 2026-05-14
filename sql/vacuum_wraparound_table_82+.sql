@@ -1,30 +1,30 @@
 SELECT
     n.nspname AS "Schema", 
     c.relname AS "Table",
-    trim(to_char(age(c.relfrozenxid),'999G999G999G999')) ||
+    trim(to_char(age(c.relfrozenxid),'FM999G999G999G999')) ||
         CASE 
             WHEN t.relfrozenxid IS NOT NULL 
-                THEN ' (T ' || trim(to_char(age(t.relfrozenxid),'999G999G999G999')) || ')'
+                THEN ' (T ' || trim(to_char(age(t.relfrozenxid),'FM999G999G999G999')) || ')'
             ELSE '' END AS "Current Age",
     trim(to_char(LEAST (to_number(COALESCE(fmi.option_value, current_setting('vacuum_freeze_min_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') /2),'999G999G999G999')) || 
+        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') /2),'FM999G999G999G999')) || 
             CASE WHEN 
                 tfmi.option_value IS NOT NULL AND 
                 to_number(tfmi.option_value, '999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')/2
-                THEN ' (T ' || trim(to_char(to_number(tfmi.option_value ,'999999999999'),'999G999G999G999')) || ')' 
+                THEN ' (T ' || trim(to_char(to_number(tfmi.option_value ,'999999999999'),'FM999G999G999G999')) || ')' 
             ELSE '' END AS "Min Age", 
     trim(to_char(LEAST (to_number(COALESCE(ftb.option_value, current_setting('vacuum_freeze_table_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95'),'999G999G999G999')) || 
+        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95'),'FM999G999G999G999')) || 
             CASE WHEN 
                 tftb.option_value IS NOT NULL  AND 
                 to_number(tftb.option_value ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')*'0.95'
-                THEN ' (T ' || trim(to_char(to_number(tftb.option_value ,'999999999999'),'999G999G999G999')) || ')' 
+                THEN ' (T ' || trim(to_char(to_number(tftb.option_value ,'999999999999'),'FM999G999G999G999')) || ')' 
             ELSE '' END AS "Table Age", 
-    trim(to_char(to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')), '999999999999'),'999G999G999G999')) ||
+    trim(to_char(to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')), '999999999999'),'FM999G999G999G999')) ||
             CASE WHEN 
                 tfma.option_value IS NOT NULL AND
                 to_number(tfma.option_value ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')
-                THEN ' (T ' || trim(to_char(to_number(tfma.option_value ,'999999999999'),'999G999G999G999')) || ')' 
+                THEN ' (T ' || trim(to_char(to_number(tfma.option_value ,'999999999999'),'FM999G999G999G999')) || ')' 
             ELSE '' END AS "Max Age", 
     pg_size_pretty(pg_table_size(c.oid)) AS "Size"
 FROM 
