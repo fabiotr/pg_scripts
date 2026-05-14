@@ -13,13 +13,13 @@ FROM
         datname           AS db, 
         usename           AS u,
         pid::text         AS id,
-        state             AS status,
-        age(backend_xmin) AS age,
+	state             AS status,
+        greatest(age(backend_xmin), age(backend_xid)) AS age,
         xact_start        AS duration
     FROM pg_stat_activity
-    WHERE 
-        pid != pg_backend_pid()AND 
-        backend_xmin IS NOT NULL
+    WHERE
+        pid != pg_backend_pid() AND
+        (backend_xmin IS NOT NULL OR backend_xid IS NOT NULL)
     UNION
     SELECT
         'Prepared Xact',
