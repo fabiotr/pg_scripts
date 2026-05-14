@@ -11,16 +11,16 @@ SELECT
         || n.nspname || '"."' || c.relname 
         || '" SET(autovacuum_analyze_scale_factor = ' 
         || CASE 
-                WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'0D99999')
-                WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'0D9999')
-                WHEN c.scale < '0.01'   THEN to_char(round(c.scale,3),'0D999')
-                WHEN c.scale < '0.1'    THEN to_char(round(c.scale,2),'0D99')
-                ELSE                         to_char(round(c.scale,1),'0D99999')
+                WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'FM0D99999')
+                WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'FM0D9999')
+                WHEN c.scale < '0.01'   THEN to_char(round(c.scale,3),'FM0D999')
+                WHEN c.scale < '0.1'    THEN to_char(round(c.scale,2),'FM0D99')
+                ELSE                         to_char(round(c.scale,1),'FM0D99999')
            END 
         || '); --' AS "Command", 
     coalesce(t.scale,s.scale) AS current,
     round(c.scale,6) AS new,
-    to_char(reltuples, '999G999G999G990')  AS n_live_tup
+    to_char(reltuples, 'FM999G999G999G990')  AS n_live_tup
 FROM 
     (SELECT 
             (250000 / reltuples)::NUMERIC scale, -- 250K tuples goal

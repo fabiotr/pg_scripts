@@ -1,8 +1,8 @@
 SELECT
     row_number() over(order by total_time desc) "#",
-trim(to_char(total_time*100/sum(total_time) OVER (),'99D99') || '%') AS "load_%",
+to_char(total_time*100/sum(total_time) OVER (),'FM99D99') || '%' AS "load_%",
     datname db,
-    to_char(calls,'999G999G999G999') AS calls,
+    to_char(calls,'FM999G999G999G999') AS calls,
 --    to_char(min_time        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,
 --    to_char(max_time        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS max,
     to_char(total_time / calls       * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,

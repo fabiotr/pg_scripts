@@ -1,6 +1,6 @@
 SELECT 
     --string_agg(datname,', ') db, 
-    to_char(sum(calls),'999G999G999G999') AS calls, 
+    to_char(sum(calls),'FM999G999G999G999') AS calls, 
     to_char(min(min_time)        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,
     to_char(max(max_time)        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS max,
     to_char(avg(mean_time)       * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,

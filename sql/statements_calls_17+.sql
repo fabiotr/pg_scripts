@@ -1,13 +1,13 @@
 SELECT
     row_number() over(order by calls/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END "N",
-    trim(to_char((calls/since_days)*100/sum((calls/since_days)) OVER (),'99D99') || '%') AS "Calls_%",
+    to_char((calls/since_days)*100/sum((calls/since_days)) OVER (),'FM99D99') || '%' AS "Calls_%",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
     calls,
-    to_char(calls::numeric/since_days,'999G999G999') AS "Calls/Day",
-    to_char((rows/since_days),'999G999G999') AS "Rows/Day",
-    to_char(rows::numeric/calls::numeric,'999G990D9') AS "Rows/Call",
+    to_char(calls::numeric/since_days,'FM999G999G999') AS "Calls/Day",
+    to_char((rows/since_days),'FM999G999G999') AS "Rows/Day",
+    to_char(rows::numeric/calls::numeric,'FM999G990D9') AS "Rows/Call",
     to_char((total_plan_time/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Plan/Day",
     to_char((total_exec_time/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Exec/Day",
     CASE WHEN stats_since - stats_reset < (current_timestamp - stats_reset) / 50

@@ -8,7 +8,7 @@ SELECT
         END AS "Type",
     pg_get_userbyid(c.relowner) AS "Owner",
     pg_size_pretty(pg_relation_size(c.oid)) AS "Index Size",
-    ltrim(to_char(c.reltuples,'999G999G999G999G999')) AS "Rows",
+    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
     version,
     pending_pages,
     pending_tuples

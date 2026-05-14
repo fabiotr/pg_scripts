@@ -3,7 +3,7 @@ SELECT
     string_agg(distinct datname,', ') db,
     string_agg(distinct rolname,', ') role,
     queryid,
-    to_char(sum(calls/reset_days),'999G999G999') AS "Calls/Day", 
+    to_char(sum(calls/reset_days),'FM999G999G999') AS "Calls/Day", 
     to_char(min(min_exec_time)              * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,
     to_char(max(max_exec_time)              * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS max,
     to_char(avg(mean_exec_time)             * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,

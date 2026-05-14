@@ -1,10 +1,10 @@
 SELECT
     t.schemaname AS "Schema", 
     t.relname    AS "Table", 
-    to_char(t.n_tup_upd + t.n_tup_del, '999G999G999G999') AS "Upd+Del", 
-    to_char(t.n_live_tup, '999G999G999G999') AS "Live", 
+    to_char(t.n_tup_upd + t.n_tup_del, 'FM999G999G999G999') AS "Upd+Del", 
+    to_char(t.n_live_tup, 'FM999G999G999G999') AS "Live", 
     pg_size_pretty(pg_relation_size(t.relid)) AS "Size",
-    to_char(t.n_dead_tup, '999G999G999G999') AS "Dead",
+    to_char(t.n_dead_tup, 'FM999G999G999G999') AS "Dead",
     CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END AS "Dead Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END AS "D%", 
     trunc(to_number(coalesce(c.scale,s.setting),'99.999') * 100,3) AS "S%",

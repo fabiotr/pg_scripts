@@ -1,6 +1,6 @@
 SELECT
     to_char((sum(total_exec_time)/reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'FF6') AS "Avg time (uS)", 
-    to_char(sum(calls)/reset_days,'999G999G999G999') AS "Total calls/Day",
+    to_char(sum(calls)/reset_days,'FM999G999G999G999') AS "Total calls/Day",
     to_char((sum(total_exec_time)/reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total time/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char(((sum(blk_read_time + blk_write_time))/reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')

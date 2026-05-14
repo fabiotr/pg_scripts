@@ -6,9 +6,9 @@ SELECT
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond',                      'HH24:MI:SS')       AS "Exec T/Day",
     to_char((sum(total_plan_time + total_exec_time) / reset_days) * INTERVAL '1 millisecond',    'HH24:MI:SS')       AS "Total T/Day",
     trunc(sum(total_plan_time)::numeric * 100 / nullif(sum(total_plan_time + total_exec_time)::numeric,0),1) || ' %' AS "Plan %",
-    to_char(sum(calls)::numeric / reset_days,'999G999G999')                                                          AS "Calls/Day",
+    to_char(sum(calls)::numeric / reset_days,'FM999G999G999')                                                          AS "Calls/Day",
     CASE WHEN current_setting('pg_stat_statements.track') = 'all'
-        THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'999G999G999')  ELSE 'Disabled' END       AS "N TopLevel/Day",
+        THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END       AS "N TopLevel/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char((sum(blk_read_time + blk_write_time)     / reset_days)
             * INTERVAL '1 millisecond','HH24:MI:SS')
