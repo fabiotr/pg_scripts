@@ -2,7 +2,7 @@
 
 # Find psql binary location
 PSQL=$(which psql)
-PSQL_OPTS=" -t -c "
+PSQL_OPTS=(-t -c)
 
 #Run psql and execute SQL that returns the list of existing databases
 function list_db_names () {
@@ -10,5 +10,5 @@ function list_db_names () {
 }
 
 ## Iterates over the database list and runs comando.sql against each database
-PSQL_OPTS=" -t -f "
+PSQL_OPTS=(-t -f)
 list_db_names | while read LINHA; do "$PSQL" "$PSQL_OPTS" comando.sql "$LINHA"; done
