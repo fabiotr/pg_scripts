@@ -52,6 +52,7 @@ SELECT
 	WHEN name = 'track_wal_io_timing'               AND source IN ('default', 'configuration file') AND setting = 'on'                               THEN 'OK'
 	WHEN name = 'track_cost_delay_timing'           AND source IN ('default', 'configuration file') AND setting = 'on'                               THEN 'OK'
 	WHEN name = 'track_functions'               	AND source IN ('default', 'configuration file') AND setting = 'all'                              THEN 'OK'
+        WHEN name = 'track_commit_timestamp'            AND source IN ('default', 'configuration file')                                                  THEN '--'
 	WHEN name = 'stats_fetch_consistency'           AND source IN ('default', 'configuration file') AND setting = 'cache'                            THEN 'OK'
        
 	WHEN name = 'compute_query_id'                  AND source IN ('default', 'configuration file') AND setting IN ('auto', 'on')                    THEN 'OK'
@@ -79,7 +80,7 @@ WHERE name IN (
 	'log_checkpoints', 'log_connections', 'log_disconnections', 'log_duration', 'log_error_verbosity', 'log_hostname', 'log_line_prefix', 'log_lock_waits', 'log_lock_failures',
 	'log_recovery_conflict_waits', 'log_parameter_max_length', 'log_parameter_max_length_on_error', 'log_statement', 'log_replication_commands', 'log_temp_files',
 	'TimeZone',  'log_timezone', 'lc_messages', 'track_activities', 'track_counts', 'track_functions',  'track_io_timing', 'track_cost_delay_timing', 'track_activity_query_size',
-	'track_wal_io_timing', 'stats_fetch_consistency', 
+	'track_wal_io_timing', 'track_commit_timestamp', 'stats_fetch_consistency', 
 	'compute_query_id', 'log_statement_stats', 'log_parser_stats', 'log_planner_stats', 'log_executor_stats', 
 	'shared_preload_libraries', 'pg_stat_statements.track', 'pg_stat_statements.track_planning', 'pg_stat_statements.track_utility', 'pg_stat_statements.save', 'pg_stat_statements.max')
 ORDER BY category, name;
