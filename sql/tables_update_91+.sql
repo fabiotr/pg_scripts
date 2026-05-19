@@ -9,7 +9,7 @@ FROM pg_stat_database WHERE datname = current_database();
 SELECT 
 	schemaname AS "Schema",
 	relname AS "Table",  
-	to_char(n_tup_upd / reset_days,'FM999G999G999G999') AS "UPDATEs/Day"
+	lpad(to_char(n_tup_upd / reset_days,'FM999G999G999G999'),15) AS "UPDATEs/Day"
 FROM
     pg_stat_user_tables,
     (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days 
