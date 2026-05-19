@@ -14,7 +14,7 @@ SELECT
     CASE 
         WHEN pg_is_in_recovery() THEN 'N/A'
 	ELSE to_char(coalesce(pg_current_xact_id_if_assigned(), pg_current_xact_id())::text::int8 - pg_snapshot_xmin(pg_current_snapshot())::text::int8,'FM999G999G999') 
-	END AS "XIDs blk",
+	END AS "Max XIDs bloked",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
     pg_stat_activity a
