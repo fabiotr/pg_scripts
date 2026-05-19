@@ -204,8 +204,8 @@ echo ""                                                             >> $file_des
 
 echo "### Environment Variables"                                    >> $file_dest
 echo '```bash'                                                      >> $file_dest
-env | grep USER                                                     >> $file_dest
-env | grep HOME                                                     >> $file_dest
+env | grep ^USER                                                     >> $file_dest
+env | grep ^HOME                                                     >> $file_dest
 env | grep ^PATH                                                    >> $file_dest
 env | grep ^PG | grep -v PGPASSWORD                                 >> $file_dest
 if [ -n "$PGPASSWORD" ]; then 
