@@ -9,7 +9,6 @@ SELECT
     lpad(to_char(restartpoints_done::numeric  / reset_days,'FM9G990D0'),8)                          AS "Restartpoints done      / Day",
     '--------' AS "-----------------------------",
     lpad(pg_size_pretty(round((buffers_written * current_setting('block_size')::numeric) / reset_days)),8) AS "Shared / Day",
-    lpad(pg_size_pretty(round((slru_written    * current_setting('block_size')::numeric) / reset_days)),8) AS "SLRU   / Day",
     date_trunc('second',write_time / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Write time  / Day",
     date_trunc('second',sync_time  / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Sync  time  / Day",
     '--------' AS "-----------------------------",
