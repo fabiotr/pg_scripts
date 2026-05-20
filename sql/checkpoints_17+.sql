@@ -1,15 +1,17 @@
 SELECT
-    to_char(100 * num_timed::NUMERIC  	    / nullif((num_timed + num_requested),0),'FM990D9') || ' %' AS "Checkpoints timed",
-    to_char(100 * num_requested::NUMERIC    / nullif((num_timed + num_requested),0),'FM990D9') || ' %' AS "Checkpoints requested",
-    pg_size_pretty((buffers_written * current_setting('block_size')::INTEGER) / (num_timed + num_requested)) AS "Average bytes / Checkpoin",
-    '-------' AS "------------------",
-    to_char(restartpoints_timed::NUMERIC / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9') AS "Restartpoints timed     / Day",
-    to_char(restartpoints_req::NUMERIC   / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9') AS "Restartpoints requested / Day",
-    to_char(restartpoints_done::NUMERIC  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)),'FM999G990D9') AS "Restartpoints done      / Day",
-    '-------' AS "------------------",
-    pg_size_pretty(trunc((buffers_written * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24))))  AS "Write bytes / Day",
-    date_trunc('second',write_time / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND')                  AS "Write time  / Day",
-    date_trunc('second',sync_time  / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) * INTERVAL '1 MIlLISECOND')                  AS "Sync  time  / Day",
-    '-------' AS "------------------",
-    date_trunc('second', current_timestamp - stats_reset)                                                                                            AS "Age"
-FROM pg_stat_checkpointer;
+    lpad(to_char(100 * num_timed::numeric        / nullif((num_timed + num_requested),0),'FM990D0') || ' %',8) AS "Timed",
+    lpad(to_char(100 * num_requested::numeric    / nullif((num_timed + num_requested),0),'FM990D0') || ' %',8) AS "Requested",
+    lpad(pg_size_pretty((buffers_written * current_setting('block_size')::numeric) / 
+        nullif(coalesce(num_timed,0) + coalesce(num_requested,0),0)::numeric),8)                               AS "Avg size",
+    '--------' AS "-----------------------------",
+    lpad(to_char(restartpoints_timed::numeric / reset_days,'FM9G990D0'),8)                          AS "Restartpoints timed     / Day",
+    lpad(to_char(restartpoints_req::numeric   / reset_days,'FM9G990D0'),8)                          AS "Restartpoints requested / Day",
+    lpad(to_char(restartpoints_done::numeric  / reset_days,'FM9G990D0'),8)                          AS "Restartpoints done      / Day",
+    '--------' AS "-----------------------------",
+    lpad(pg_size_pretty(round((buffers_written * current_setting('block_size')::numeric) / reset_days)),8) AS "Shared / Day",
+    lpad(pg_size_pretty(round((slru_written    * current_setting('block_size')::numeric) / reset_days)),8) AS "SLRU   / Day",
+    date_trunc('second',write_time / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Write time  / Day",
+    date_trunc('second',sync_time  / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Sync  time  / Day",
+    '--------' AS "-----------------------------",
+    date_trunc('second', current_timestamp - stats_reset)                                           AS "Age"
+FROM (SELECT *, (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_checkpointer) AS c;
