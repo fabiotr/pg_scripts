@@ -10,7 +10,7 @@ SELECT
             WHEN 'f' THEN 'FOREIGN TABLE'
             WHEN 'p' THEN 'PARTITION TABLE'
             END || ' ' ||
-    nspname || '.' || relname || ' TO ' || rolname || ';' AS "GRANT COMMAND"
+    quote_ident(nspname) || '.' || quote_ident(relname) || ' TO ' || quote_ident(rolname) || ';' AS "GRANT COMMAND"
 FROM 
     pg_class c, 
     pg_namespace n, 
