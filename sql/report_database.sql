@@ -149,11 +149,16 @@ SET pg_stat_statements.track TO none;
   \qecho
 \endif
 
+\qecho '## Database Queries'
+\qecho
+
+\qecho '### SELECT stats'
+\qecho
+\i tables_select.sql
+\qecho
+
 \if :svp_pg_90
   \if :svp_not_standby
-    \qecho '## ✨ Database DML'
-    \qecho
-
     \qecho '### DML (INSERT, UPDATE, DELETE) stats'
     \qecho
     \i tables_changes.sql
@@ -179,7 +184,6 @@ SET pg_stat_statements.track TO none;
     \qecho 
     \i tablespace_objects.sql
     \qecho
-
 
     \qecho '## 📂 Schemas'
     \qecho
