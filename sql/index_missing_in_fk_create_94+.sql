@@ -1,8 +1,9 @@
 SELECT 'CREATE INDEX CONCURRENTLY ON ' || 
-       quote_ident(n.nspname) || '.' || quote_ident(c.conrelid::regclass) || 
+       quote_ident(n.nspname) || '.' || quote_ident(r.relname) || 
        ' (' || string_agg(quote_ident(a.attname), ', ' ORDER BY x.n) || ');' AS command
 FROM
     pg_constraint c
+    JOIN pg_class r ON r.oid = c.conrelid
     JOIN pg_namespace n ON n.oid = c.connamespace 
    CROSS JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS x(attnum, n)
    JOIN pg_attribute a ON a.attnum = x.attnum AND a.attrelid = c.conrelid
@@ -15,5 +16,5 @@ WHERE
             i.indrelid = c.conrelid AND
             (i.indkey::smallint[])[0:cardinality(c.conkey)-1] @> c.conkey)
         AND c.contype = 'f'
-GROUP BY n.nspname, c.conrelid, c.conname, c.confrelid
+GROUP BY n.nspname, c.conrelid, c.conname, c.confrelid, r.relname
 ORDER BY pg_relation_size(c.conrelid) DESC;
