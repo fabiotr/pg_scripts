@@ -12,7 +12,6 @@ SET client_min_messages TO WARNING;
     CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
   \endif
 \endif
-SET pg_stat_statements.track TO none;
 
 \pset footer off
 \pset null ' - '
