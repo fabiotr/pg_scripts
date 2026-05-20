@@ -5,7 +5,7 @@
 --glibc >= 2.28
 SET maintenance_work_mem = '8GB';
 SELECT 
-    'REINDEX INDEX ' || s.indexrelid::regclass::text || '; --' ,
+    'REINDEX INDEX ' || quote_ident(s.indexrelid::regclass::text) || '; --' ,
     c.collname
 FROM 
     (SELECT 

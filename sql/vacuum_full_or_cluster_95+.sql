@@ -2,20 +2,18 @@
 SELECT 
     CASE 
         WHEN c.relhasindex AND i.idx_scan > 0 AND (t.spcname != 'pg_global' OR t.spcname IS NULL)
-            THEN 'CLUSTER VERBOSE "'     || n.nspname || '"."' || c.relname || '" USING "' || i.indexrelname || '"; --'
-        ELSE     'VACUUM FULL VERBOSE "' || n.nspname || '"."' || c.relname || '"; --'
+            THEN 'CLUSTER VERBOSE '     || quote_ident(n.nspname) || '.' || quote_ident(c.relname) || ' USING ' || quote_ident(i.indexrelname) || '; --'
+            ELSE 'VACUUM FULL VERBOSE ' || quote_ident(n.nspname) || '.' || quote_ident(c.relname) || '; --'
     END AS command,
     CASE c.relpersistence
         WHEN 'p' THEN 'permanent'
         WHEN 'u' THEN 'unlogged'
         WHEN 't' THEN 'temporary'
     END AS persistence,
-    --pg_size_pretty(pg_total_relation_size(c.oid)) AS "Total Size",
-    pg_size_pretty(pg_table_size(c.oid)) AS "Size",
-    pg_size_pretty(approx_free_space) AS "Free Size",
-    --approx_free_space AS "Free Size'",
-    coalesce(fillfactor::integer,100) AS "Fillfactor",
-    round(approx_free_percent::numeric,2) AS "% Free",
+    lpad(pg_size_pretty(pg_table_size(c.oid)),7) AS "Size",
+    lpad(pg_size_pretty(approx_free_space),7)    AS "Free Size",
+    coalesce(fillfactor::integer,100)            AS "Fillfactor",
+    round(approx_free_percent::numeric,2)        AS "% Free",
     round(approx_free_percent::numeric - (100 - coalesce(fillfactor::numeric,100)), 2) AS "% Free - Fillfactor"
 FROM 
     pg_class c

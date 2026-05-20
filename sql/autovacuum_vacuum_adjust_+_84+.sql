@@ -5,9 +5,9 @@
 -- 100 MB SSD write intensive 
 SET lc_numeric = 'C';
 SELECT
-    'ALTER TABLE "' 
-        || n.nspname || '"."' || c.relname 
-        || '" SET(autovacuum_vacuum_scale_factor = ' 
+    'ALTER TABLE ' 
+        || quote_ident(n.nspname) || '.' || quote_ident(c.relname)
+        || ' SET(autovacuum_vacuum_scale_factor = ' 
         || CASE 
                 WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'FM0D99999')
                 WHEN c.scale < '0.001'  THEN to_char(round(c.scale,4),'FM0D9999')
@@ -17,8 +17,7 @@ SELECT
            END 
         || '); --' AS "Command", 
     coalesce(t.scale,s.scale) AS current,
-    --round(c.scale,6) AS new,
-    pg_size_pretty(pg_relation_size(c.oid, 'main'))  AS size
+    lpad(pg_size_pretty(pg_relation_size(c.oid, 'main')),7)  AS size
 FROM 
     (SELECT 
             (100*1024*1024) / pg_relation_size(oid,'main')::NUMERIC scale, -- 100*1024*1024 = 100MB goal
