@@ -7,8 +7,8 @@ SELECT
         WHEN 'I' THEN 'partitioned index' 
         END AS "Type",
     pg_get_userbyid(c.relowner) AS "Owner",
-    pg_size_pretty(pg_relation_size(c.oid)) AS "Index Size",
-    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
+    lpad(pg_size_pretty(pg_relation_size(c.oid)),7) AS "Index Size",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows",
     version,
     pending_pages,
     pending_tuples

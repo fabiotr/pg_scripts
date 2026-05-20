@@ -1,17 +1,17 @@
 SELECT 
     n.nspname as "Schema",
     c.relname as "Name",
---    pg_get_userbyid(c.relowner) AS "Owner",
+    --pg_get_userbyid(c.relowner) AS "Owner",
     --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
-    pg_size_pretty(index_size) AS "Index Size",
-    lto_char(c.reltuples,'FM999G999G999G999G999') AS "Rows",
-    trunc(avg_leaf_density::numeric,1)   AS "Avg Leaf Density",
-    trunc(leaf_fragmentation::numeric,1) AS "Leaf Fragmentation",
-    tree_level AS "Tree Level",
+    lpad(pg_size_pretty(index_size),7)   AS "Index Size",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows",
+    round(avg_leaf_density::numeric,1)   AS "Avg Leaf Density",
+    round(leaf_fragmentation::numeric,1) AS "Leaf Fragmentation",
+    tree_level     AS "Tree Level",
     internal_pages AS "Internal P", 
-    leaf_pages AS "Leaf P.",
-    empty_pages AS "Empty P.", 
-    deleted_pages AS "Deleted P."
+    leaf_pages     AS "Leaf P.",
+    empty_pages    AS "Empty P.", 
+    deleted_pages  AS "Deleted P."
 FROM 
          pg_index i
     JOIN pg_class c ON c.oid = i.indexrelid

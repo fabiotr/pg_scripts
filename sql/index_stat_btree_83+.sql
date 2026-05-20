@@ -4,7 +4,7 @@ SELECT
     "Index name",
     "Owner",
     rows AS "Rows",
-    pg_size_pretty(index_size) AS "Index size",
+    lpad(pg_size_pretty(index_size),7) AS "Index size",
     avg_leaf_density AS "Avg leaf density",
     leaf_fragmentation AS "Leaf fragmentation",
     version AS "Version",
@@ -21,7 +21,7 @@ FROM
         ct.relname AS "Table name",
 	c.relname AS "Index name",
         pg_get_userbyid(c.relowner) AS "Owner",
-        lto_char(c.reltuples,'FM999G999G999G999G999') AS "rows",
+        lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "rows",
         (pgstatindex(c.relname)).*
     FROM 
              pg_index i
