@@ -166,18 +166,18 @@ echo '```bash'                                                      >> $file_des
 cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
 
-echo "### glibc version
-echo '```bash'
+echo "### glibc version"                                            >> $file_dest
+echo '```bash'                                                      >> $file_dest
 
 # Debian like Linux
 if [ -f /etc/debian_version ]; then
-  dpkg -s libc-bin | grep -E '(^Version|^Status)'
+  dpkg -s libc-bin | grep -E '(^Version|^Status)'                   >> $file_dest
 fi
 # Red Hat like Linux
 if [ -f /etc/redhat-release ]; then
-  rpm -qa | grep glibc
+  rpm -qa | grep glibc                                              >> $file_dest
 fi 
-echo '```'
+echo '```'                                                          >> $file_dest
 
 echo "### PostgreSQL related packages"                              >> $file_dest
 # Red Hat like Linux
