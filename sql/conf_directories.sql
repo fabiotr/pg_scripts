@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_84
-  \ir conf_directories_84+.sql
+  \ir conf_directories_84up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

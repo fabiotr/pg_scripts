@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_10
-  \ir index_stat_hash_10+.sql
+  \ir index_stat_hash_10up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

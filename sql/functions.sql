@@ -1,9 +1,9 @@
 \ir variables.sql
 
 \if :svp_pg_91
-  \ir functions_91+.sql
+  \ir functions_91up.sql
 \elif :svp_pg_84
-  \ir functions_84+.sql
+  \ir functions_84up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

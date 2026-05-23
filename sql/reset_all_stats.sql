@@ -19,21 +19,21 @@ SET client_min_messages TO warning ;
 
 
 \if :svp_pg_17
-  \ir reset_all_stats_17+.sql
+  \ir reset_all_stats_17up.sql
 \elif :svp_pg_16
-  \ir reset_all_stats_16+.sql
+  \ir reset_all_stats_16up.sql
 \elif :svp_pg_15
-  \ir reset_all_stats_15+.sql
+  \ir reset_all_stats_15up.sql
 \elif :svp_pg_14
-  \ir reset_all_stats_14+.sql
+  \ir reset_all_stats_14up.sql
 \elif :svp_pg_13
-  \ir reset_all_stats_13+.sql
+  \ir reset_all_stats_13up.sql
 \elif :svp_pg_94
-  \ir reset_all_stats_94+.sql
+  \ir reset_all_stats_94up.sql
 \elif :svp_pg_91
-  \ir reset_all_stats_91+.sql
+  \ir reset_all_stats_91up.sql
 \elif :svp_pg_90
-  \ir reset_all_stats_90+.sql
+  \ir reset_all_stats_90up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

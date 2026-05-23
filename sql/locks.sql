@@ -1,11 +1,11 @@
 \ir variables.sql
 
 \if :svp_pg_96
-  \ir locks_96+.sql
+  \ir locks_96up.sql
 \elif :svp_pg_92
-  \ir locks_92+.sql
+  \ir locks_92up.sql
 \elif :svp_pg_83
-  \ir locks_83+.sql
+  \ir locks_83up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

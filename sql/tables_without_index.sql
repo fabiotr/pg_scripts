@@ -1,9 +1,9 @@
 \ir variables.sql
 
 \if :svp_pg_91
-  \ir tables_without_index_91+.sql
+  \ir tables_without_index_91up.sql
 \elif :svp_pg_82
-  \ir tables_without_index_82+.sql
+  \ir tables_without_index_82up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

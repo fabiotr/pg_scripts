@@ -1,13 +1,13 @@
 \ir variables.sql
 
 \if :svp_pg_15
-  \ir backup_15+.sql
+  \ir backup_15up.sql
 \elif :svp_pg_93
-  \ir backup_93+.sql
+  \ir backup_93up.sql
 \elif :svp_pg_92
-  \ir backup_92+.sql
+  \ir backup_92up.sql
 \elif :svp_pg_91
-  \ir backup_91+.sql
+  \ir backup_91up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

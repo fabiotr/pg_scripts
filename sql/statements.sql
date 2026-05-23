@@ -65,9 +65,9 @@
 
   \x on
   \if :svp_pg_17
-    \ir statements_total_17+.sql
+    \ir statements_total_17up.sql
   \elif :svp_pg_14
-    \ir statements_total_14+.sql
+    \ir statements_total_14up.sql
   \else
     \qecho '- pg_stat_statements TOTAL is not supported on version' :svp_server_version
   \endif
@@ -82,11 +82,11 @@
   \qecho
 
   \if   :svp_pg_18
-    \ir statements_summary_18+.sql
+    \ir statements_summary_18up.sql
   \elif :svp_pg_17
-    \ir statements_summary_17+.sql
+    \ir statements_summary_17up.sql
   \elif :svp_pg_14
-    \ir statements_summary_14+.sql
+    \ir statements_summary_14up.sql
   \else
     \qecho '- pg_stat_statements SUMMARY is not supported on version' :svp_server_version
   \endif
@@ -96,17 +96,17 @@
   \qecho
 
   \if   :svp_pg_17
-    \ir statements_time_17+.sql
+    \ir statements_time_17up.sql
   \elif :svp_pg_14
-    \ir statements_time_14+.sql
+    \ir statements_time_14up.sql
   \elif :svp_pg_13
-    \ir statements_time_13+.sql
+    \ir statements_time_13up.sql
   \elif :svp_pg_95
-    \ir statements_time_95+.sql
+    \ir statements_time_95up.sql
   \elif :svp_pg_94
-    \ir statements_time_94+.sql
+    \ir statements_time_94up.sql
   \elif :svp_pg_84
-    \ir statements_time_84+.sql
+    \ir statements_time_84up.sql
   \else
     \qecho '- pg_stat_statements TOTAL is not supported on version' :svp_server_version
   \endif
@@ -117,9 +117,9 @@
 
   \if :svp_plan
     \if :svp_pg_17
-      \ir statements_plan_17+.sql
+      \ir statements_plan_17up.sql
     \elif :svp_pg_14
-      \ir statements_plan_14+.sql
+      \ir statements_plan_14up.sql
     \else
       \qecho '- pg_stat_statements PLAN is not supported on version' :svp_server_version
     \endif
@@ -133,11 +133,11 @@
 
   \if :svp_track_io
     \if :svp_pg_17
-      \ir statements_shared_17+.sql
+      \ir statements_shared_17up.sql
     \elif :svp_pg_14
-      \ir statements_shared_14+.sql
+      \ir statements_shared_14up.sql
     \elif :svp_pg_92
-      \ir statements_shared_92+.sql
+      \ir statements_shared_92up.sql
     \else
       \qecho '- pg_stat_statements SHARED I/O is not supported on version' :svp_server_version
     \endif
@@ -155,11 +155,11 @@
 
   \if :svp_track_io
     \if :svp_pg_17
-      \ir statements_local_17+.sql
+      \ir statements_local_17up.sql
     \elif :svp_pg_14
-      \ir statements_local_14+.sql
+      \ir statements_local_14up.sql
     \elif :svp_pg_92
-      \ir statements_local_92+.sql
+      \ir statements_local_92up.sql
     \else 
       \qecho '- pg_stat_statements LOCAL I/O is not supported on version' :svp_server_version
     \endif
@@ -178,13 +178,13 @@
       \qecho 
 
       \if :svp_pg_18
-        \ir statements_wal_18+.sql
+        \ir statements_wal_18up.sql
       \elif :svp_pg_17
-        \ir statements_wal_17+.sql
+        \ir statements_wal_17up.sql
       \elif :svp_pg_14
-        \ir statements_wal_14+.sql
+        \ir statements_wal_14up.sql
       \elif :svp_pg_13
-        \ir statements_wal_13+.sql
+        \ir statements_wal_13up.sql
       \else
         \qecho '- pg_stat_statements WAL I/O is not supported on version' :svp_server_version
       \endif
@@ -197,9 +197,9 @@
   
   \if :svp_jit
     \if :svp_pg_17
-      \ir statements_jit_17+.sql
+      \ir statements_jit_17up.sql
     \elif :svp_pg_15
-      \ir statements_jit_15+.sql
+      \ir statements_jit_15up.sql
     \else 
       \qecho '- pg_stat_statements JIT is not supported on version' :svp_server_version
     \endif
@@ -216,15 +216,15 @@
   \qecho
 
   \if :svp_pg_14
-    \ir statements_calls_14+.sql
+    \ir statements_calls_14up.sql
   \elif :svp_pg_13
-    \ir statements_calls_13+.sql
+    \ir statements_calls_13up.sql
   \elif :svp_pg_95
-    \ir statements_calls_95+.sql
+    \ir statements_calls_95up.sql
   \elif :svp_pg_94
-    \ir statements_calls_94+.sql
+    \ir statements_calls_94up.sql
   \elif :svp_pg_84
-    \ir statements_calls_84+.sql
+    \ir statements_calls_84up.sql
   \else
     \qecho '- pg_stat_statements CALLS is not supported on version' :svp_server_version
   \endif
@@ -234,15 +234,15 @@
   \qecho
 
   \if :svp_pg_14
-    \ir statements_rows_14+.sql
+    \ir statements_rows_14up.sql
   \elif :svp_pg_13
-    \ir statements_rows_13+.sql
+    \ir statements_rows_13up.sql
   \elif :svp_pg_95
-    \ir statements_rows_95+.sql
+    \ir statements_rows_95up.sql
   \elif :svp_pg_94
-    \ir statements_rows_94+.sql
+    \ir statements_rows_94up.sql
   \elif :svp_pg_84
-    \ir statements_rows_84+.sql
+    \ir statements_rows_84up.sql
   \else
     \qecho '- pg_stat_statements ROWS is not supported on version' :svp_server_version
   \endif
@@ -252,15 +252,15 @@
   \qecho
 
   \if :svp_pg_14
-    \ir statements_rows_call_14+.sql
+    \ir statements_rows_call_14up.sql
   \elif :svp_pg_13
-    \ir statements_rows_call_13+.sql
+    \ir statements_rows_call_13up.sql
   \elif :svp_pg_95
-    \ir statements_rows_call_95+.sql
+    \ir statements_rows_call_95up.sql
   \elif :svp_pg_94
-    \ir statements_rows_call_94+.sql
+    \ir statements_rows_call_94up.sql
   \elif :svp_pg_84
-    \ir statements_rows_call_84+.sql
+    \ir statements_rows_call_84up.sql
   \else
     \qecho '- pg_stat_statements CALLS is not supported on version' :svp_server_version
   \endif
@@ -270,19 +270,19 @@
   \qecho
 
   \if   :svp_pg_17
-    \ir statements_temp_17+.sql
+    \ir statements_temp_17up.sql
   \elif :svp_pg_14
-    \ir statements_temp_14+.sql
+    \ir statements_temp_14up.sql
   \elif :svp_pg_13 
-    \ir statements_temp_13+.sql
+    \ir statements_temp_13up.sql
   \elif :svp_pg_95
-    \ir statements_temp_95+.sql
+    \ir statements_temp_95up.sql
   \elif :svp_pg_94
-    \ir statements_temp_94+.sql
+    \ir statements_temp_94up.sql
   \elif :svp_pg_92
-    \ir statements_temp_92+.sql
+    \ir statements_temp_92up.sql
   \elif :svp_pg_90
-    \ir statements_temp_90+.sql
+    \ir statements_temp_90up.sql
   \else
     \qecho '- pg_stat_statements TEMP FILES is not supported on version' :svp_server_version
   \endif
@@ -297,15 +297,15 @@
 
   \x on
   \if :svp_pg_17
-    \ir statements_top5_17+.sql
+    \ir statements_top5_17up.sql
   \elif :svp_pg_13 
-    \ir statements_top5_13+.sql
+    \ir statements_top5_13up.sql
   \elif :svp_pg_95
-    \ir statements_top5_95+.sql
+    \ir statements_top5_95up.sql
   \elif :svp_pg_94
-    \ir statements_top5_94+.sql
+    \ir statements_top5_94up.sql
   \elif :svp_pg_84
-    \ir statements_top5_84+.sql
+    \ir statements_top5_84up.sql
   \else
     \qecho '- pg_stat_statements TOP5 is not supported on version' :svp_server_version
   \endif

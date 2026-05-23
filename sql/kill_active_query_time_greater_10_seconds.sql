@@ -1,15 +1,15 @@
 \ir variables.sql
 
 \if :svp_pg_14
-  \ir kill_active_query_time_greater_10_seconds_14+.sql
+  \ir kill_active_query_time_greater_10_seconds_14up.sql
 \elif :svp_pg_10
-  \ir kill_active_query_time_greater_10_seconds_10+.sql
+  \ir kill_active_query_time_greater_10_seconds_10up.sql
 \elif :svp_pg_92
-  \ir kill_active_query_time_greater_10_seconds_92+.sql
+  \ir kill_active_query_time_greater_10_seconds_92up.sql
 \elif :svp_pg_90
-  \ir kill_active_query_time_greater_10_seconds_90+.sql
+  \ir kill_active_query_time_greater_10_seconds_90up.sql
 \elif :svp_pg_84
-  \ir kill_active_query_time_greater_10_seconds_84+.sql
+  \ir kill_active_query_time_greater_10_seconds_84up.sql
 \else
   \qecho - not supported on version :svp_server_version
 \endif

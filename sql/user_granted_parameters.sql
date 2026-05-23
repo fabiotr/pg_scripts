@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_15
-  \ir user_granted_parameters_15+.sql
+  \ir user_granted_parameters_15up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

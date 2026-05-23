@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_13
-  \ir shared_buffers_stats_13+.sql
+  \ir shared_buffers_stats_13up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

@@ -1,9 +1,9 @@
 \ir variables.sql
 
 \if :svp_pg_91
-  \ir tables_delete_91+.sql 
+  \ir tables_delete_91up.sql 
 \elif :svp_pg_82
-  \ir tables_delete_82+.sql
+  \ir tables_delete_82up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

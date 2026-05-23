@@ -2,19 +2,19 @@
 
 \x on
 \if :svp_pg_18
-  \ir database_stats_18+.sql
+  \ir database_stats_18up.sql
 \elif :svp_pg_14
-  \ir database_stats_14+.sql
+  \ir database_stats_14up.sql
 \elif :svp_pg_12
-  \ir database_stats_12+.sql
+  \ir database_stats_12up.sql
 \elif :svp_pg_92
-  \ir database_stats_92+.sql
+  \ir database_stats_92up.sql
 \elif :svp_pg_91
-  \ir database_stats_91+.sql
+  \ir database_stats_91up.sql
 \elif :svp_pg_83
-  \ir database_stats_83+.sql
+  \ir database_stats_83up.sql
 \elif :svp_pg_82
-  \ir database_stats_82+.sql
+  \ir database_stats_82up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
