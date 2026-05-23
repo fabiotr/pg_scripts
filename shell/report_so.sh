@@ -165,6 +165,7 @@ echo "### Crontab (/etc/cron.d)"                                    >> $file_des
 echo '```bash'                                                      >> $file_dest
 cat /etc/cron.d/* | grep -vE '^(#|;|PATH|SHELL|MAIL|[[:space:]]*$)' >> $file_dest
 echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
 echo "### glibc version"                                            >> $file_dest
 echo '```bash'                                                      >> $file_dest
@@ -178,6 +179,7 @@ if [ -f /etc/redhat-release ]; then
   rpm -qa | grep glibc                                              >> $file_dest
 fi 
 echo '```'                                                          >> $file_dest
+echo ""                                                             >> $file_dest
 
 echo "### PostgreSQL related packages"                              >> $file_dest
 # Red Hat like Linux
