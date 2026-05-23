@@ -1,9 +1,9 @@
 \ir variables.sql
 
 \if :svp_pg_18
-  \ir io_cluster_18+.sql
+  \ir io_cluster_18up.sql
 \elif :svp_pg_16
-  \ir io_cluster_16+.sql
+  \ir io_cluster_16up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

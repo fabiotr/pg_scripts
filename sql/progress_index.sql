@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_12
-  \ir progress_index_12+.sql 
+  \ir progress_index_12up.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

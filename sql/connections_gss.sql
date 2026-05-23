@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_12
-  \ir connections_gss_12+.sql
+  \ir connections_gss_12up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

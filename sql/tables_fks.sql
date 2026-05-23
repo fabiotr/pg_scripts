@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_95
-  \ir tables_fks_95+.sql 
+  \ir tables_fks_95up.sql 
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

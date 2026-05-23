@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_82
-  \ir autovacuum_analyze_82+.sql
+  \ir autovacuum_analyze_82up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

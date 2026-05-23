@@ -1,7 +1,7 @@
 \ir variables.sql
 
 \if :svp_pg_91
-  \ir extensions_91+.sql
+  \ir extensions_91up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif

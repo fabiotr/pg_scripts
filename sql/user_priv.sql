@@ -2,9 +2,9 @@
 
 \x off
 \if :svp_pg_91
-  \ir user_priv_91+.sql 
+  \ir user_priv_91up.sql 
 \elif :svp_pg_82
-  \ir user_priv_82+.sql
+  \ir user_priv_82up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
