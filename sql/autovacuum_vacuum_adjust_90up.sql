@@ -6,7 +6,7 @@
 SET lc_numeric = 'C';
 SELECT
     'ALTER TABLE ' 
-        || quote_literal(n.nspname) || '.' || quote_literal(c.relname)
+        || quote_ident(n.nspname) || '.' || quote_ident(c.relname)
         || ' SET(autovacuum_vacuum_scale_factor = ' 
         || CASE 
                 WHEN c.scale < '0.0001' THEN to_char(round(c.scale,5),'FM0D99999')
