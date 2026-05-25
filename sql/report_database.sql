@@ -125,16 +125,20 @@ SET client_min_messages TO WARNING;
 \i io_table_heap.sql
 \qecho
 
-\qecho '### I/O on tables (others)'
-\qecho
-\i io_table_others.sql
-\qecho
-
 \qecho '### I/O on tables (indexes)'
 \qecho
 \i io_table_index.sql
 \qecho
 
+\qecho '### I/O on tables (toast)'
+\qecho
+\i io_table_toast.sql
+\qecho
+
+\qecho '### I/O on tables (toast indexes)'
+\qecho
+\i io_table_tidx.sql
+\qecho
 
 \qecho '### I/O on indexes'
 \qecho
