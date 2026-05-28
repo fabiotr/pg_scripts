@@ -7,7 +7,7 @@ SELECT
     to_char((calls::numeric/since_days::numeric),'FM999G999G990D9') AS "Calls/Day",
     to_char((plans::numeric/since_days::numeric),  'FM999G999G999') AS "Plans/Day",
     to_char((rows::numeric/calls::numeric),          'FM999G990D9') AS "Rows/Call",
-    to_char(mean_exec_time                        * INTERVAL '1 millisecond', 'HH24:MI:SS,US')        AS "Avg Exec",
+    --to_char(mean_exec_time                        * INTERVAL '1 millisecond', 'HH24:MI:SS,US')        AS "Avg Exec",
     to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Exec/Day",
     to_char((total_plan_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Plan/Day",
     trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1)           AS "Plan %",
