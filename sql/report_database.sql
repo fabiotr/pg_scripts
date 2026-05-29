@@ -9,7 +9,6 @@ SET client_min_messages TO WARNING;
 \if :svp_pg_91
   \if :svp_not_standby
     CREATE EXTENSION IF NOT EXISTS pgstattuple;
-    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
   \endif
 \endif
 
