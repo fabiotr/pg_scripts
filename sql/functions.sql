@@ -1,11 +1,11 @@
 \ir variables.sql
 
-\if :svp_pg_91
-  \ir functions_91up.sql
-\elif :svp_pg_84
-  \ir functions_84up.sql
+\x on
+\if :svp_pg_11
+  \ir functions_11up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
+\x off
 \timing on
 \set QUIET off
