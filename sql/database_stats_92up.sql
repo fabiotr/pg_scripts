@@ -12,7 +12,7 @@ SELECT
     lpad(to_char(100 * tup_deleted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows DELETE",
     CASE deadlocks  WHEN 0 THEN NULL ELSE lpad(to_char(deadlocks::NUMERIC  / reset_days,'FM9G999G990D9'),11) END                 AS "Deadlocks  / Day",
     CASE temp_files WHEN 0 THEN NULL ELSE lpad(to_char(temp_files::NUMERIC / reset_days,'FM9G999G990D0'),11) END                 AS "Temp file  / Day",
-    CASE temp_files WHEN 0 THEN NULL ELSE lpad(pg_size_pretty(temp_bytes   / reset_days::bigint),11) END                         AS "Temp bytes / Day",
+    CASE temp_files WHEN 0 THEN NULL ELSE lpad(pg_size_pretty(round(temp_bytes / reset_days)::bigint),11) END                    AS "Temp bytes / Day",
     lpad(date_trunc('second', blk_read_time   / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                                 AS "Read time  / Day",
     lpad(date_trunc('second', blk_write_time  / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                                 AS "Write time / Day",
     '--------------------'                                                                                                       AS "Reset",
