@@ -35,14 +35,14 @@ SET client_min_messages TO WARNING;
 
 \qecho '## 📊 Database stats'
 \qecho
-\i database_stats.sql
+\ir database_stats.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
     \qecho '## 🛠️ Extensions'
     \qecho
-    \i extensions.sql
+    \ir extensions.sql
     \qecho
 
     \qecho '## 🛡️ Roles'
@@ -50,26 +50,26 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Default privileges'
     \qecho
-    \i user_default_privileges.sql
+    \ir user_default_privileges.sql
     \qecho
   \endif
 \endif
 
 \qecho '### Owner X Connections'
 \qecho
-\i user_owners_x_connections.sql
+\ir user_owners_x_connections.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
     \qecho '### Row level security'
     \qecho
-    \i security_policies.sql
+    \ir security_policies.sql
     \qecho
 
     \qecho '### Security Labels'
     \qecho
-    \i security_labels.sql
+    \ir security_labels.sql
     \qecho
  
   \endif
@@ -84,17 +84,17 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Publications'
     \qecho
-    \i publications.sql
+    \ir publications.sql
     \qecho
 
     \qecho '### Schemas in publications'
     \qecho
-    \i publication_schemas.sql
+    \ir publication_schemas.sql
     \qecho
 
     \qecho '### Tables in publications'
     \qecho
-    \i publication_tables.sql
+    \ir publication_tables.sql
     \qecho
   \endif
 
@@ -104,13 +104,13 @@ SET client_min_messages TO WARNING;
     \qecho
 
     \qecho '### Subscriptions'
-    \qecho
-    \i subscription_stats.sql
+    gqecho
+    \ir subscription_stats.sql
     \qecho
 
     \qecho '### Tables in subscriptions'
     \qecho
-    \i subscription_rel_stats.sql
+    \ir subscription_rel_stats.sql
     \qecho
   \endif
 \endif
@@ -121,33 +121,33 @@ SET client_min_messages TO WARNING;
 
 \qecho '### I/O on tables (heap)'
 \qecho
-\i io_table_heap.sql
+\ir io_table_heap.sql
 \qecho
 
 \qecho '### I/O on tables (indexes)'
 \qecho
-\i io_table_index.sql
+\ir io_table_index.sql
 \qecho
 
 \qecho '### I/O on tables (toast)'
 \qecho
-\i io_table_toast.sql
+\ir io_table_toast.sql
 \qecho
 
 \qecho '### I/O on tables (toast indexes)'
 \qecho
-\i io_table_tidx.sql
+\ir io_table_tidx.sql
 \qecho
 
 \qecho '### I/O on indexes'
 \qecho
-\i io_index.sql
+\ir io_index.sql
 \qecho
 
 \if :svp_not_standby
   \qecho '### I/O on sequences'
   \qecho
-  \i io_sequence.sql
+  \ir io_sequence.sql
   \qecho
 \endif
 
@@ -156,111 +156,152 @@ SET client_min_messages TO WARNING;
 
 \qecho '### SELECT stats'
 \qecho
-\i tables_select.sql
+\ir tables_select.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
     \qecho '### DML (INSERT, UPDATE, DELETE) stats'
     \qecho
-    \i tables_changes.sql
+    \ir tables_changes.sql
     \qecho
 
     \qecho '### INSERT stats'
     \qecho
-    \i tables_insert.sql
+    \ir tables_insert.sql
     \qecho
 
     \qecho '### UPDATE stats'
     \qecho
-    \i tables_update.sql
+    \ir tables_update.sql
     \qecho
 
     \qecho '### DELETE stats'
     \qecho
-    \i tables_delete.sql
+    \ir tables_delete.sql
     \qecho
 
 
     \qecho '## 📂 Tablespaces objects'
     \qecho 
-    \i tablespace_objects.sql
+    \ir tablespace_objects.sql
     \qecho
 
     \qecho '## 📂 Schemas'
     \qecho
-    \i schemas.sql
+    \ir schemas.sql
     \qecho
 
     \qecho '## 🔍 Views'
     \qecho
-    \i views.sql
+    \ir views.sql
     \qecho
 
     \qecho '## 🔥 Top objects'
     \qecho
-    \i object_size.sql
+    \ir object_size.sql
+    \qecho
+    
+    \qecho '### Procedural Languages'
+    \qecho
+    \ir procedural_languages.sql
     \qecho
 
-    \qecho '## ✨ Triggers'
+    \qecho '### User Operators'
+    \qecho 
+    \ir operators.sql
+    \qecho
+
+    \qecho '### User Functions'
+    \qecho
+    \ir functions.sql
     \qecho
 
     \qecho '### Event Triggers'
     \qecho
-    \i trigger_events.sql
+    \ir trigger_events.sql
     \qecho
 
+    \qecho '### Access Methods'
+    \qecho 
+    \ir access_method.sql
+    \qecho
+    
+    \qecho '### Collations'
+    \qecho 
+    \ir collations.sql
+    \qecho
+
+    \qecho '#### User Conversions'
+    \qecho
+    \ir conversions.sql
+    \qecho
+
+    \qecho '### User Data Types'
+    \qecho
+    \ir data_types.sql
+    \qecho
+    
+    \qecho '### User Domains'
+    \qecho
+    \ir domains.sql
+    \qecho
+
+    \qecho 'Large Objects'
+    \qecho
+    \ir large_objects.sql
+    \qecho
 
     \qecho '## 📂 Tables'
     \qecho
 
     \qecho '### Table sizes'
     \qecho
-    \i tables_size.sql
+    \ir tables_size.sql
     \qecho
 
     \qecho '### Tables with TOAST'
     \qecho
-    \i tables_with_toast.sql
+    \ir tables_with_toast.sql
     \qecho
 
     \qecho '### Tables unlogged'
     \qecho
-    \i tables_unlogged.sql
+    \ir tables_unlogged.sql
     \qecho
 	
 	
     \qecho '### Table Triggers'
     \qecho
-    \i trigger_tables.sql
+    \ir trigger_tables.sql
     \qecho
 	
     \qecho '### Tables with unused space'
     \qecho
-    \i tables_bloat_approx.sql
+    \ir tables_bloat_approx.sql
     \qecho
 
     \qecho '### Tables with unused space cleanup'
     \qecho
     \qecho '```sql'
-    \i vacuum_full_or_cluster.sql
+    \ir vacuum_full_or_cluster.sql
     \qecho '```'
     \qecho
 	
     \qecho '### Tables without PK'
     \qecho
-    \i tables_without_pk.sql
+    \ir tables_without_pk.sql
     \qecho
 
     \qecho '### Tables without any Index'
     \qecho
-    \i tables_without_index.sql
+    \ir tables_without_index.sql
     \qecho
 
     \if :svp_under_pg_12
       \qecho '### Tables with OID'
       \qecho
-      \i tables_with_oid.sql
+      \ir tables_with_oid.sql
       \qecho
     \endif
 	
@@ -269,12 +310,12 @@ SET client_min_messages TO WARNING;
 
 \qecho '### Tables with seq scan'
 \qecho
-\i tables_with_seq_scan.sql
+\ir tables_with_seq_scan.sql
 \qecho
 
 \qecho '### Not used tables'
 \qecho
-\i tables_not_used.sql
+\ir tables_not_used.sql
 \qecho
 
 \if :svp_pg_90
@@ -282,18 +323,18 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Partition tables'
     \qecho
-    \i tables_partition.sql
+    \ir tables_partition.sql
     \qecho
 
     \qecho '### Materialized Views'
     \qecho
-    \i materialized_views.sql
+    \ir materialized_views.sql
     \qecho
 
     \qecho '### Foreign Tables'
     \qecho
     \qecho '```sql'
-    \i tables_foreign.sql
+    \ir tables_foreign.sql
     \qecho '```'
     \qecho
   \endif
@@ -305,25 +346,25 @@ SET client_min_messages TO WARNING;
 
 \qecho '### Unused (at these instance only)'
 \qecho
-\i index_poor.sql
+\ir index_poor.sql
 \qecho
 
 \if :svp_pg_90
   \if :svp_not_standby
     \qecho '### Duplicated'
     \qecho
-    \i index_dup.sql
+    \ir index_dup.sql
     \qecho
 
     \qecho '### Foreign Key without indexes'
     \qecho
-    \i index_missing_in_fk.sql
+    \ir index_missing_in_fk.sql
     \qecho
 
     \qecho '### Foreign Key without index CREATE'
     \qecho
     \qecho '```sql'
-    \i index_missing_in_fk_create.sql
+    \ir index_missing_in_fk_create.sql
     \qecho '```'
     \qecho
   \endif
@@ -341,54 +382,59 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Objects with individual adjustments'
     \qecho
-    \i object_options.sql 
+    \ir object_options.sql 
+    \qecho
+
+    \qecho '### Extended Statistics'
+    \qecho
+    \ir statistic_ext.sql
     \qecho
 
     \qecho '### Analyze'
     \qecho
-    \i autovacuum_analyze.sql
+    \ir autovacuum_analyze.sql
     \qecho
 
     \qecho '### Analyze Adjusts'
     \qecho
     \qecho '```sql'
-    \i autovacuum_analyze_adjust.sql
+    \ir autovacuum_analyze_adjust.sql
     \qecho '```'
     \qecho
 
     \qecho '### Vacuum'
     \qecho
-    \i autovacuum_vacuum.sql
+    \ir autovacuum_vacuum.sql
     \qecho
 
     \qecho '### Vacuum Adjusts'
     \qecho
     \qecho '```sql'
-    \i autovacuum_vacuum_adjust.sql
+    \ir autovacuum_vacuum_adjust.sql
     \qecho '```'
     \qecho
 
     \qecho '### Vacuum "to prevent wraparound"'
     \qecho
-    \i vacuum_wraparound.sql
+    \ir vacuum_wraparound.sql
     \qecho
 
     \qecho '### Fillfactor'
     \qecho
-    \i fillfactor.sql
+    \ir fillfactor.sql
     \qecho
   \endif
 \endif
 
 \qecho '## ⚙️ Functions'
 \qecho
-\i functions.sql
+\ir functions_stats.sql
 \qecho
 
 \qecho '## 📊 pg_stat_statement'
 \qecho
 
-\i statements.sql
+\ir statements.sql
 
 \qecho
 \qecho END

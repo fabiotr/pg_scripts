@@ -109,6 +109,13 @@ SET client_encoding TO 'UTF8';
 \i io_cluster.sql
 \qecho
 
+\if :svp_not_aurora
+  \qecho '## I/O Cluster Writes'
+  \qecho
+  \i io_cluster_write.sql
+  \qecho
+\endif
+
 \qecho '## 📊 SLRU'
 \qecho
 \i slru_stats.sql
@@ -180,6 +187,16 @@ SET client_encoding TO 'UTF8';
 \qecho '### Connections Running'
 \qecho
 \i connections_running.sql
+\qecho
+
+\qecho '### Connections blocking vacuum'
+\qecho
+\i connections_blocking_vacuum.sql
+\qecho
+
+\qecho '### Vaccum delayed by'
+\qecho
+\i vacuum_blocker.sql
 \qecho
 
 \qecho '### Prepared Transactions (Two Phase Commit)'

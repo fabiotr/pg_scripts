@@ -1,7 +1,11 @@
-\set QUIET on
-\timing off
-SELECT owner, database, transaction, gid, prepared
-FROM pg_prepared_xacts 
-ORDER BY owner, database;
+\ir variables.sql
+
+\x on
+\if :svp_pg_82
+  \ir prepared_transactions_82up.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\x off
 \timing on
 \set QUIET off

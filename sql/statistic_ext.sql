@@ -1,8 +1,8 @@
 \ir variables.sql
 
 \x on
-\if :svp_pg_82
-  \ir views_82up.sql
+\if :svp_pg_12
+  \ir statistic_ext_12up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
