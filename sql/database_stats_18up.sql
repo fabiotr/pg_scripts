@@ -14,7 +14,7 @@ SELECT
     CASE checksum_failures WHEN 0 THEN NULL ELSE lpad(to_char(checksum_failures::NUMERIC / reset_days, 'FM9G999G999D0'),11) END  AS "Checksum fail / Day",
     lpad(date_trunc('second',checksum_last_failure)::text,11)                                                                    AS "Last Checksum fail",
     CASE temp_files WHEN 0 THEN NULL ELSE lpad(to_char(temp_files::NUMERIC / reset_days,'FM9G999G990D0'),11) END                 AS "Temp file  / Day",
-    CASE temp_files WHEN 0 THEN NULL ELSE lpad(pg_size_pretty(temp_bytes   / reset_days),11) END                                 AS "Temp bytes / Day",
+    CASE temp_files WHEN 0 THEN NULL ELSE lpad(pg_size_pretty(round(temp_bytes / reset_days)::bigint),11) END                    AS "Temp bytes / Day",
     lpad(date_trunc('second', blk_read_time   / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                                 AS "Read time  / Day",
     lpad(date_trunc('second', blk_write_time  / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                                 AS "Write time / Day",
     '-----------'                                                                                                                AS "Sessions",
