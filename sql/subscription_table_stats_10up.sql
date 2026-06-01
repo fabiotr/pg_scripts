@@ -1,6 +1,6 @@
 SELECT 
-        s.subname AS subscription, 
-        sr.srrelid::regclass AS table, 
+        s.subname AS "Subscription", 
+        c.relname AS "Table", 
         CASE sr.srsubstate 
                 WHEN 'i' THEN 'initialize'
                 WHEN 'd' THEN 'data is being copied'
@@ -12,5 +12,6 @@ SELECT
         sr.srsublsn AS lsn
 FROM 
         pg_subscription                 AS s
-        JOIN pg_subscription_rel        AS sr  ON s.oid = sr.srsubid
-ORDER BY s.subname, sr.srrelid::regclass;
+        JOIN pg_subscription_rel        AS sr ON s.oid = sr.srsubid
+	JOIN pg_class                   AS c  ON sr.srrelid = c.oid
+ORDER BY s.subname, c.relname;
