@@ -19,7 +19,7 @@ SELECT
 FROM 
     pg_stat_activity a
 WHERE 
-    pid != pg_backend_pid()AND 
-    (backend_xmin IS NOT NULL OR backend_xid IS NOT NULL)
+    pid != pg_backend_pid() AND 
+    coalesce(age(a.backend_xid),0) + coalesce(age(backend_xmin),0) > 1
 ORDER BY greatest(age(backend_xmin), age(backend_xid)) DESC, xact_start
 LIMIT 10;
