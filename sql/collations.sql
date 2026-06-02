@@ -1,6 +1,5 @@
 \ir variables.sql
 
-\x on
 \if :svp_pg_17
   \ir collations_17up.sql
 \elif :svp_pg_16
@@ -14,6 +13,5 @@
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
-\x off
 \timing on
 \set QUIET off
