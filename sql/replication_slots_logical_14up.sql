@@ -37,3 +37,4 @@
     lpad(pg_size_pretty(total_bytes),8)        AS "Total size"
   FROM  pg_stat_replication_slots
   ORDER BY 1;
+\endif
