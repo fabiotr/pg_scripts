@@ -12,18 +12,31 @@ SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDE
 \endif
 
 \if :svp_not_aurora
-  SELECT 'wal' AS shared_stat, stats_reset FROM pg_stat_wal;
-\endif
-
-SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
-UNION
-SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
-UNION
-SELECT 'recovery_prefetch' AS shared_stat, stats_reset FROM pg_stat_recovery_prefetch
-UNION
-SELECT DISTINCT 'io' AS shared_stat, stats_reset FROM pg_stat_io
-UNION
-SELECT DISTINCT 'checkpointer' AS shared_stat, stats_reset FROM pg_stat_checkpointer
-UNION
-SELECT DISTINCT 'slru / ' || name AS shared_stat, stats_reset FROM pg_stat_slru
+  SELECT 'wal' AS shared_stat, stats_reset FROM pg_stat_wal
+  UNION
+  SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
+  UNION
+  SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
+  UNION
+  SELECT 'recovery_prefetch' AS shared_stat, stats_reset FROM pg_stat_recovery_prefetch
+  UNION
+  SELECT DISTINCT 'io' AS shared_stat, stats_reset FROM pg_stat_io
+  UNION
+  SELECT DISTINCT 'checkpointer' AS shared_stat, stats_reset FROM pg_stat_checkpointer
+  UNION
+  SELECT DISTINCT 'slru / ' || name AS shared_stat, stats_reset FROM pg_stat_slru
+  ORDER BY 2,1;
+\else
+  SELECT 'bgwriter' AS shared_stat, stats_reset FROM pg_stat_bgwriter
+  UNION
+  SELECT 'archiver' AS shared_stat, stats_reset FROM pg_stat_archiver
+  UNION
+  SELECT 'recovery_prefetch' AS shared_stat, stats_reset FROM pg_stat_recovery_prefetch
+  UNION
+  SELECT DISTINCT 'io' AS shared_stat, stats_reset FROM pg_stat_io
+  UNION
+  SELECT DISTINCT 'checkpointer' AS shared_stat, stats_reset FROM pg_stat_checkpointer
+  UNION
+  SELECT DISTINCT 'slru / ' || name AS shared_stat, stats_reset FROM pg_stat_slru
 ORDER BY 2,1;
+\endif
