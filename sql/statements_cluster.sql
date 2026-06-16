@@ -52,9 +52,6 @@
 
 \if :svp_run_ok
   \x off
-  \qecho
-  \qecho '## 📊 Statements from cluster'
-  \qecho
 
   \qecho
   \if :svp_pg_14

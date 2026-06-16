@@ -52,9 +52,6 @@
 
 \if :svp_run_ok
   \x off
-  \qecho
-  \qecho '## Statements'
-  \qecho
 
   \qecho '### Statements total'
   \qecho
