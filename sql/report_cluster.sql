@@ -303,33 +303,7 @@ SET client_encoding TO 'UTF8';
 \qecho '## 📊 Statements from cluster'
 \qecho
 
-\qecho
-\if :svp_pg_14
-  \qecho '### Statements total on cluster'
-  \qecho
-  \ir statements_group_total.sql
-  \qecho
-
-  \qecho '### Statements total grouped by database'
-  \qecho 
-  \ir statements_group_database_total.sql
-  \qecho
-
-  \qecho '### Statements summary from cluster by time'
-  \qecho
-  \ir statements_group_database_summary.sql
-  \qecho
-\else
-  \qecho '### Statements from cluster by time'
-  \qecho
-  \ir statements_group_database_time.sql
-  \qecho
-\endif
-
-\qecho '### Statements from cluster by temp'
-\qecho
-\ir statements_group_database_temp.sql
-\qecho
+\ir statements_cluster.sql
 
 \qecho
 \qecho END
