@@ -42,13 +42,17 @@ SET client_encoding TO 'UTF8';
 
 \qecho '## ⚙️ Preset options'
 \qecho
-\i internal.sql
+\ir internal.sql
 \qecho
+
+\qecho '## Status last reset'
+\qecho
+\ir stats_last_reset.sql
 
 \if :svp_not_gcp
   \qecho '## 📊 Shared Memory use'
   \qecho
-  \i shared_buffers_stats.sql
+  \ir shared_buffers_stats.sql
   \qecho
 \endif
 
@@ -57,68 +61,68 @@ SET client_encoding TO 'UTF8';
     \if :svp_pg_17
       \qecho '## ✨ Background Workers'
       \qecho
-      \i bgwriter.sql
+      \ir bgwriter.sql
       \qecho
     \endif
   \endif 
 
   \qecho '## 🛠️ Checkpoints'
   \qecho
-  \i checkpoints.sql
+  \ir checkpoints.sql
   \qecho
 
   \if :svp_not_aurora
     \qecho '## 🚀 Write Ahead Log (WAL)'
     \qecho
-    \i wal.sql
+    \ir wal.sql
     \qecho
 
     \qecho '## 🛠️ Archiver'
     \qecho
-    \i archives.sql
+    \ir archives.sql
     \qecho
   \endif
 \endif
 
 \qecho '## 🚀 WAL files'
 \qecho
-\i ls_wal.sql
+\ir ls_wal.sql
 \qecho
 
 \qecho '## 🛠️ Temp files'
 \qecho
-\i ls_temp.sql
+\ir ls_temp.sql
 \qecho
 
 \if :svp_not_gcp
   \qecho '## 🛠️ Log files'
   \qecho
-  \i ls_logs.sql
+  \ir ls_logs.sql
   \qecho
 \endif
 
 \if :svp_not_dbaas
   \qecho '## 🛡️ Backup'
   \qecho
-  \i backup.sql
+  \ir backup.sql
   \qecho
 \endif
 
 \qecho '## 📊 I/O Cluster'
 \qecho 
-\i io_cluster.sql
+\ir io_cluster.sql
 \qecho
 
 \if :svp_not_aurora
   \qecho '## I/O Cluster Writes'
   \qecho
-  \i io_cluster_write.sql
+  \ir io_cluster_write.sql
   \qecho
 \endif
 
 \qecho '## 📊 SLRU'
 \qecho
-\i slru_stats.sql
+\ir slru_stats.sql
 \qecho
 
 \qecho '## 🛠️ Configurations'
@@ -127,33 +131,33 @@ SET client_encoding TO 'UTF8';
 \if :svp_not_gcp
   \qecho '### pg_hba.conf'
   \qecho
-  \i pg_hba.sql
+  \ir pg_hba.sql
   \qecho
 \endif
 
 \qecho '### Authentication configurations'
 \qecho 
-\i conf_auth.sql
+\ir conf_auth.sql
 \qecho
 
 \qecho '### SSL configurations'
 \qecho
-\i conf_ssl.sql
+\ir conf_ssl.sql
 \qecho
 
 \qecho '### Log configurations'
 \qecho
-\i conf_logs.sql
+\ir conf_logs.sql
 \qecho
 
 \qecho '### Resource configurations'
 \qecho
-\i conf_resource.sql
+\ir conf_resource.sql
 \qecho
 
 \qecho '### Other configurations'
 \qecho
-\i conf_others.sql
+\ir conf_others.sql
 \qecho
 
 \qecho '## 📊 Connections'
@@ -161,47 +165,47 @@ SET client_encoding TO 'UTF8';
 
 \qecho '### Connections Total'
 \qecho
-\i connections_tot.sql
+\ir connections_tot.sql
 \qecho
 
 \qecho '### Connections by Database'
 \qecho
-\i connections_by_database.sql
+\ir connections_by_database.sql
 \qecho
 
 \qecho '### Connections by User'
 \qecho 
-\i connections_by_user.sql
+\ir connections_by_user.sql
 \qecho
 
 \qecho '### Connections SSL'
 \qecho
-\i connections_ssl.sql
+\ir connections_ssl.sql
 \qecho
 
 \qecho '### Connections GSS'
 \qecho
-\i connections_gss.sql
+\ir connections_gss.sql
 \qecho
 
 \qecho '### Connections Running'
 \qecho
-\i connections_running.sql
+\ir connections_running.sql
 \qecho
 
 \qecho '### Connections blocking vacuum'
 \qecho
-\i connections_blocking_vacuum.sql
+\ir connections_blocking_vacuum.sql
 \qecho
 
 \qecho '### Vaccum delayed by'
 \qecho
-\i vacuum_blocker.sql
+\ir vacuum_blocker.sql
 \qecho
 
 \qecho '### Prepared Transactions (Two Phase Commit)'
 \qecho
-\i prepared_transactions.sql
+\ir prepared_transactions.sql
 \qecho
 
 \if :svp_not_standby
@@ -210,17 +214,17 @@ SET client_encoding TO 'UTF8';
 
   \qecho '### Roles with high privileges'
   \qecho
-  \i user_priv.sql
+  \ir user_priv.sql
   \qecho
 
   \qecho '### Roles with options'
   \qecho
-  \i user_options.sql
+  \ir user_options.sql
   \qecho
 
   \qecho '### Granted roles'
   \qecho
-  \i user_granted_roles.sql
+  \ir user_granted_roles.sql
   \qecho
 \endif
 
@@ -232,23 +236,23 @@ SET client_encoding TO 'UTF8';
     
     \qecho '### Replica conf'
     \qecho
-    \i conf_replica.sql
+    \ir conf_replica.sql
     \qecho
     \qecho '### Recovery conf'
-    \i conf_recovery.sql
+    \ir conf_recovery.sql
     \qecho
 	
     \if :svp_pg_91
       \qecho '### Conflicts'
       \qecho
-      \i database_standby_conflicts.sql
+      \ir database_standby_conflicts.sql
       \qecho
     \endif
 
     \if :svp_not_aurora
       \qecho '### WAL receiver'
       \qecho
-      \i wal_receiver.sql
+      \ir wal_receiver.sql
       \qecho
     \endif
   \endif
@@ -259,24 +263,24 @@ SET client_encoding TO 'UTF8';
 
     \qecho '### Master conf'
     \qecho
-    \i conf_master.sql
+    \ir conf_master.sql
     \qecho
 	
     \qecho '### Replication stats'
     \qecho
-    \i replication_stats.sql
+    \ir replication_stats.sql
     \qecho
 
     \if :svp_pg_95
       \qecho '### Replication Slots'
       \qecho
-      \i replication_slots.sql
+      \ir replication_slots.sql
       \qecho
 
       \if :svp_not_gcp
         \qecho '### Replication origins'
         \qecho
-        \i replication_origin.sql
+        \ir replication_origin.sql
         \qecho
       \endif
     \endif
@@ -286,13 +290,13 @@ SET client_encoding TO 'UTF8';
 \if :svp_not_standby
   \qecho '## 📂 Tablespaces'
   \qecho
-  \i tablespaces.sql
+  \ir tablespaces.sql
   \qecho
 
 
   \qecho '## 📂 Databases on cluster'
   \qecho
-  \i database_size.sql
+  \ir database_size.sql
   \qecho
 \endif
 
@@ -303,28 +307,28 @@ SET client_encoding TO 'UTF8';
 \if :svp_pg_14
   \qecho '### Statements total on cluster'
   \qecho
-  \i statements_group_total.sql
+  \ir statements_group_total.sql
   \qecho
 
   \qecho '### Statements total grouped by database'
   \qecho 
-  \i statements_group_database_total.sql
+  \ir statements_group_database_total.sql
   \qecho
 
   \qecho '### Statements summary from cluster by time'
   \qecho
-  \i statements_group_database_summary.sql
+  \ir statements_group_database_summary.sql
   \qecho
 \else
   \qecho '### Statements from cluster by time'
   \qecho
-  \i statements_group_database_time.sql
+  \ir statements_group_database_time.sql
   \qecho
 \endif
 
 \qecho '### Statements from cluster by temp'
 \qecho
-\i statements_group_database_temp.sql
+\ir statements_group_database_temp.sql
 \qecho
 
 \qecho
