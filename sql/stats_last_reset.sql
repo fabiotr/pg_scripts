@@ -1,4 +1,5 @@
 \ir variables.sql
+\pset footer off
 
 \if :svp_pg_17
   \ir stats_last_reset_17up.sql
@@ -18,5 +19,6 @@
   \qecho - Not supported on version :svp_server_version
 \endif
 
+\pset footer on
 \timing on
 \set QUIET off

@@ -3,7 +3,7 @@
 \qecho
 
 SELECT datname AS database, stats_reset FROM pg_stat_database WHERE datname IS NOT NULL ORDER BY datname;
-SELECT slot_name, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;
+SELECT slot_name AS replication_slot, stats_reset FROM pg_stat_replication_slots ORDER BY slot_name;
 SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDER BY subname;
 \if :svp_lib
   \if :svp_ext
