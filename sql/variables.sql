@@ -42,7 +42,7 @@ SELECT
 
 --Some variables exists only above specific PG versions
 \if :svp_pg_90
-  SELECT 
+  SELECT
     NOT pg_is_in_recovery() AS not_standby,
         pg_is_in_recovery() AS recovery
   \gset svp_
@@ -52,13 +52,22 @@ SELECT
 \endif
 
 \if :svp_pg_91
-  SELECT 
+  SELECT
      (SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_stat_replication) AS master
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_extension WHERE extname = 'pg_stat_statements') AS ext
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_extension WHERE extname = 'pg_stat_statements') AS not_ext
   \gset svp_
 \else
   \set svp_master FALSE
+\endif
+
+\if :svp_pg_14
+  \if :svp_master
+    SELECT (SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_replication_slots WHERE slot_type = 'logical') AS logical_replication_slot
+    \gset svp_
+  \endif
+  \else
+  \set svp_logical_replication_slot FALSE
 \endif
 
 \if :svp_pg_10
@@ -70,4 +79,3 @@ SELECT
   \set svp_publication FALSE
   \set svp_subscription FALSE
 \endif
-
