@@ -19,11 +19,11 @@ SELECT
     pg_size_pretty(trunc(((sum(shared_blks_hit))     / reset_days) * current_setting('block_size')::integer)) || ' - ' ||
     pg_size_pretty(trunc(((sum(shared_blks_read))    / reset_days) * current_setting('block_size')::integer)) || ' - ' ||
     pg_size_pretty(trunc(((sum(shared_blks_written)) / reset_days) * current_setting('block_size')::integer)) || ' - ' ||
+    pg_size_pretty(trunc(((sum(shared_blks_dirtied)) / reset_days) * current_setting('block_size')::integer))        AS "Shared (Hit - Read - Write - Dirty)/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char((sum(shared_blk_read_time + shared_blk_write_time) / reset_days)
             * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE 'Disabled' END                                                                                          AS "Shared T/Day",
-    pg_size_pretty(trunc(((sum(shared_blks_dirtied)) / reset_days) * current_setting('block_size')::integer))        AS "Shared (Hit - Read - Write - Dirty)/Day",
     trunc(sum(shared_blks_hit) * 100 / nullif(sum(shared_blks_hit + shared_blks_read),0)::numeric,1) || ' %'         AS "Shared Hit",
     pg_size_pretty((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer) || ' - ' ||
     pg_size_pretty((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer) AS "(Local - Temp)/Day",
