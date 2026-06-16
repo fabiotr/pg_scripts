@@ -75,6 +75,14 @@ SET client_min_messages TO WARNING;
   \endif
 \endif
 
+\if :svp_pg_14
+  \if :svp_master
+    \qecho '## Logical Replication slot'
+    \qecho
+    \ir replication_slots_logical.sql
+    \qecho
+  \endif
+\endif
 
 \if :svp_pg_10
   \if :svp_publication
