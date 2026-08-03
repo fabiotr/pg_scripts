@@ -13,10 +13,21 @@ SELECT
     END AS persistence,
     pg_get_userbyid(c.relowner) AS "Owner",
     --c.relpages,
-    lpad(pg_size_pretty(pg_total_relation_size(c.oid)),7) AS "Total Size",
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7)          AS "Size",
-    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows",
-    pg_size_pretty(trunc(pg_table_size(c.oid) / nullif(c.reltuples,0))::numeric) AS "Avg Row Size"
+    lpad(pg_size_pretty(pg_total_relation_size(c.oid)),7)  AS "Total Size",
+    lpad(pg_size_pretty(pg_indexes_size(c.oid)),7) 
+        || lpad('(' || round(100 * pg_indexes_size(c.oid) / 
+        pg_total_relation_size(c.oid),1) || ' %)',9)       AS "Index Size",
+    lpad(pg_size_pretty(pg_relation_size(c.oid,'main')),7)           
+        || lpad('(' || round(100 * pg_relation_size(c.oid,'main') / 
+        pg_total_relation_size(c.oid),1) || ' %)',9)       AS "Heap Size",
+    lpad(pg_size_pretty(pg_table_size(c.reltoastrelid)),7) 
+        || lpad('(' || round(100 * pg_table_size(c.reltoastrelid) / 
+        pg_total_relation_size(c.oid),1) || ' %)',9)       AS "Toast Size",
+    --lpad(pg_size_pretty(pg_relation_size(c.oid, 'fsm')),7) AS "FSM Size",
+    --lpad(pg_size_pretty(pg_relation_size(c.oid, 'vm')),7)  AS "VM Size",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15)  AS "Rows",
+    pg_size_pretty(trunc(pg_table_size(c.oid) / 
+        nullif(c.reltuples,0))::numeric)                   AS "Avg Row Size"
 FROM pg_class c
     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -26,5 +37,5 @@ WHERE
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
     AND pg_table_is_visible(c.oid)
-ORDER BY pg_table_size(c.oid) DESC
+ORDER BY pg_total_relation_size(c.oid) DESC
 LIMIT 20;
