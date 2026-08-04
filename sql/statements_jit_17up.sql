@@ -30,5 +30,5 @@ FROM
 WHERE
     jit_functions > 0 AND
     datname = current_database()
-ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) / since_days DESC
+ORDER BY jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC
 LIMIT 10;

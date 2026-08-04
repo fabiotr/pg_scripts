@@ -29,5 +29,5 @@ FROM
 WHERE 
     total_plan_time > 0 AND
     datname = current_database()
-ORDER BY total_plan_time / since_days DESC
+ORDER BY total_plan_time  DESC
 LIMIT 10;
