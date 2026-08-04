@@ -19,5 +19,5 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT stats_reset, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
-ORDER BY calls/since_days DESC
+ORDER BY calls DESC
 LIMIT 10;

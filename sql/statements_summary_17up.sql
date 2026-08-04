@@ -27,5 +27,5 @@ WHERE
     datname = current_database() AND
     total_exec_time + total_plan_time > 0 AND
     calls > 0
-ORDER BY (total_exec_time + total_plan_time) / since_days DESC
+ORDER BY total_exec_time + total_plan_time DESC
 LIMIT 20;
