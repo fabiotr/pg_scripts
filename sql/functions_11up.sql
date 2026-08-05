@@ -22,5 +22,6 @@ FROM
     LEFT JOIN pg_language l ON l.oid = p.prolang
 WHERE 
     n.nspname NOT IN ('pg_catalog', 'information_schema') AND 
-    pg_function_is_visible(p.oid)
+    pg_function_is_visible(p.oid) AND
+    r.rolname != 'rdsadmin'
 ORDER BY 1, 2, 3,4,5;
