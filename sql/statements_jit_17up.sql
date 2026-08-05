@@ -1,18 +1,17 @@
 SELECT
-    row_number() OVER (ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time)/since_days DESC) || 
+    row_number() OVER (ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) DESC) || 
         CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char(((jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time)/since_days) * 100 / 
-    sum((jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time)/since_days) OVER (),'FM99D99') || '%' AS "Jit %",
-    --datname AS "DB",
+    to_char((jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
+    sum(jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'FM99D99') || '%' AS "Jit %",
     userid::regrole AS "User",
     queryid,
-    to_char(calls::numeric                  / since_days::numeric, 'FM999G999G990D9') AS "Calls/Day",
-    to_char(jit_functions::numeric          / calls::numeric,      'FM999G999G990D9') AS "Jit/Call",
-    to_char(jit_functions::numeric          / since_days::numeric, 'FM999G999G990D9') AS "Jit/Day",
-    to_char(jit_inlining_count::numeric     / since_days::numeric, 'FM999G999G990D9') AS "Inlinings/Day",
-    to_char(jit_optimization_count::numeric / since_days::numeric, 'FM999G999G990D9') AS "Optimizations/Day",
-    to_char(jit_emission_count::numeric     / since_days::numeric, 'FM999G999G990D9') AS "Emissions/Day",
-    to_char(jit_deform_count::numeric       / since_days::numeric, 'FM999G999G990D9') AS "Deforms/Day",
+    to_char(calls::numeric                  / since_days::numeric, 'FM999G999G990D0') AS "Calls/Day",
+    to_char(jit_functions::numeric          / calls::numeric,      'FM999G999G990D0') AS "Jit/Call",
+    to_char(jit_functions::numeric          / since_days::numeric, 'FM999G999G990D0') AS "Jit/Day",
+    to_char(jit_inlining_count::numeric     / since_days::numeric, 'FM999G999G990D0') AS "Inlinings/Day",
+    to_char(jit_optimization_count::numeric / since_days::numeric, 'FM999G999G990D0') AS "Optimizations/Day",
+    to_char(jit_emission_count::numeric     / since_days::numeric, 'FM999G999G990D0') AS "Emissions/Day",
+    to_char(jit_deform_count::numeric       / since_days::numeric, 'FM999G999G990D0') AS "Deforms/Day",
     to_char((total_exec_time + total_plan_time / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Query Time/Day",
     to_char((jit_generation_time               / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Generation/Day",
     to_char((jit_inlining_time                 / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Inlining/Day",

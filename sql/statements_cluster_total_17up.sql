@@ -5,13 +5,13 @@ SELECT
     to_char((sum(total_plan_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6') || ' - ' ||
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6')       AS "Avg (Plan - Exec) time ",
     to_char(sum(calls)::numeric / reset_days,'FM999G999G999G999')  || ' - ' ||
-    to_char(sum(rows)::numeric  / reset_days,'FM999G999G999G999')                                                AS "(Calls - Rows)/Day",
-    to_char(sum(rows)::numeric / nullif(sum(calls),0)::numeric, 'FM999G990D0')                                   AS "Rows/Call",
+    to_char(sum(rows)::numeric  / reset_days,'FM999G999G999G999')                                                    AS "(Calls - Rows)/Day",
+    to_char(sum(rows)::numeric / nullif(sum(calls),0)::numeric, 'FM999G990D0')                                       AS "Rows/Call",
     CASE WHEN current_setting('pg_stat_statements.track') = 'all'
-        THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END AS "Non Toplevel calls/Day",
+        THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END     AS "Non Toplevel calls/Day",
     to_char(sum(wal_records)  / reset_days, 'FM999G999G999') || ' - ' ||
     pg_size_pretty(trunc(sum(wal_bytes)/ reset_days))                                                                AS "WAL (Records - Size)/Day",
-    to_char(sum(wal_records)  / nullif(sum(calls),0)::numeric, 'FM999G990D9')                                    AS "Wal/Call",
+    to_char(sum(wal_records)  / nullif(sum(calls),0)::numeric, 'FM999G990D0')                                        AS "Wal/Call",
     to_char((sum(total_plan_time)                   / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') || ' - ' ||
     to_char((sum(total_exec_time)                   / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') || ' - ' ||
     to_char((sum(total_plan_time + total_exec_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')          AS "(Plan - Exec - Total) time/Day",

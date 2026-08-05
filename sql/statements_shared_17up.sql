@@ -1,11 +1,11 @@
 SELECT
-    row_number() OVER (ORDER BY (coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0))/since_days DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char(((coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0))/since_days) * 100 / 
-        sum((coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0))/since_days) OVER (),'FM99D99') || '%' AS "I/O %",
+    row_number() OVER (ORDER BY coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    to_char((coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) * 100 / 
+        sum(coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0)) OVER (),'FM90D00') || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    to_char(calls::numeric / since_days::numeric, 'FM999G999G990D9') AS "Calls/Day",
+    to_char(calls::numeric / since_days::numeric, 'FM999G999G990D0') AS "Calls/Day",
     --to_char(rows::numeric  / since_days,          'FM999G999G999')   AS "Rows/Day",
     --to_char(rows::numeric  / calls::numeric,      'FM999G990D9')     AS "Rows/Call",
     --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / calls),     0)) AS "Hit/Call",
