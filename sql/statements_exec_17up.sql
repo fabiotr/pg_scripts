@@ -1,6 +1,6 @@
 SELECT
-    row_number() OVER (ORDER BY total_exec_time/since_days DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char((total_exec_time/since_days)*100/sum((total_exec_time/since_days)) OVER (),'FM99D99') || '%' AS "load_%",
+    row_number() OVER (ORDER BY total_exec_time DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    to_char(total_exec_time*100/sum(total_exec_time) OVER (),'FM90D00') || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,

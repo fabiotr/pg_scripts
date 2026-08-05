@@ -1,11 +1,11 @@
 SELECT
-    lpad(CASE WHEN toplevel = FALSE THEN '* ' ELSE '' END || row_number() OVER (ORDER BY (total_exec_time + total_plan_time)/since_days DESC),4)    AS "N",
-    lpad(to_char(((total_exec_time + total_plan_time)/since_days) * 100 / sum((total_exec_time + total_plan_time)/since_days) OVER (),'FM90D00'),5) AS "load_%",
+    lpad(CASE WHEN toplevel = FALSE THEN '* ' ELSE '' END || row_number() OVER (ORDER BY total_exec_time + total_plan_time DESC),4)    AS "N",
+    lpad(to_char((total_exec_time + total_plan_time) * 100 / sum(total_exec_time + total_plan_time) OVER (),'FM90D00'),5) AS "load_%",
     userid::regrole AS "User",
     queryid AS "Query ID",
-    lpad(to_char((calls::numeric/since_days::numeric),                    'FM999G999G990D9'),13) AS "Calls/Day",
-    lpad(to_char((rows::numeric/calls::numeric),                              'FM999G990D9'), 9) AS "Rows/Call",
-    lpad(to_char((plans::numeric/since_days::numeric),                    'FM999G999G999D9'),13) AS "Plans/Day",
+    lpad(to_char((calls::numeric/since_days::numeric),                    'FM999G999G990D0'),13) AS "Calls/Day",
+    lpad(to_char((rows::numeric/calls::numeric),                              'FM999G990D0'), 9) AS "Rows/Call",
+    lpad(to_char((plans::numeric/since_days::numeric),                    'FM999G999G999D0'),13) AS "Plans/Day",
     lpad(to_char((parallel_workers_to_launch::numeric/since_days::numeric), 'FM999G999G999'),11) AS "Workers Planned/Day",
     lpad(to_char((parallel_workers_launched::numeric/since_days::numeric),  'FM999G999G999'),11) AS "Workers Lunched/Day",
     to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Exec/Day",
@@ -31,5 +31,5 @@ WHERE
     datname = current_database() AND
     total_exec_time + total_plan_time > 0 AND
     calls > 0
-ORDER BY (total_exec_time + total_plan_time)/since_days DESC
+ORDER BY total_exec_time + total_plan_time DESC
 LIMIT 20;

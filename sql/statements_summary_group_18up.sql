@@ -4,7 +4,7 @@ SELECT
     queryid                                                  AS "QueryID",
     to_char(sum(calls / reset_days),          'FM999G999G999') AS "Calls/Day", 
     to_char(sum(plans / reset_days),          'FM999G999G999') AS "Plans/Day", 
-    to_char(sum(rows)  / nullif(sum(calls), 0), 'FM999G990D9') AS "Rows/Call",
+    to_char(sum(rows)  / nullif(sum(calls), 0), 'FM999G990D0') AS "Rows/Call",
     to_char(sum(parallel_workers_to_launch / reset_days),'FM999G999G999') AS "Workers Planned/Day",
     to_char(sum(parallel_workers_launched  / reset_days),'FM999G999G999') AS "Workers Lunched/Day",
     trunc(sum(total_plan_time)::numeric * 100 / nullif(sum(total_plan_time + total_exec_time)::numeric, 0), 1)  AS "Plan %",

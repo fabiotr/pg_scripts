@@ -93,17 +93,17 @@
   \qecho
 
   \if   :svp_pg_17
-    \ir statements_time_17up.sql
+    \ir statements_exec_17up.sqll
   \elif :svp_pg_14
-    \ir statements_time_14up.sql
+    \ir statements_exec_14up.sql
   \elif :svp_pg_13
-    \ir statements_time_13up.sql
+    \ir statements_exec_13up.sql
   \elif :svp_pg_95
-    \ir statements_time_95up.sql
+    \ir statements_exec_95up.sql
   \elif :svp_pg_94
-    \ir statements_time_94up.sql
+    \ir statements_exec_94up.sql
   \elif :svp_pg_84
-    \ir statements_time_84up.sql
+    \ir statements_exec_84up.sql
   \else
     \qecho '- pg_stat_statements TOTAL is not supported on version' :svp_server_version
   \endif
