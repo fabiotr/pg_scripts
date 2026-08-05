@@ -64,14 +64,12 @@ SET client_encoding TO 'UTF8';
       \ir bgwriter.sql
       \qecho
     \endif
-  \endif 
+  
+    \qecho '## 🛠️ Checkpoints'
+    \qecho
+    \ir checkpoints.sql
+    \qecho
 
-  \qecho '## 🛠️ Checkpoints'
-  \qecho
-  \ir checkpoints.sql
-  \qecho
-
-  \if :svp_not_aurora
     \qecho '## 🚀 Write Ahead Log (WAL)'
     \qecho
     \ir wal.sql
