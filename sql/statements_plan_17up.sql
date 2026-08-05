@@ -1,6 +1,6 @@
 SELECT
     row_number() OVER (ORDER BY total_plan_time DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char(total_plan_time*100/sum(total_plan_time) OVER (),'FM09D99') || '%' AS "load_%",
+    to_char(total_plan_time*100/sum(total_plan_time) OVER (),'FM90D00') || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,

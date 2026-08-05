@@ -290,7 +290,7 @@ SET client_min_messages TO WARNING;
     \qecho '### Tables with unused space cleanup'
     \qecho
     \qecho '```sql'
-    \ir vacuum_full_or_cluster.sql
+    \ir vacuum_full_or_cluster_report.sql
     \qecho '```'
     \qecho
 	
@@ -339,9 +339,7 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Foreign Tables'
     \qecho
-    \qecho '```sql'
     \ir tables_foreign.sql
-    \qecho '```'
     \qecho
   \endif
 \endif
@@ -404,7 +402,7 @@ SET client_min_messages TO WARNING;
     \qecho '### Analyze Adjusts'
     \qecho
     \qecho '```sql'
-    \ir autovacuum_analyze_adjust.sql
+    \ir autovacuum_analyze_adjusti_report.sql
     \qecho '```'
     \qecho
 
@@ -416,7 +414,7 @@ SET client_min_messages TO WARNING;
     \qecho '### Vacuum Adjusts'
     \qecho
     \qecho '```sql'
-    \ir autovacuum_vacuum_adjust.sql
+    \ir autovacuum_vacuum_adjust_report.sql
     \qecho '```'
     \qecho
 
@@ -444,7 +442,7 @@ SET client_min_messages TO WARNING;
 
 \qecho
 \qecho END
-\pset footer on
+--\pset footer on
 --RESET client_encoding;
 --RESET client_min_messages;
 --RESET pg_stat_statements.track;

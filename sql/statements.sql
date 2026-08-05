@@ -93,7 +93,7 @@
   \qecho
 
   \if   :svp_pg_17
-    \ir statements_exec_17up.sqll
+    \ir statements_exec_17up.sql
   \elif :svp_pg_14
     \ir statements_exec_14up.sql
   \elif :svp_pg_13
