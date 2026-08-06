@@ -38,4 +38,4 @@ WHERE
     AND n.nspname !~ '^pg_toast'
     AND pg_table_is_visible(c.oid)
 ORDER BY pg_total_relation_size(c.oid) DESC
-LIMIT 20;
+LIMIT 10;
