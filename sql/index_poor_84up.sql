@@ -81,4 +81,5 @@ SELECT reason "Reason", schemaname "Schema", tablename "Table", indexname "Index
     index_scan_pct "idx scan %", scans_per_write "scan/w", index_size , table_size
 FROM index_groups
 WHERE index_bytes > 1000000
-ORDER BY grp, index_bytes desc, tablename, indexname, schemaname;
+ORDER BY grp, index_bytes desc, tablename, indexname, schemaname
+LIMIT 20;
