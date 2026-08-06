@@ -26,6 +26,7 @@ FROM
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
+    t.schemaname != 'pg_toast' AND
     n_live_tup > 0 AND
     n_tup_del + n_tup_upd > 1000 AND
     n_dead_tup >  1000
