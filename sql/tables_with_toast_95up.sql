@@ -20,4 +20,4 @@ FROM pg_class c
     JOIN pg_class t ON t.oid = c.reltoastrelid
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 ORDER BY pg_table_size(t.oid) DESC
-LIMIT 20;
+LIMIT 10;
