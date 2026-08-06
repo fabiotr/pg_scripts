@@ -355,9 +355,60 @@ SET client_min_messages TO WARNING;
 
 \if :svp_pg_90
   \if :svp_not_standby
+
+    \qecho '### Big indexes'
+    \qecho
+    \ir index_big.sql
+    \qecho
+
+    \qecho '### Partial indexes'
+    \qecho
+    \ir index_partial.sql
+    \qecho
+
+    \qecho '### Indexes with functions'
+    \qecho
+    \ir index_functions.sql
+    \qecho
+
+    \qecho '### Indexes with non defaul collation'
+    \qecho
+    \ir index_non_default_collation.sql
+    \qecho
+
+    \qecho '### BTREE index bloated'
+    \qecho
+    \ir index_stat_btree.sql
+    \qecho
+
+    --\qecho '### BTREE indexes bloated REINDEX'
+    --\qecho 
+    --\ir index_stat_btree_reindex.sql
+    --\qecho
+
+    \qecho '### GIN indexes stats'
+    \qecho
+    \ir index_stat_gin.sql 
+    \qecho
+
+    \qecho '### Hash indexes stats'
+    \qecho 
+    \ir index_stat_hash.sql
+    \qecho
+
+    \qecho '### Non BTREE indexes'
+    \qecho 
+    \ir index_non_btree.sql
+    \qecho
+
     \qecho '### Duplicated'
     \qecho
     \ir index_dup.sql
+    \qecho
+
+    \qecho '### Invalid'
+    \qecho 
+    \ir index_invalid.sql
     \qecho
 
     \qecho '### Foreign Key without indexes'
@@ -402,7 +453,7 @@ SET client_min_messages TO WARNING;
     \qecho '### Analyze Adjusts'
     \qecho
     \qecho '```sql'
-    \ir autovacuum_analyze_adjusti_report.sql
+    \ir autovacuum_analyze_adjust_report.sql
     \qecho '```'
     \qecho
 
