@@ -1,9 +1,9 @@
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    lpad(to_char(seq_scan,'FM999G999G999'),11) AS "Seq Scan",
-    lpad(to_char(idx_scan,'FM999G999G999G999'),15) AS "Idx Scan",
-    CASE WHEN coalesce(idx_scan,0) +coalesce(seq_scan,0) = 0 THEN NULL ELSE idx_scan*100 / (idx_scan + seq_scan) END AS "Idx %",
+    --lpad(to_char(seq_scan,'FM999G999G999'),11) AS "Seq Scan",
+    --lpad(to_char(idx_scan,'FM999G999G999G999'),15) AS "Idx Scan",
+    --CASE WHEN coalesce(idx_scan,0) +coalesce(seq_scan,0) = 0 THEN NULL ELSE idx_scan*100 / (idx_scan + seq_scan) END AS "Idx %",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),11)          AS "Live Rows",
     lpad(pg_size_pretty(pg_relation_size(t.relid)),7)            AS "Size",
     lpad(to_char(t.n_mod_since_analyze, 'FM999G999G999G999'),11) AS "Mod",

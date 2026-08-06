@@ -1,7 +1,7 @@
 SELECT
     t.schemaname "Schema", 
     t.relname "Table", 
-    to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(EPOCH FROM current_timestamp - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999') "Upd+Del/Day",
+    --to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(EPOCH FROM current_timestamp - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999') "Upd+Del/Day",
     to_char(t.n_live_tup, 'FM99G999G999G999')  "Live Rows", 
     to_char(tt.n_live_tup, 'FM99G999G999G999') "Live T Rows",
     to_char(t.n_dead_tup, 'FM99G999G999G999')  "Dead Rows",
