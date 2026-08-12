@@ -75,33 +75,39 @@ SET client_min_messages TO WARNING;
   \endif
 \endif
 
-\if :svp_logical_replication_slot
-  \qecho '## Logical Replication slot'
-  \qecho
-  \ir replication_slots_logical.sql
-  \qecho
-\endif
+\if :svp_pg_14
+  \if :svp_not_standby
+    \if :svp_logical_replication_slot
+      \qecho '## Logical Replication slot'
+      \qecho
+      \ir replication_slots_logical.sql
+      \qecho
+    \endif
+  \if
+\if
 
 \if :svp_pg_10
-  \if :svp_publication
+  \if :svp_not_standby
+    \if :svp_publication
 
-    \qecho '## 🚀 Logical Replication publications'
-    \qecho
+      \qecho '## 🚀 Logical Replication publications'
+      \qecho
 
-    \qecho '### Publications'
-    \qecho
-    \ir publications.sql
-    \qecho
+      \qecho '### Publications'
+      \qecho
+      \ir publications.sql
+      \qecho
 
-    \qecho '### Schemas in publications'
-    \qecho
-    \ir publication_schemas.sql
-    \qecho
+      \qecho '### Schemas in publications'
+      \qecho
+      \ir publication_schemas.sql
+      \qecho
 
-    \qecho '### Tables in publications'
-    \qecho
-    \ir publication_tables.sql
-    \qecho
+      \qecho '### Tables in publications'
+      \qecho
+      \ir publication_tables.sql
+      \qecho
+    \endif
   \endif
 
   \if :svp_subscription
