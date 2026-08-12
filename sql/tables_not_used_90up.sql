@@ -1,12 +1,11 @@
 SELECT 
 	schemaname AS "Schema", 
 	relname AS "Table", 
-	seq_scan AS "Seq scan", 
-	idx_scan AS "Index scan", 
+	coalesce(seq_scan,0) + coalesce(idx_scan,0) AS "Scan", 
 	n_live_tup AS "Rows", 
 	pg_size_pretty(pg_table_size(relid)) AS  "Size"
     FROM pg_stat_user_tables 
     WHERE 
-        seq_scan + coalesce(idx_scan, 0) < 10 AND
+        coalsece(seq_scan,0) + coalesce(idx_scan, 0) = 0 AND
         schemaname NOT LIKE 'pg_%'
     ORDER BY schemaname, relname;
