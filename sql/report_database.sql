@@ -83,8 +83,8 @@ SET client_min_messages TO WARNING;
       \ir replication_slots_logical.sql
       \qecho
     \endif
-  \if
-\if
+  \endif
+\endif
 
 \if :svp_pg_10
   \if :svp_not_standby
@@ -382,10 +382,10 @@ SET client_min_messages TO WARNING;
     \ir index_non_default_collation.sql
     \qecho
 
-    \qecho '### BTREE index bloated'
-    \qecho
-    \ir index_stat_btree.sql
-    \qecho
+    --\qecho '### BTREE index bloated'
+    --\qecho
+    --\ir index_stat_btree.sql
+    --\qecho
 
     --\qecho '### BTREE indexes bloated REINDEX'
     --\qecho 
