@@ -3,6 +3,8 @@
 \x on
 \if :svp_pg_18
   \ir internal_18up.sql
+\elif :svp_pg_17
+  \ir internal_17up.sql
 \elif :svp_pg_15
   \ir internal_15up.sql
 \elif :svp_pg_14
