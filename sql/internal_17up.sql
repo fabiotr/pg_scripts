@@ -10,12 +10,12 @@ SELECT
   current_setting('data_checksums') 	AS "Checksum?",
   current_setting('debug_assertions') 	AS "Debug?",
   current_setting('huge_pages')         AS "Huge Pages",
+  current_setting('huge_pages_status')  AS "Huge Page Status",
   pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size'))) 	AS "Shared Memory",
   pg_size_pretty(pg_size_bytes(current_setting('shared_memory_size_in_huge_pages')) * 
     CASE 
       WHEN current_setting('huge_page_size') = '0' THEN 2*1024*1024 
       ELSE pg_size_bytes(current_setting('huge_page_size')) END) 	AS "Shared Huge Pages",
-  current_setting('huge_pages_status')  AS "Huge Page Status",
   current_setting('block_size') 	AS "Block Size",
   current_setting('wal_segment_size') 	AS "Wal Segment Size",
   current_setting('segment_size') 	AS "Max Segment Size",
