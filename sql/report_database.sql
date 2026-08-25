@@ -282,12 +282,20 @@ SET client_min_messages TO WARNING;
     \ir tables_unlogged.sql
     \qecho
 	
-	
     \qecho '### Table Triggers'
     \qecho
     \ir trigger_tables.sql
     \qecho
-	
+    
+    \qecho '### Tables with NOT VALID constraints'
+    \qecho
+    \ir tables_constraint_not_valid.sql
+    \qecho
+    \qecho '```sql'
+    \ir tables_constraint_validate.sql
+    \qecho '```'
+    \qecho
+
     \qecho '### Tables with unused space'
     \qecho
     \ir tables_bloat_approx.sql
