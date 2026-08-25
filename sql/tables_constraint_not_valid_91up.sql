@@ -9,6 +9,7 @@ SELECT
         WHEN 'p' THEN 'PRIMARY KEY'
         WHEN 'u' THEN 'UNIQUE'
         WHEN 'x' THEN 'EXCLUSION'
+	WHEN 'n' THEN 'NOT NULL'
         ELSE con.contype::text
     END                                     AS "Type",
     pg_get_constraintdef(con.oid)           AS "Definition"
