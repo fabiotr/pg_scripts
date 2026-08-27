@@ -1,8 +1,9 @@
-SELECT
-	schemaname AS "Schema",
-	tablename  AS "Table",
-	rulename   AS "Rule",
-	definition AS "Definition"
-FROM pg_rules
-WHERE schemaname != 'pg_catalog'
-ORDER BY 1, 2, 3;
+\ir variables.sql
+
+\if :svp_pg_82
+  \ir tables_rule_82up.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\timing on
+\set QUIET off
