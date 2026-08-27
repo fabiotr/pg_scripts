@@ -75,8 +75,8 @@ SET client_min_messages TO WARNING;
   \endif
 \endif
 
-\if :svp_pg_14
-  \if :svp_not_standby
+\if :svp_pg_94
+  \if :svp_master
     \if :svp_logical_replication_slot
       \qecho '## Logical Replication slot'
       \qecho
@@ -116,7 +116,7 @@ SET client_min_messages TO WARNING;
     \qecho
 
     \qecho '### Subscriptions'
-    gqecho
+    \qecho
     \ir subscription_stats.sql
     \qecho
 
