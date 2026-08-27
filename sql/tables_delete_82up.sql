@@ -1,5 +1,3 @@
-\set QUIET on
-\timing off
 SELECT 
 	schemaname AS "Schema",
 	relname AS "Table",  

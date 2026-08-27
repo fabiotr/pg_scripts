@@ -48,7 +48,7 @@ SELECT
   \gset svp_
 \else
   \set svp_not_standby TRUE
-  \set recovery FALSE
+  \set svp_recovery FALSE
 \endif
 
 \if :svp_pg_91
