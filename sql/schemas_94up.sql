@@ -31,7 +31,8 @@ FROM (
 		JOIN pg_namespace n ON c.relnamespace = n.oid
     WHERE 
         n.nspname NOT LIKE 'pg_temp_%' AND
-	n.nspname NOT LIKE 'pg_toast_temp_%'
+	n.nspname NOT LIKE 'pg_toast_temp_%' AND
+	n.nspname != 'pg_toast'
     GROUP BY n.nspname) t
 
 ORDER BY size DESC;
