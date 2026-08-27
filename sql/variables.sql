@@ -61,7 +61,7 @@ SELECT
   \set svp_master FALSE
 \endif
 
-\if :svp_pg_14
+\if :svp_pg_94
   \if :svp_master
     SELECT (SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_replication_slots WHERE slot_type = 'logical') AS logical_replication_slot
     \gset svp_
