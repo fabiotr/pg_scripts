@@ -370,19 +370,34 @@ The scripts are organized by functional area and scope. Click on a category to e
 
 ## 🐚 Shell Scripts
 
-In addition to SQL scripts, this repository provides shell utilities for OS-level tuning, report generation, and PostgreSQL log retrieval from managed cloud databases. Every script below is available both as Bash (`linux_bash/`) and as a PowerShell port (`windows_power_shell/`).
+In addition to SQL scripts, this repository provides shell utilities for OS-level tuning, report generation, and PostgreSQL log retrieval from managed cloud databases — as native Bash scripts for Linux (`linux_bash/`) and as PowerShell ports for Windows (`windows_power_shell/`).
 
-| Name                                     | Description                                                                                                                                     |
-| :---                                     | :---                                                                                                                                             |
-| `report_so.sh` / `report_so.ps1`         | Generates a complete Markdown report of the Operating System (CPU, Memory, Network, Disks, and Kernel parameters).                              |
-| `exec_comando.sh`                        | A wrapper script to execute a SQL command (defined in `comando.sql`) across all databases in the cluster. Bash only.                            |
-| `postgres_log_download_from_aws_rds.*`   | Downloads log files from an Amazon RDS/Aurora PostgreSQL instance via the AWS CLI, filtered by a minimum date.                                  |
-| `postgres_log_download_from_azure.*`     | Downloads PostgreSQL server logs from an Azure Database for PostgreSQL Flexible Server instance via the Azure CLI (`az`).                       |
-| `postgres_log_download_from_gcp_sql.*`   | Downloads PostgreSQL logs from a Google Cloud SQL instance via the `gcloud` CLI (Cloud Logging), one text file per day.                         |
-| `postgres_log_download_from_oci.*`       | Downloads PostgreSQL logs from an OCI Database with PostgreSQL DB system, previously exported to Object Storage, via the OCI CLI.               |
-| `so_recommendations.md`                  | Reference guide with recommended Linux kernel/sysctl settings (huge pages, transparent huge pages, dirty ratios, etc.) for PostgreSQL hosts.    |
+### 🐧 Linux (`linux_bash/`)
 
-> All four `postgres_log_download_from_*` scripts skip re-downloading a log file that already exists locally with the same name and size (the GCP version compares entry counts instead, since Cloud Logging has no per-file size).
+| Name                                      | Description                                                                                                                                    |
+| :---                                      | :---                                                                                                                                            |
+| `report_so.sh`                            | Generates a complete Markdown report of the Operating System (CPU, Memory, Network, Disks, and Kernel parameters).                             |
+| `exec_comando.sh`                         | A wrapper script to execute a SQL command (defined in `comando.sql`) across all databases in the cluster.                                      |
+| `postgres_log_download_from_aws_rds.sh`   | Downloads log files from an Amazon RDS/Aurora PostgreSQL instance via the AWS CLI, filtered by a minimum date.                                 |
+| `postgres_log_download_from_azure.sh`     | Downloads PostgreSQL server logs from an Azure Database for PostgreSQL Flexible Server instance via the Azure CLI (`az`).                      |
+| `postgres_log_download_from_gcp_sql.sh`   | Downloads PostgreSQL logs from a Google Cloud SQL instance via the `gcloud` CLI (Cloud Logging), one text file per day.                        |
+| `postgres_log_download_from_oci.sh`       | Downloads PostgreSQL logs from an OCI Database with PostgreSQL DB system, previously exported to Object Storage, via the OCI CLI.              |
+| `so_recommendations.md`                   | Reference guide with recommended Linux kernel/sysctl settings (huge pages, transparent huge pages, dirty ratios, etc.) for PostgreSQL hosts.   |
+
+### 🪟 Windows (`windows_power_shell/`)
+
+| Name                                      | Description                                                                                                                                    |
+| :---                                      | :---                                                                                                                                            |
+| `report_so.ps1`                           | Generates a complete Markdown report of the Operating System (CPU, Memory, Network, Disks, and Kernel parameters).                             |
+| `postgres_log_download_from_aws_rds.ps1`  | Downloads log files from an Amazon RDS/Aurora PostgreSQL instance via the AWS CLI, filtered by a minimum date.                                 |
+| `postgres_log_download_from_azure.ps1`    | Downloads PostgreSQL server logs from an Azure Database for PostgreSQL Flexible Server instance via the Azure CLI (`az`).                      |
+| `postgres_log_download_from_gcp_sql.ps1`  | Downloads PostgreSQL logs from a Google Cloud SQL instance via the `gcloud` CLI (Cloud Logging), one text file per day.                        |
+| `postgres_log_download_from_oci.ps1`      | Downloads PostgreSQL logs from an OCI Database with PostgreSQL DB system, previously exported to Object Storage, via the OCI CLI.              |
+| `so_recommendations.md`                   | Reference guide with recommended Windows settings (page file, power plan, TCP/network, etc.) for PostgreSQL hosts, equivalent to the Linux guide. |
+
+> `exec_comando.sh` has no PowerShell port yet — it is Linux/Bash only.
+
+> All eight `postgres_log_download_from_*` scripts skip re-downloading a log file that already exists locally with the same name and size (the GCP versions compare entry counts instead, since Cloud Logging has no per-file size).
 
 > **Requirements per cloud provider:** each `postgres_log_download_from_*` script requires that provider's own CLI installed and authenticated beforehand — `aws` (RDS), `az` (Azure), `gcloud` (GCP), or `oci` (OCI) — plus, for Azure and OCI, that log export/capture is explicitly enabled on the instance first (see the comments at the top of each script for the exact commands).
 
