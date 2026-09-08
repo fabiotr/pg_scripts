@@ -2,7 +2,7 @@ SELECT
     'ALTER TABLE ' || 
   quote_ident (n.nspname)   || '.' || 
   quote_ident (c.relname)   || ' VALIDATE CONSTRAINT ' ||  
-  quote_ident (con.conname) || ';'
+  quote_ident (con.conname) || ';' AS command
 FROM
     pg_constraint con
     JOIN pg_class      c ON c.oid = con.conrelid
