@@ -17,10 +17,10 @@ SET client_min_messages TO WARNING;
 \pset border 1
 \pset pager off
 -- Markdown format
-\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
+--\o | sed -u 's/+--/\|--/g' | sed -u 's/--+/--\|/g' | sed -u 's/^\s\(\s\+\)/\|\1/' | sed -u 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
-\qecho '# 🐘 Report for database :DBNAME'
+\qecho '# 🐘 Report for database ' :DBNAME
 \qecho '- Date:    ' :svp_date
 \qecho '- Host:    ' :HOST
 \qecho '- Port:    ' :PORT
@@ -71,7 +71,7 @@ SET client_min_messages TO WARNING;
     \qecho
     \ir security_labels.sql
     \qecho
- 
+
   \endif
 \endif
 
@@ -195,7 +195,7 @@ SET client_min_messages TO WARNING;
 
 
     \qecho '## 📂 Tablespaces objects'
-    \qecho 
+    \qecho
     \ir tablespace_objects.sql
     \qecho
 
@@ -213,14 +213,14 @@ SET client_min_messages TO WARNING;
     \qecho
     \ir object_size.sql
     \qecho
-    
+
     \qecho '### Procedural Languages'
     \qecho
     \ir procedural_languages.sql
     \qecho
 
     \qecho '### User Operators'
-    \qecho 
+    \qecho
     \ir operators.sql
     \qecho
 
@@ -235,12 +235,12 @@ SET client_min_messages TO WARNING;
     \qecho
 
     \qecho '### Access Methods'
-    \qecho 
+    \qecho
     \ir access_method.sql
     \qecho
-    
+
     \qecho '### Collations'
-    \qecho 
+    \qecho
     \ir collations.sql
     \qecho
 
@@ -253,7 +253,7 @@ SET client_min_messages TO WARNING;
     \qecho
     \ir data_types.sql
     \qecho
-    
+
     \qecho '### User Domains'
     \qecho
     \ir domains.sql
@@ -281,12 +281,12 @@ SET client_min_messages TO WARNING;
     \qecho
     \ir tables_unlogged.sql
     \qecho
-	
+
     \qecho '### Table Triggers'
     \qecho
     \ir trigger_tables.sql
     \qecho
-    
+
     \qecho '### Tables with NOT VALID constraints'
     \qecho
     \ir tables_constraint_not_valid.sql
@@ -307,7 +307,7 @@ SET client_min_messages TO WARNING;
     \ir vacuum_full_or_cluster_report.sql
     \qecho '```'
     \qecho
-	
+
     \qecho '### Tables without PK'
     \qecho
     \ir tables_without_pk.sql
@@ -324,7 +324,7 @@ SET client_min_messages TO WARNING;
       \ir tables_with_oid.sql
       \qecho
     \endif
-	
+
   \endif
 \endif
 
@@ -396,22 +396,22 @@ SET client_min_messages TO WARNING;
     --\qecho
 
     --\qecho '### BTREE indexes bloated REINDEX'
-    --\qecho 
+    --\qecho
     --\ir index_stat_btree_reindex.sql
     --\qecho
 
     \qecho '### GIN indexes stats'
     \qecho
-    \ir index_stat_gin.sql 
+    \ir index_stat_gin.sql
     \qecho
 
     \qecho '### Hash indexes stats'
-    \qecho 
+    \qecho
     \ir index_stat_hash.sql
     \qecho
 
     \qecho '### Non BTREE indexes'
-    \qecho 
+    \qecho
     \ir index_non_btree.sql
     \qecho
 
@@ -421,7 +421,7 @@ SET client_min_messages TO WARNING;
     \qecho
 
     \qecho '### Invalid'
-    \qecho 
+    \qecho
     \ir index_invalid.sql
     \qecho
 
@@ -446,12 +446,12 @@ SET client_min_messages TO WARNING;
 
 
 \if :svp_pg_90
-  \if :svp_not_standby  
+  \if :svp_not_standby
     \qecho '## 🛠️ Maintenance'
 
     \qecho '### Objects with individual adjustments'
     \qecho
-    \ir object_options.sql 
+    \ir object_options.sql
     \qecho
 
     \qecho '### Extended Statistics'
