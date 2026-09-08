@@ -11,7 +11,7 @@ SET client_encoding TO 'UTF8';
 \pset pager off
 
 -- Markdown format
-\o | sed 's/+--/\|--/g' | sed 's/--+/--\|/g' | sed 's/^\s\(\s\+\)/\|\1/' | sed 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
+--\o | sed -u 's/+--/\|--/g' | sed -u 's/--+/--\|/g' | sed -u 's/^\s\(\s\+\)/\|\1/' | sed -u 's/-\[ RECORD .*/\| Info \| Value \n\|---\|---\|/'
 
 --Report
 \qecho '# 🐘 Report for cluster'
