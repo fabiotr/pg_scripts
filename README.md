@@ -81,7 +81,7 @@ echo "\i sql/tables_size.sql" > comando.sql
 
 The scripts are organized by functional area and scope. Click on a category to expand the full list.
 
-> **Internal files:** `variables.sql` (loaded via `\ir` by every script for version auto-detection) and the `*_report.sql` variants (e.g. `autovacuum_analyze_adjust_report.sql`, `autovacuum_vacuum_adjust_report.sql`, `vacuum_full_or_cluster_report.sql`) are not meant to be run standalone — they exist to feed condensed output into `report_database.sql` and mirror their non-`_report` counterparts already listed below. Files ending in a version suffix like `_95up.sql` (e.g. `tables_size_95up.sql`) are version-specific implementations selected automatically by their base script — run the base script, not the versioned one, directly.
+> **Internal file:** `variables.sql` (loaded via `\ir` by every script for version auto-detection) is not meant to be run standalone. Files ending in a version suffix like `_95up.sql` (e.g. `tables_size_95up.sql`) are version-specific implementations selected automatically by their base script — run the base script, not the versioned one, directly.
 
 <details>
 <summary>📊 Reports (Complete Database & Cluster Audits)</summary>
