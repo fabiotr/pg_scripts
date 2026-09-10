@@ -12,7 +12,7 @@
   - Edit `/etc/sysctl.d/90_postgresql.conf`
   - Run `sysctl -p /etc/sysctl.d/90_postgresql.conf`
 
-### Recomendations
+### Recommendations
 ```
 vm.dirty_ratio=10
 vm.dirty_background_ratio=5
@@ -26,9 +26,9 @@ net.ipv4.tcp_fin_timeout=5
 ```
 
 ## sysctl (very large databases recommendations)
-**Change if you find thise errors on PostgreSQL or Linux logs**
+**Change if you find these errors on PostgreSQL or Linux logs**
 
-- Out of memmoy killer
+- Out of memory killer
 ```
 Out of Memory: Killed process 12345 (postgres).
 ```
@@ -85,7 +85,7 @@ io_setup() failed: Resource temporarily unavailable
 failed to create aio context: Resource temporarily unavailable
 ```
   - **Action**: Raise `fs.aio-max-nr`
-  - Tipical number:
+  - Typical number:
 ```
 fs.aio-max-nr = 1048576
 ```
@@ -101,7 +101,7 @@ net.core.somaxconn = 256
 ```
 
 ## limits (Recommendations for very large databases)
-**Change if you find this errors on PostgreSQL logs**
+**Change if you find these errors on PostgreSQL logs**
 
 ```
 ERROR: could not open file "base/16384/12456": Too many open files;
@@ -123,7 +123,7 @@ postgres hard nofile 65535
 
 ## Huge pages (only for servers with RAM >= 32GB)
 - The huge memory size must be at least PostgreSQL + 10% at a dedicated server.
-- To get te number of Huge Pages size: (shared_buffers * 1,1) / huge page size
+- To get the number of Huge Pages size: (shared_buffers * 1,1) / huge page size
 - The default Huge page size (for each huge page) is 2MB
 - Example
   - Server with 64GB of RAM and 16GB of PostgreSQL shared_buffers
@@ -167,7 +167,7 @@ cat /proc/meminfo | grep Huge
 ```
 
 ## Disk partitioning
-- Use at least on partition or disk separeted only to database (PGDATA)
+- Use at least one partition or disk separated only to database (PGDATA)
 - Other partitions or disks that may be useful
   - PostgreSQL logs (change the `log_directory` parameter on PostgreSQL too)
   - Write Ahead Log or WAL (make a symbolic link to  $PGDATA/pg_wal too)
