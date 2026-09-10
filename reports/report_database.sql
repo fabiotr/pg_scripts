@@ -1,5 +1,16 @@
 -- WARNING
 -- psql must be >= pg10 to run this script
+--
+-- Usage:
+--     psql -X [-v sql_dir=<path to sql directory>] -f report_database.sql [dbname]
+--
+-- If sql_dir variable is omitted use the default SQL scripts directory at $HOME/pg_scritps/sql
+
+\if :{?sql_dir}
+\else
+  \set sql_dir `echo $HOME/pg_scripts/sql`
+\endif
+\cd :sql_dir
 \ir variables.sql
 
 --Setup
@@ -29,7 +40,7 @@ SET client_min_messages TO WARNING;
 
 \qecho '# 📌 Index'
 \qecho
-\qecho [[_TOC_]]
+\qecho '/table of contents'
 \qecho
 
 
