@@ -72,7 +72,7 @@ cat /proc/meminfo | grep -i 'HugePages'                             >> $file_des
 echo '```'                                                          >> $file_dest
 echo ""                                                             >> $file_dest
 
-echo "## 📂 Discs"                                                  >> $file_dest
+echo "## 📂 Disks"                                                  >> $file_dest
 echo "### fstab"                                                    >> $file_dest
 echo '```text'                                                      >> $file_dest
 cat /etc/fstab | grep -v '#'                                        >> $file_dest
@@ -232,7 +232,7 @@ echo "### .pgpass"                                                  >> $file_des
 echo '```bash'                                                      >> $file_dest
 if [ -n "$PGPASSFILE" ]; then
   if [ -f "$PGPASSFILE" ]; then
-    echo "Enviroment file: $PGPASSFILE"                             >> $file_dest
+    echo "Environment file: $PGPASSFILE"                             >> $file_dest
     cut -d ':' -f 1,2,3,4 $PGPASSFILE | while read LINE
           do echo "$LINE:*****"                                     >> $file_dest
         done
@@ -250,7 +250,7 @@ echo "### .pg_service.conf"                                         >> $file_des
 echo '```bash'                                                      >> $file_dest
 if [ -n "$PGSERVICEFILE" ]; then
   if [ -f "$PGSERVICEFILE" ]; then
-    echo "Enviroment file: $PGSERVICEFILE"                          >> $file_dest
+    echo "Environment file: $PGSERVICEFILE"                          >> $file_dest
         cat $PGSERVICEFILE | grep -v '#'                            >> $file_dest
   fi
 fi
