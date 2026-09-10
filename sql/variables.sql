@@ -1,4 +1,4 @@
--- Don't show any annoyng messages now
+-- Don't show any annoying messages now
 \set QUIET on
 \timing off
 

@@ -10,5 +10,5 @@ SELECT
   current_setting('data_checksums')   AS "Checksum?",
   current_setting('debug_assertions') AS "Debug?",
   pg_size_pretty(pg_size_bytes(current_setting('block_size'))) AS "Block Size",
-  pg_size_pretty(pg_size_bytes(current_setting('wal_segment_size'))) AS "Wal Segemnt Size",
+  pg_size_pretty(pg_size_bytes(current_setting('wal_segment_size'))) AS "Wal Segment Size",
   pg_size_pretty(pg_size_bytes(current_setting('segment_size')) * pg_size_bytes(current_setting('block_size'))) AS "Max Segment Size";

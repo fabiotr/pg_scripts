@@ -1,4 +1,4 @@
--- Kill all sessions with an wait_event_type, except for 'Client'
+-- Kill all sessions with a wait_event_type, except for 'Client'
 SELECT
     pid,
     usename AS "User",

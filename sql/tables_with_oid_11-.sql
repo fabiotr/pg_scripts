@@ -1,4 +1,4 @@
---tabelas com OID (until PG 11) - pg_class version
+--tables with OID (until PG 11) - pg_class version
 SELECT relnamespace::regnamespace, relname, relhasoids,
 CASE relkind 
 	WHEN 'r' THEN 'table' 

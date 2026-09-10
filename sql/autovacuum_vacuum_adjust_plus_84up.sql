@@ -55,7 +55,7 @@ FROM
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables
     c.relpages > 0               AND  -- Avoid division by zero
-    (c.scale  < s.scale AND  -- Only adjust WHERE new value < default valuE
+    (c.scale  < s.scale AND  -- Only adjust WHERE new value < default value
         coalesce(to_number(cs.option_value, '99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
                 CASE
                     WHEN c.scale < '0.0001' THEN round(c.scale,5)
@@ -65,7 +65,7 @@ WHERE
                     ELSE                         round(c.scale,1)
                 END) 
     OR 
-     (ct.scale < s.scale AND  -- Only adjust WHERE new value < default valuE
+     (ct.scale < s.scale AND  -- Only adjust WHERE new value < default value
         coalesce(to_number(cts.option_value,'99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
             CASE
                 WHEN ct.scale < '0.0001' THEN round(ct.scale,5)

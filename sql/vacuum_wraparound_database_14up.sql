@@ -12,7 +12,7 @@ SELECT
         WHEN age(datfrozenxid) >  current_setting('vacuum_failsafe_age')::numeric / 2 THEN '🟠 WARNING'
         WHEN age(datfrozenxid) >  current_setting('autovacuum_freeze_max_age')::numeric THEN '🟡 ATENTION'
         ELSE '✅ OK'
-    END AS "XID Staus",
+    END AS "XID Status",
 
     CASE
         WHEN mxid_age(datminmxid) > current_setting('vacuum_failsafe_age')::numeric THEN '🔴 CRITIC'
