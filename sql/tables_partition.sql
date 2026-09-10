@@ -2,6 +2,8 @@
 
 \if :svp_pg_12
   \ir tables_partition_12up.sql
+\elif :svp_pg_10
+  \ir tables_partition_10up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
