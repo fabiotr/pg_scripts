@@ -48,66 +48,47 @@ stats_age AS (
     FROM pg_stat_database sd
     WHERE sd.datname = current_database()
 ),
-partkey AS (
+ranked AS (
     SELECT
-        pt.partrelid,
-        CASE pt.partstrat
-            WHEN 'r' THEN 'RANGE'
-            WHEN 'l' THEN 'LIST'
-            WHEN 'h' THEN 'HASH'
-        END AS partition_type,
-        CASE
-            WHEN pt.partexprs IS NULL THEN (
-                SELECT string_agg(a.attname, ', ' ORDER BY k.ord)
-                FROM unnest(pt.partattrs::int2[]) WITH ORDINALITY AS k(attnum, ord)
-                JOIN pg_attribute a ON a.attrelid = pt.partrelid AND a.attnum = k.attnum
-            )
-            ELSE pg_get_expr(pt.partexprs, pt.partrelid)
-        END AS partition_key
-    FROM pg_partitioned_table pt
-),
-agg AS (
-    SELECT
-        r.schema_name,
-        r.table_name,
-        pk.partition_type,
-        pk.partition_key,
-        COUNT(DISTINCT ls.relid)                                              AS part_count,
-        SUM(ls.data_bytes)                                                    AS data_bytes,
-        SUM(ls.toast_bytes)                                                   AS toast_bytes,
-        SUM(ls.table_bytes)                                                   AS table_bytes,
-        SUM(ls.total_bytes)                                                   AS total_bytes,
-        SUM(ls.indexes_bytes)                                                 AS idx_bytes,
-        ROUND(AVG(ls.index_count), 2)                                         AS avg_idx_count,
-        COALESCE(SUM(st.cache_blks), 0)                                       AS cache_blks,
-        COALESCE(SUM(st.disk_blks), 0)                                        AS disk_blks
+        r.schema_name                                                         AS parent_schema,
+        r.table_name                                                          AS parent_table,
+        pn.nspname                                                            AS part_schema,
+        pc.relname                                                            AS part_name,
+        pg_get_expr(pc.relpartbound, pc.oid)                                  AS part_bound,
+        ls.data_bytes,
+        ls.toast_bytes,
+        ls.table_bytes,
+        ls.indexes_bytes,
+        ls.total_bytes,
+        ls.index_count,
+        COALESCE(st.cache_blks, 0)                                            AS cache_blks,
+        COALESCE(st.disk_blks, 0)                                             AS disk_blks,
+        ROW_NUMBER() OVER (PARTITION BY r.relid ORDER BY ls.total_bytes DESC) AS part_rank
     FROM roots r
-    LEFT JOIN leaf_sizes  ls ON ls.root_relid = r.relid
-    LEFT JOIN leaf_statio st ON st.relid      = ls.relid
-    LEFT JOIN partkey     pk ON pk.partrelid  = r.relid
-    GROUP BY r.schema_name, r.table_name, pk.partition_type, pk.partition_key
+    JOIN leaf_sizes ls ON ls.root_relid = r.relid
+    LEFT JOIN leaf_statio st ON st.relid = ls.relid
+    JOIN pg_class pc ON pc.oid = ls.relid
+    JOIN pg_namespace pn ON pn.oid = pc.relnamespace
 )
 SELECT
-    schema_name    AS "Schema",
-    table_name     AS "Table",
-    partition_type AS "Part Type",
-    partition_key  AS "Part Key",
-    part_count     AS "Part Count",
-    avg_idx_count  AS "Index Count",
+    parent_schema AS "Schema",
+    parent_table  AS "Table",
+    part_name     AS "Partition",
+    part_bound    AS "Bound",
+    index_count   AS "Index Count",
     pg_size_pretty(data_bytes)                                                AS "Heap size",
     pg_size_pretty(toast_bytes)                                               AS "Toast size",
     pg_size_pretty(table_bytes)                                               AS "Table size",
-    pg_size_pretty(idx_bytes)                                                 AS "Index size",
+    pg_size_pretty(indexes_bytes)                                             AS "Index size",
     pg_size_pretty(total_bytes)                                               AS "Total size",
-    pg_size_pretty( (table_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg size",
-    pg_size_pretty( (idx_bytes   / NULLIF(part_count, 0))::bigint )           AS "Avg index size",
-    pg_size_pretty( (total_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg partition size",
     pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Hit / Day",
     pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Reads / Day",
     ROUND(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
 FROM
-    agg,
+    ranked,
     stats_age sa
-ORDER BY total_bytes DESC;
+WHERE part_rank <= 5
+ORDER BY parent_schema, parent_table, part_rank;
+

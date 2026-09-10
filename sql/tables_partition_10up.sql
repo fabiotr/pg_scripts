@@ -1,4 +1,4 @@
-WITH roots AS (
+WITH RECURSIVE roots AS (
     SELECT
         c.oid       AS relid,
         n.nspname   AS schema_name,
@@ -8,13 +8,31 @@ WITH roots AS (
     WHERE c.relkind = 'p'
       AND c.relispartition = false
 ),
-leaves AS (
+part_tree AS (
     SELECT
-        r.relid AS root_relid,
-        pt.relid::oid AS relid
+        r.relid       AS relid,
+        r.relid       AS root_relid,
+        c.relkind     AS relkind,
+        0             AS level
     FROM roots r
-    CROSS JOIN LATERAL pg_partition_tree(r.relid) pt
-    WHERE pt.isleaf
+    JOIN pg_class c ON c.oid = r.relid
+
+    UNION ALL
+
+    SELECT
+        ch.oid,
+        pt.root_relid,
+        ch.relkind,
+        pt.level + 1
+    FROM pg_inherits i
+    JOIN part_tree pt ON i.inhparent = pt.relid
+    JOIN pg_class ch  ON ch.oid = i.inhrelid
+),
+leaves AS (
+    SELECT relid, root_relid
+    FROM part_tree
+    WHERE level > 0
+      AND relkind IN ('r', 'f')
 ),
 leaf_sizes AS (
     SELECT
