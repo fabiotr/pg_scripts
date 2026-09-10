@@ -6,6 +6,8 @@
   \ir statements_exec_14up.sql
 \elif :svp_pg_13
   \ir statements_exec_13up.sql
+\elif :svp_pg_96
+  \ir statements_exec_96up.sql
 \elif :svp_pg_95
   \ir statements_exec_95up.sql
 \elif :svp_pg_94
