@@ -1,4 +1,4 @@
---Use this whith logical replication
+--Use this with logical replication
 \t on
 
 SELECT $$SELECT setval('"$$ ||  n.nspname || $$"."$$ || c.relname || $$"',$$ || v || $$);$$ AS sql_setval

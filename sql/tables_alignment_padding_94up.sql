@@ -83,8 +83,8 @@ with recursive constants as (
     table_name,
     analyzed + 1,
     cur_left_in_chunk,
-    case when padding_occured > 0 then padded_columns || array[prev_column_name] else padded_columns end,
-    case when padding_occured > 0 then pads || array[padding_occured] else pads end,
+    case when padding_occurred > 0 then padded_columns || array[prev_column_name] else padded_columns end,
+    case when padding_occurred > 0 then pads || array[padding_occurred] else pads end,
     col_cnt,
     cols,
     types,
@@ -95,7 +95,7 @@ with recursive constants as (
   from analyze_alignment a, constants, lateral (
     select
       shift,
-      case when left_in_chunk < shift then left_in_chunk else 0 end as padding_occured,
+      case when left_in_chunk < shift then left_in_chunk else 0 end as padding_occurred,
       case when left_in_chunk < shift then chunk_size - shift % chunk_size else left_in_chunk - shift end as cur_left_in_chunk,
       column_name,
       typlen

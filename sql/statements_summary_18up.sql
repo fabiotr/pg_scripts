@@ -7,7 +7,7 @@ SELECT
     lpad(to_char((rows::numeric/calls::numeric),                              'FM999G990D0'), 9) AS "Rows/Call",
     lpad(to_char((plans::numeric/since_days::numeric),                    'FM999G999G999D0'),13) AS "Plans/Day",
     lpad(to_char((parallel_workers_to_launch::numeric/since_days::numeric), 'FM999G999G999'),11) AS "Workers Planned/Day",
-    lpad(to_char((parallel_workers_launched::numeric/since_days::numeric),  'FM999G999G999'),11) AS "Workers Lunched/Day",
+    lpad(to_char((parallel_workers_launched::numeric/since_days::numeric),  'FM999G999G999'),11) AS "Workers Launched/Day",
     to_char((total_exec_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Exec/Day",
     to_char((total_plan_time::numeric/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Plan/Day",
     trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1)           AS "Plan %",

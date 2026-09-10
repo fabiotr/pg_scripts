@@ -1,4 +1,4 @@
--- When Maxwritten is hight, you need to increase the bgwriter_lru_maxpages parameter
+-- When Maxwritten is high, you need to increase the bgwriter_lru_maxpages parameter
 SELECT
     lpad(pg_size_pretty(round((buffers_alloc * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)))),7) AS "Allocated / Day",
     lpad(pg_size_pretty(round((buffers_clean * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)))),7) AS "Clean     / Day",

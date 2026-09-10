@@ -1,4 +1,4 @@
---Use this whith logical replication
+--Use this with logical replication
 \t on
 
 --Choose this

@@ -10,7 +10,7 @@ SELECT
         WHEN age(datfrozenxid) >  800000000 THEN '🟠 WARNING'
         WHEN age(datfrozenxid) >  current_setting('autovacuum_freeze_max_age')::numeric THEN '🟡 ATENTION'
         ELSE '✅ OK'
-    END AS "XID Staus",
+    END AS "XID Status",
     CASE
         WHEN mxid_age(datminmxid) > 1600000000 THEN '🔴 CRITIC'
         WHEN mxid_age(datminmxid) >  800000000 THEN '🟠 WARNING'

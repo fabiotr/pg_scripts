@@ -23,7 +23,7 @@ SELECT
     lpad(to_char(sessions_fatal::NUMERIC     / reset_days,'FM9G999G990D0'),11)                                                   AS "Fatal / Day",
     lpad(to_char(sessions_killed::NUMERIC    / reset_days,'FM9G999G990D0'),11)                                                   AS "Killed / Day",
     lpad(to_char((parallel_workers_to_launch::numeric / reset_days::numeric), 'FM9G999G999D0'),11)                               AS "Workers Planned / Day",
-    lpad(to_char((parallel_workers_launched::numeric  / reset_days::numeric), 'FM9G999G999D0'),11)                               AS "Workers Lunched / Day",
+    lpad(to_char((parallel_workers_launched::numeric  / reset_days::numeric), 'FM9G999G999D0'),11)                               AS "Workers Launched / Day",
     lpad(date_trunc('second',(session_time / sessions)             * INTERVAL '1 MILLISECOND')::text,11)                         AS "Time / Session",
     lpad(date_trunc('second',active_time              / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                         AS "Active / Day",
     lpad(date_trunc('second',idle_in_transaction_time / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                         AS "Idle in Trans. / Day",

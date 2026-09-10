@@ -7,7 +7,7 @@ SELECT
     CASE WHEN current_setting('pg_stat_statements.track') = 'all' 
 	THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END AS "Non Toplevel calls/Day", 
     to_char((sum(parallel_workers_to_launch)/reset_days::numeric), 'FM999G999G999') || ' - ' ||
-    to_char((sum(parallel_workers_launched)/reset_days::numeric),  'FM999G999G999') AS "Workers (Planned - Lunched)/Day",
+    to_char((sum(parallel_workers_launched)/reset_days::numeric),  'FM999G999G999') AS "Workers (Planned - Launched)/Day",
      to_char(sum(wal_records)  / reset_days, 'FM999G999G999') || ' - ' ||
     pg_size_pretty(trunc(sum(wal_bytes)/ reset_days))           AS "WAL (Records - Size)/Day",
     to_char(sum(wal_records)  / sum(calls), 'FM999G990D9')  AS "Wal/Call",
