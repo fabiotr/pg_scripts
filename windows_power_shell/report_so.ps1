@@ -93,13 +93,13 @@ if ($pgProc) {
     Write-Report ("PeakWorkingSet:         {0} MB" -f [math]::Round($pgProc.PeakWorkingSet64 / 1MB, 2))
     Write-Report ("PeakVirtualMemorySize:  {0} MB" -f [math]::Round($pgProc.PeakVirtualMemorySize64 / 1MB, 2))
 } else {
-    Write-Report "No PostgreSQL active now"
+    Write-Report "No PostgreSQL process active"
 }
 Write-Report '```'
 Write-Report ""
 
 # ------------------------------------------------------------------
-Write-Report "## 📂 Discs"
+Write-Report "## 📂 Disks"
 Write-Report "### Volumes"
 Write-Report '```text'
 Write-Report ("{0,-6} {1,-8} {2,10} {3,10}  {4}" -f "Drive", "FS", "SizeGB", "FreeGB", "Label")
