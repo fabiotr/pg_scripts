@@ -3,7 +3,7 @@
 \if :svp_pg_17
   \ir collations_17up.sql
 \elif :svp_pg_16
-  \ir collations_17up.sql
+  \ir collations_16up.sql
 \elif :svp_pg_15
   \ir collations_15up.sql
 \elif :svp_pg_12
