@@ -1,6 +1,6 @@
 SELECT
     row_number() OVER (ORDER BY rows DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char(rows)*100/sum(rows) OVER (),'FM99D00') || '%' AS "Rows_%",
+    to_char(rows*100/sum(rows) OVER (),'FM99D00') || '%' AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
