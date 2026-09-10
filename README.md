@@ -376,7 +376,7 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 | Name                                     | Description                                                                                                                                     |
 | :---                                     | :---                                                                                                                                             |
 | `report_so.sh` / `report_so.ps1`         | Generates a complete Markdown report of the Operating System (CPU, Memory, Network, Disks, and Kernel parameters).                              |
-| `exec_comando.sh`                        | A wrapper script to execute a SQL command (defined in `comando.sql`) across all databases in the cluster. Bash only.                            |
+| `exec_comando.sh` / `exec_comando.ps1`   | A wrapper script to execute a SQL command (defined in `comando.sql`) across all databases in the cluster.                                       |
 | `postgres_log_download_from_aws_rds.*`   | Downloads log files from an Amazon RDS/Aurora PostgreSQL instance via the AWS CLI, filtered by a minimum date.                                  |
 | `postgres_log_download_from_azure.*`     | Downloads PostgreSQL server logs from an Azure Database for PostgreSQL Flexible Server instance via the Azure CLI (`az`).                       |
 | `postgres_log_download_from_gcp_sql.*`   | Downloads PostgreSQL logs from a Google Cloud SQL instance via the `gcloud` CLI (Cloud Logging), one text file per day.                         |
