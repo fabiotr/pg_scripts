@@ -362,6 +362,12 @@ SET client_min_messages TO WARNING;
     \ir materialized_views.sql
     \qecho
 
+    \qecho '## Foreign Data Wrappers'
+    \qecho 
+    \qecho '### Foreign Servers'
+    \qecho
+    \ir foreign_servers.sql
+    \qecho
     \qecho '### Foreign Tables'
     \qecho
     \ir tables_foreign.sql
