@@ -1,0 +1,9 @@
+\ir variables.sql
+
+\if :svp_pg_18
+  \ir autovacuum_analyze_duration_18up.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\timing on
+\set QUIET off
