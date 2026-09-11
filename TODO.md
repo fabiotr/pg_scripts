@@ -1,3 +1,4 @@
+- Create scripts for Foreign Server, user mappings (using pg_user_mappings)
 - Better semantics for bgwriter.sql, checkpoint.sql and io_cluster.sql
 - Create new statements to all cluster, grouping ~~databases~~ and users, by plan time, shared buffers and WAL
 - ~~Create an autovacuum script based on new PG 18 columns in pg_stat_user_tables to see how long autovacuum is taking in each table.~~ (see `autovacuum_vacuum_duration.sql` and `autovacuum_analyze_duration.sql`)
