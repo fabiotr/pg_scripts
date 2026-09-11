@@ -26,15 +26,9 @@ FROM
     JOIN pg_class c ON t.relid = c.oid
     LEFT JOIN pg_class ct ON c.reltoastrelid = ct.oid
     LEFT JOIN pg_stat_all_tables tt ON tt.relid = ct.oid
-    LEFT JOIN (SELECT trim('autovacuum_vacuum_scale_factor=' FROM reloptions) scale, oid
-        FROM (SELECT unnest(reloptions) reloptions, oid FROM pg_class WHERE reloptions IS NOT NULL) i
-        WHERE reloptions LIKE 'autovacuum_vacuum_scale_factor=%') sc ON t.relid = sc.oid
-    LEFT JOIN (SELECT trim('autovacuum_vacuum_scale_factor=' FROM reloptions) scale, oid
-        FROM (SELECT unnest(reloptions) reloptions, oid FROM pg_class WHERE reloptions IS NOT NULL) i
-        WHERE reloptions LIKE 'autovacuum_vacuum_scale_factor=%') sct ON tt.relid = sct.oid
-    LEFT JOIN (SELECT FALSE enabled, oid
-        FROM (SELECT unnest(reloptions) reloptions, oid FROM pg_class WHERE reloptions IS NOT NULL) i
-        WHERE reloptions LIKE 'autovacuum_enabled=false') e ON t.relid = e.oid
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sc ON true
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(ct.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sct ON true
+    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON true
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
