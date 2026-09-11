@@ -22,18 +22,15 @@ SELECT
     round(c.scale,6) AS new,
     lpad(to_char(reltuples, 'FM999G999G999G990'),15) AS n_live_tup
 FROM 
-    (SELECT 
+    (SELECT
             (250000 / reltuples)::NUMERIC scale, -- 250K tuples goal
-            relname, relnamespace, relkind, reltuples, oid 
+            relname, relnamespace, relkind, reltuples, oid, reloptions
         FROM pg_class) c
     JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN (
-        SELECT to_number(trim('autovacuum_analyze_scale_factor=' FROM reloptions),'99.99999') scale, oid
-            FROM (
-                SELECT unnest(reloptions) reloptions, oid 
-                    FROM pg_class 
-                    WHERE reloptions IS NOT NULL) i
-            WHERE reloptions LIKE 'autovacuum_analyze_scale_factor=%') AS t ON t.oid = c.oid,
+    LEFT JOIN LATERAL (
+        SELECT to_number(option_value,'99.99999') AS scale
+            FROM pg_options_to_table(c.reloptions)
+            WHERE option_name = 'autovacuum_analyze_scale_factor') AS t ON true,
     (SELECT to_number(current_setting('autovacuum_analyze_scale_factor'),'99.999') AS scale) AS s
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables

@@ -16,12 +16,8 @@ SELECT
     CASE WHEN NOT e.enabled THEN 'X' END AS "Disabled"
 FROM
     pg_stat_user_tables t
-    LEFT JOIN (SELECT trim('autovacuum_analyze_scale_factor=' FROM reloptions) scale, oid
-        FROM (SELECT unnest(reloptions) reloptions, oid FROM pg_class WHERE reloptions IS NOT NULL) i
-        WHERE reloptions LIKE 'autovacuum_analyze_scale_factor=%') c ON t.relid = c.oid
-    LEFT JOIN (SELECT FALSE enabled, oid
-        FROM (SELECT unnest(reloptions) reloptions, oid FROM pg_class WHERE reloptions IS NOT NULL) i
-        WHERE reloptions LIKE 'autovacuum_enabled=false') e ON t.relid = e.oid
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_analyze_scale_factor') c ON true
+    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON true
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_analyze_scale_factor'
 WHERE

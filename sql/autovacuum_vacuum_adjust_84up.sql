@@ -20,18 +20,15 @@ SELECT
     --round(c.scale,6) AS new,
     pg_size_pretty(pg_relation_size(c.oid))  AS size
 FROM 
-    (SELECT 
+    (SELECT
             (100*1024*1024) / pg_relation_size(oid)::NUMERIC AS scale, -- 100*1024*1024 = 100MB goal
-            relname, relnamespace, relkind, relpages, oid 
+            relname, relnamespace, relkind, relpages, oid, reloptions
         FROM pg_class) c
     JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN (
-        SELECT to_number(trim('autovacuum_vacuum_scale_factor=' FROM reloptions),'99.99999') AS scale, oid
-            FROM (
-                SELECT unnest(reloptions) AS reloptions, oid 
-                    FROM pg_class 
-                    WHERE reloptions IS NOT NULL) i
-            WHERE reloptions LIKE 'autovacuum_vacuum_scale_factor=%') AS t ON t.oid = c.oid,
+    LEFT JOIN LATERAL (
+        SELECT to_number(option_value,'99.99999') AS scale
+            FROM pg_options_to_table(c.reloptions)
+            WHERE option_name = 'autovacuum_vacuum_scale_factor') AS t ON true,
     (SELECT to_number(current_setting('autovacuum_vacuum_scale_factor'),'99.999') AS scale) AS s
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables
