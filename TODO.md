@@ -1,4 +1,46 @@
-
+- PG19 new features
+  - Add PG19 on variables.sql
+  - Add new script for pg_stat_lock on PG19
+  - Add new script for pg_stat_recovery on PG19
+  - Add new script for pg_stat_autovacuum_scores on PG19
+  - Add new script for pg_dsm_registry_allocations on PG19
+  - Update progress_vacuum.sql for the started_by and mode new columns on PG19
+  - Update progress_analyze.sql with the started_by new column on PG19
+  - Update progress_basebackup.sql with the new column backup_type on PG19
+  - Update replication_slots_logical.sql with the mem_exceeded_count, slotsync_skip_count, slotsync_last_skip and slotsync_skip_reason new columns on PG19
+  - Update subscription_stats.sql with sync_table_error_count column name change and add the update_deleted and sync_seq_error_count new columns on PG19
+  - Update vacuum_full_or_cluster.sql to use new REPACK on PG19
+  - Update wal_receiver with new connecting column on PG19
+  - Update wal.sql with new bytes written to WAL for full page images on PG19
+  - Update scripts based on pg_stat_*_tables, pg_stat_*_indexes, pg_stat_*_sequencesk, pg_stat_user_functions and pg_stat_database_conflicts to use the new column stats_reset on PG19
+  - Update extensions.sql to use the new column location on PG19
+  - Update kill_active_bufferpin.sql due to wait event type BUFFERPIN renamed to BUFFER on PG19 
+  - Explore the new pg_plan_advice and pg_stash_advice extensions on PG19
+  - Explore the new $PGDATA/pg_hosts.conf file
+  - Add new parameters for all conf_***.sql scripts on PG19:
+    - io_min_workers,
+    - io_max_workers,
+    - io_worker_idle_timeout,
+    - io_worker_launch_interval,
+    - md5_password_warnings,
+    - password_expiration_warning_threshold,
+    - autovacuum_parallel_workers,
+    - autovacuum_max_parallel_workers,
+    - autovacuum_freeze_score_weight
+    - autovacuum_multixact_freeze_score_weight
+    - autovacuum_vacuum_score_weight
+    - autovacuum_vacuum_insert_score_weight
+    - autovacuum_analyze_score_weight
+    - default_toast_compression,
+    - timing_clock_source,
+    - log_autoanalyze_min_duration,
+    - debug_print_raw_parse
+    - wal_sender_shutdown_timeout
+    - max_retention_duration
+    - effective_wal_level
+  - Update conf_logs.sql to new semantic on log_min_message specified by process type on PG19
+  - Update publication and subscripts scripts to show sequences
+  - Update statements_* scripts to work with generic_plan_calls and custom_plan_calls new columns on PG19
 - Better semantics for bgwriter.sql, checkpoint.sql and io_cluster.sql
 - ~~Create new statements to all cluster, grouping databases and users, by plan time, shared buffers and WAL~~ (see `statements_cluster_total_by_database.sql` and `statements_cluster_total_by_user.sql`)
 - ~~Create scripts for Foreign Server, user mappings (using pg_user_mappings)~~ (see `foreign_servers.sql`)
