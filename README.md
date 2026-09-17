@@ -386,7 +386,7 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 | `postgres_log_download_from_azure.*`     | Downloads PostgreSQL server logs from an Azure Database for PostgreSQL Flexible Server instance via the Azure CLI (`az`).                       |
 | `postgres_log_download_from_gcp_sql.*`   | Downloads PostgreSQL logs from a Google Cloud SQL instance via the `gcloud` CLI (Cloud Logging), one text file per day.                         |
 | `postgres_log_download_from_oci.*`       | Downloads PostgreSQL logs from an OCI Database with PostgreSQL DB system, previously exported to Object Storage, via the OCI CLI.               |
-| `so_recommendations.md`                  | Reference guide with recommended Linux kernel/sysctl settings (huge pages, transparent huge pages, dirty ratios, etc.) for PostgreSQL hosts.    |
+| `so_recommendations.md`                  | Reference guide with recommended OS-level settings for PostgreSQL hosts (huge pages, memory/paging, TCP tuning, disk/file systems, etc.) — Linux kernel/sysctl in `linux_bash/`, Windows registry/PowerShell equivalents in `windows_power_shell/`. |
 
 > All four `postgres_log_download_from_*` scripts skip re-downloading a log file that already exists locally with the same name and size (the GCP version compares entry counts instead, since Cloud Logging has no per-file size).
 
