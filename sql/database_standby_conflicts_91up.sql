@@ -10,4 +10,5 @@ SELECT
 FROM 
 	pg_stat_database d
 	JOIN pg_stat_database_conflicts c ON d.datid = c.datid
+WHERE d.datistemplate IF FALSE
 ORDER BY d.datname;
