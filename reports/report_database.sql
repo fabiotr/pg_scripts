@@ -133,7 +133,7 @@ SET client_min_messages TO WARNING;
 
     \qecho '### Tables in subscriptions'
     \qecho
-    \ir subscription_rel_stats.sql
+    \ir subscription_table_stats.sql
     \qecho
   \endif
 \endif
