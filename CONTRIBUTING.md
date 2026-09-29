@@ -17,7 +17,7 @@ We are always looking for new scripts! To ensure consistency, please follow thes
    - Any external extensions needed (e.g., `pg_stat_statements`).
 3. **Coding Style**:
    - Use meaningful alias names for joins.
-   - Prefer lowercase for SQL keywords for consistency with the existing library, or maintain a single style throughout the file.
+   - Use uppercase for SQL keywords (`SELECT`, `FROM`, `WHERE`) for consistency with the existing library.
    - Avoid hardcoded schema names unless necessary.
 
 ### Improving Existing Scripts

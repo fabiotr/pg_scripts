@@ -11,7 +11,7 @@
 \elif :svp_pg_84
   \ir kill_active_query_time_greater_60_seconds_84up.sql
 \else
-  \qecho - not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \timing on
 \set QUIET off
