@@ -8,6 +8,7 @@ Everything is written in English (code, comments, column aliases, commit message
 - `sql/` — all SQL scripts (flat, no subfolders). Run via psql; they rely on psql meta-commands.
 - `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf`.
 - `linux_bash/` — bash scripts. `windows_power_shell/` — PowerShell ports **mirroring the same file names** (`.sh` → `.ps1`).
+- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.sh` validates the dispatcher rules below.
 - `psqlrc` — recommended `~/.psqlrc` (does `\cd $HOME/pg_scripts/sql`).
 - `README.md` — the script catalog. `TODO.md` — roadmap (done items are ~~struck through~~ with a "(see `file.sql`)" note).
 
@@ -35,7 +36,8 @@ Dispatcher template (copy exactly, only change the branches):
 
 Rules:
 - Branches go **from newest to oldest** version. Each `\ir` must point to the file matching its own `\if` (e.g. `svp_pg_16` → `_16up.sql`).
-- **Every** `_<VV>up.sql` file must be reachable from some branch. Past bugs: a PG16 branch calling `_17up.sql`; `_82up`/`_83up`/`_96up` files with no branch. Check both directions whenever you add or edit a dispatcher.
+- **Every** `_<VV>up.sql` file must be reachable from some branch. Past bugs: a PG16 branch calling `_17up.sql`; `_82up`/`_83up`/`_96up` files with no branch; a `svp_pg_13` branch placed before `svp_pg_18`, making the PG18 file dead code.
+- Run `./tools/check_dispatchers.sh` after adding, renaming or editing any SQL file. It must print `All dispatchers OK`.
 - Always include with `\ir` (relative to the file), never `\i`. `\i` only works when the cwd is `sql/`.
 - The "not supported" message is exactly `\qecho - Not supported on version :svp_server_version` (capital N).
 - Add `\x on` / `\x off` around the branches when the output is a single wide row (e.g. `checkpoints.sql`).
@@ -104,6 +106,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 
 ## Testing
 
+- `./tools/check_dispatchers.sh` (static checks: `\ir`, include targets, branch/file versions, branch order, unreachable files, message casing).
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.

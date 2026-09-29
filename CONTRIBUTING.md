@@ -20,6 +20,8 @@ We are always looking for new scripts! To ensure consistency, please follow thes
    - Use uppercase for SQL keywords (`SELECT`, `FROM`, `WHERE`) for consistency with the existing library.
    - Avoid hardcoded schema names unless necessary.
 
+4. **Check the dispatchers**: run `./tools/check_dispatchers.sh` before opening a PR. It must print `All dispatchers OK`.
+
 ### Improving Existing Scripts
 If you find a bug or a way to make a query more efficient (e.g., reducing I/O overhead), please submit a Pull Request!
 
