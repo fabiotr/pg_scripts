@@ -113,7 +113,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | Database | `statistic_ext.sql`               | PG >= 12      | Extended statistics objects                   | [`pg_statistic_ext`](https://www.postgresql.org/docs/current/catalog-pg-statistic-ext.html) |
 | Database | `tables_constraint_not_valid.sql` | PG >= 9.1     | Constraints marked as `NOT VALID`             | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) |
 | Database | `tables_pk_default_values.sql`    | PG >= 9.0     | Primary key columns with a default value defined | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) |
-| Database | `tables_uk_default_values.sql`    | PG >= 9.1     | Unique key columns with a default value defined  | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) |
+| Database | `tables_uk_default_values.sql`    | PG >= 9.0     | Unique key columns with a default value defined  | [`pg_constraint`](https://www.postgresql.org/docs/current/catalog-pg-constraint.html) |
 | Cluster  | `wal_receiver.sql`                | PG >= 9.6     | WAL receiver status on a standby              | [`pg_stat_wal_receiver`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-WAL-RECEIVER-VIEW) |
 | Database | `index_big.sql`                   |               | Indexes > 800KB and > 50% of table size       | [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) |
 | Database | `index_functions.sql`             |               | Indexes using expressions on columns          | [`pg_index`](https://www.postgresql.org/docs/current/catalog-pg-index.html) |
@@ -344,7 +344,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | Database | `statements_total.sql`                  | PG >= 14      | total statements summary                                        | [`pg_stat_statements`](https://www.postgresql.org/docs/current/pgstatstatements.html) extension |
 | Database | `statements_wal.sql`                    | PG >= 13      | top 10 statements order by WAL generation                       | [`pg_stat_statements`](https://www.postgresql.org/docs/current/pgstatstatements.html) extension |
 | Database | `tables_select.sql`                     | PG >= 9.1     | top 10 tables with more SELECTs                                 | [`pg_stat_all_tables`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ALL-TABLES-VIEW) |
-| Database | `tables_with_seq_scan.sql`              |               | top 20 tables with more seq scan                                | [`pg_stat_user_tables`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ALL-TABLES-VIEW) |
+| Database | `tables_with_seq_scan.sql`              | PG >= 9.1     | top 20 tables with more seq scan                                | [`pg_stat_user_tables`](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ALL-TABLES-VIEW) |
 
 </details>
 

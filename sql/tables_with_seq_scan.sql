@@ -1,6 +1,6 @@
 \ir variables.sql
 
-\if :svp_pg_92
+\if :svp_pg_91
   \ir tables_with_seq_scan_91up.sql
 \else
   \qecho - Not supported on version :svp_server_version
