@@ -1,9 +1,9 @@
 \ir variables.sql
 
 \if :svp_pg_10
-  \i connections_by_app_name_10up.sql
+  \ir connections_by_app_name_10up.sql
 \elif :svp_pg_92
-  \i connections_by_app_name_92up.sql
+  \ir connections_by_app_name_92up.sql
 \else
   \qecho - not supported on version :svp_server_version
 \endif
