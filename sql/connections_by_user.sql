@@ -5,7 +5,7 @@
 \elif :svp_pg_92
   \ir connections_by_user_92up.sql
 \else
-  \qecho - not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \timing on
 \set QUIET off
