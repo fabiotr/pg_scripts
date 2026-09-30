@@ -19,6 +19,7 @@ We are always looking for new scripts! To ensure consistency, please follow thes
    - Use meaningful alias names for joins.
    - Use uppercase for SQL keywords (`SELECT`, `FROM`, `WHERE`) and lowercase for identifiers (tables, columns, aliases, functions such as `sum()`/`now()`, `EXTRACT(epoch FROM ...)`), for consistency with the existing library.
    - Keep unquoted identifiers and `$tag$` names ASCII-only; non-ASCII text belongs in strings, quoted identifiers or comments.
+   - No backslash in plain `'...'` strings (its meaning depends on `standard_conforming_strings`): write `E'\\s+'`, not `'\s+'`.
    - Avoid hardcoded schema names unless necessary.
 
 4. **Run the checks** before opening a PR (CI runs them too):
