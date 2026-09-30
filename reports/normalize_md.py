@@ -85,13 +85,14 @@ def normalize(text: str, tables: str = 'md') -> str:
     def in_table(j, one_column=False):
         """True if lines[j] is still a data row of the current aligned table.
         psql doesn't always print a blank line between consecutive results,
-        so the next table's header also ends the current one."""
-        return (
-            lines[j].strip()
-            and (lines[j].startswith(' ') if one_column else '|' in lines[j])
-            and not SEP_LINE.match(lines[j])
-            and not starts_table(j)
-        )
+        so the next table's header also ends the current one. A one-column
+        row may be all hyphens (e.g. the ' - ' null display), so the
+        separator check only applies to multi-column rows."""
+        if not lines[j].strip() or starts_table(j):
+            return False
+        if one_column:
+            return lines[j].startswith(' ')
+        return '|' in lines[j] and not SEP_LINE.match(lines[j])
 
     while i < n:
         line = lines[i]
