@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for tools/check_keywords.py.
+"""Tests for tools/check_sql_style.py.
 
 Run: python3 -m unittest discover -s tools -p 'test_*.py'
 """
@@ -14,14 +14,28 @@ import unittest
 from pathlib import Path
 
 _spec = importlib.util.spec_from_file_location(
-    "check_keywords", Path(__file__).with_name("check_keywords.py"))
+    "check_sql_style", Path(__file__).with_name("check_sql_style.py"))
 ck = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ck)
 
 
+def of_kind(sql, kind):
+    return [text for _, _, text, k, _ in ck.scan(sql)[0] if k == kind]
+
+
 def found(sql):
-    """Lowercase keywords reported for sql, as a list of words."""
-    return [word for _, _, word in ck.scan(sql)[0]]
+    """Lowercase reserved keywords reported for sql."""
+    return of_kind(sql, ck.KEYWORD)
+
+
+def idents(sql):
+    """Non-lowercase identifiers reported for sql."""
+    return of_kind(sql, ck.IDENTIFIER)
+
+
+def non_ascii(sql):
+    """Non-ASCII identifiers and dollar-quote tags reported for sql."""
+    return of_kind(sql, ck.NON_ASCII)
 
 
 class Keywords(unittest.TestCase):
@@ -61,7 +75,7 @@ class Literals(unittest.TestCase):
     def test_non_ascii_dollar_quote_tags(self):
         sql = "SELECT $café$select from$café$ AS x, $ñ$ where $ñ$ AS y"
         self.assertEqual(found(sql), [])
-        self.assertEqual(ck.uppercase(sql, ck.scan(sql)[0]), sql)
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), sql)
 
     def test_positional_parameters_are_not_dollar_quotes(self):
         self.assertEqual(found("SELECT x FROM t WHERE id = $1 and y = $2"), ["and"])
@@ -146,15 +160,76 @@ class Ambiguous(unittest.TestCase):
                 self.assertIsNone(ck.scan(sql)[1])
 
     def test_scanning_stops_at_ambiguous_string(self):
-        keywords, at = ck.scan("select 1;\nSELECT 'can\\'t select from' AS a;\nselect 2")
-        self.assertEqual([w for _, _, w in keywords], ["select"])
+        findings, at = ck.scan("select 1;\nSELECT 'can\\'t select from' AS a;\nselect 2")
+        self.assertEqual([t for _, _, t, _, _ in findings], ["select"])
         self.assertEqual(ck.line_of("select 1;\nSELECT 'can", at), 2)
 
 
+class Identifiers(unittest.TestCase):
+    def test_non_lowercase_identifiers(self):
+        self.assertEqual(idents("SELECT SUM(x), Round(y), t.Col, NOW() FROM Tbl"),
+                         ["SUM", "Round", "Col", "NOW", "Tbl"])
+
+    def test_lowercase_identifiers_pass(self):
+        self.assertEqual(idents("SELECT sum(x), t.col, now() FROM pg_catalog.pg_class t"), [])
+
+    def test_unreserved_and_column_name_keywords_are_free(self):
+        sql = "SELECT COALESCE(a, b), nullif(a, b), x::TEXT, x::text, x::INTEGER, EXTRACT(YEAR FROM d)"
+        self.assertEqual(idents(sql), [])
+        self.assertEqual(found(sql), [])
+
+    def test_extract_field_epoch_is_an_identifier(self):
+        self.assertEqual(idents("SELECT EXTRACT(EPOCH FROM d), extract(epoch FROM d)"), ["EPOCH"])
+
+    def test_casts_to_non_keyword_types(self):
+        self.assertEqual(idents("SELECT x::REGCLASS, y::regclass, z :: OID"), ["REGCLASS", "OID"])
+
+    def test_psql_variables_are_not_identifiers(self):
+        self.assertEqual(idents("SELECT :DBNAME, :svp_pg_14, :'Foo', :\"Bar\""), [])
+
+    def test_after_dot_is_always_an_identifier(self):
+        self.assertEqual(idents("SELECT t.USER, s.Select, pg_catalog.COUNT(*) FROM t"),
+                         ["USER", "Select", "COUNT"])
+
+    def test_keyword_after_as_is_not_checked(self):
+        sql = "CREATE VIEW v AS SELECT 1; SELECT CAST(x AS INTEGER), 1 AS ORDER, 2 AS Total"
+        self.assertEqual(idents(sql), ["Total"])
+        self.assertEqual(found(sql), [])
+
+    def test_type_keyword_function_call_is_an_identifier(self):
+        self.assertEqual(idents("SELECT LEFT(v, 1), Right (v, 2), CURRENT_SCHEMA()"),
+                         ["LEFT", "Right", "CURRENT_SCHEMA"])
+        self.assertEqual(idents("SELECT 1 FROM t LEFT JOIN u ON TRUE"), [])
+
+    def test_identifiers_inside_literals_are_ignored(self):
+        self.assertEqual(idents("SELECT to_char(d, 'Month MON mon') AS m, \"MixedCase\" -- COUNT\n"), [])
+
+
+class NonAscii(unittest.TestCase):
+    def test_non_ascii_identifier(self):
+        self.assertEqual(non_ascii("SELECT café, selecté FROM tabelação"), ["café", "selecté", "tabelação"])
+        self.assertEqual(found("SELECT selecté FROM t"), [])
+
+    def test_non_ascii_dollar_quote_tag(self):
+        self.assertEqual(non_ascii("SELECT $café$select$café$ AS x, $$ñ$$ AS y"), ["$café$"])
+
+    def test_non_ascii_allowed_in_strings_quoted_identifiers_and_comments(self):
+        self.assertEqual(non_ascii("SELECT ' ✅ OK' AS \"σ\", 1 -- tabelação\n/* é */"), [])
+
+    def test_non_ascii_is_not_fixed(self):
+        sql = "select café"
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), "SELECT café")
+
+
 class Fix(unittest.TestCase):
+    def test_fix_uppercases_keywords_and_lowercases_identifiers(self):
+        sql = "select SUM(x), t.Col FROM Tbl WHERE EXTRACT(EPOCH FROM d) > 0"
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]),
+                         "SELECT sum(x), t.col FROM tbl WHERE EXTRACT(epoch FROM d) > 0")
+
     def test_uppercase_only_touches_reported_words(self):
         sql = "select 'select' AS a, $$from$$ AS b -- where\nfrom t left join u ON true"
-        new = ck.uppercase(sql, ck.scan(sql)[0])
+        new = ck.apply_fixes(sql, ck.scan(sql)[0])
         self.assertEqual(new, "SELECT 'select' AS a, $$from$$ AS b -- where\nFROM t LEFT JOIN u ON TRUE")
         self.assertEqual(found(new), [])
 
@@ -179,7 +254,7 @@ class Main(unittest.TestCase):
 
     def test_clean_repo(self):
         root = self.repo({"sql/a.sql": "SELECT 1;\n"})
-        self.assertEqual(self.run_main(str(root)), (0, "All keywords OK\n"))
+        self.assertEqual(self.run_main(str(root)), (0, "All SQL style checks OK\n"))
 
     def test_reports_file_and_line(self):
         root = self.repo({"sql/a.sql": "SELECT 1;\nselect 2;\n"})
@@ -201,6 +276,20 @@ class Main(unittest.TestCase):
         self.assertEqual((root / "sql" / "a.sql").read_text(), text)
         self.assertEqual((root / "sql" / "b.sql").read_text(), "SELECT 1;\n")
         self.assertIn("backslash before one of its quotes is ambiguous", out)
+
+    def test_reports_identifiers_and_non_ascii(self):
+        root = self.repo({"sql/a.sql": "SELECT SUM(x) FROM t;\nSELECT café;\n"})
+        code, out = self.run_main(str(root))
+        self.assertEqual(code, 1)
+        self.assertIn("sql/a.sql:1: identifier 'SUM' should be lowercase (sum)", out)
+        self.assertIn("sql/a.sql:2: non-ASCII character in the unquoted identifier", out)
+
+    def test_fix_leaves_non_ascii_and_exits_1(self):
+        root = self.repo({"sql/a.sql": "select SUM(x), café;\n"})
+        code, out = self.run_main("--fix", str(root))
+        self.assertEqual(code, 1)
+        self.assertEqual((root / "sql" / "a.sql").read_text(), "SELECT sum(x), café;\n")
+        self.assertIn("non-ASCII", out)
 
     def test_not_a_pg_scripts_repo(self):
         with tempfile.TemporaryDirectory() as tmp:
