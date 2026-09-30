@@ -47,9 +47,10 @@
 #
 # Options (all have REPORT_* env var equivalents, flags win):
 #   -d, --scripts-dir DIR   Dir with the sql/ fragment library (variables.sql,
-#                           internal.sql, ...). Default: $HOME/pg_scripts/sql.
+#                           internal.sql, ...). Default: ../sql next to this
+#                           script (the repo's own sql/).
 #   -m, --normalize-script FILE|DIR  Path to normalize_md.py, or a directory
-#                           containing it. Default: $HOME/pg_scripts/reports.
+#                           containing it. Default: this script's directory.
 #   -o, --out-dir DIR       Base output directory. Default: $HOME/reports.
 #   -k, --kinds LIST        Comma-separated report kinds. Default:
 #                           cluster,database.
@@ -70,9 +71,10 @@
 #                           given on the command line (services used in
 #                           file order). Use "-" (or omit trailing columns)
 #                           to skip just one column while still setting
-#                           others on the same line. Default:
-#                           $HOME/pg_scripts/reports/report.conf if it
-#                           exists, otherwise nothing is loaded/overridden.
+#                           others on the same line. Default: report.conf
+#                           next to this script (git-ignored; see
+#                           report.conf.example) if it exists, otherwise
+#                           nothing is loaded/overridden.
 #   -n, --default-dbname NAME  Fallback database for "database" kind
 #                           reports, for any service without a config-file
 #                           dbname (see the priority order above). No
@@ -96,8 +98,8 @@ set -uo pipefail
 
 SELF_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-SCRIPTS_DIR="${REPORT_SCRIPTS_DIR:-$HOME/pg_scripts/sql}"
-NORMALIZE_SCRIPT="${REPORT_NORMALIZE_SCRIPT:-$HOME/pg_scripts/reports}"
+SCRIPTS_DIR="${REPORT_SCRIPTS_DIR:-$(dirname -- "$SELF_DIR")/sql}"
+NORMALIZE_SCRIPT="${REPORT_NORMALIZE_SCRIPT:-$SELF_DIR}"
 OUT_BASE="${REPORT_OUT_DIR:-$HOME/reports}"
 KINDS="${REPORT_KINDS:-cluster,database}"
 CONFIG_FILE="${REPORT_CONFIG_FILE:-}"
@@ -140,7 +142,7 @@ else
   # Config file: resolved and loaded before the service-list fallback below,
   # since an empty command line falls back to the services listed in it.
   if [[ -z "$CONFIG_FILE" ]]; then
-    CONFIG_FILE="$HOME/pg_scripts/reports/report.conf"
+    CONFIG_FILE="$SELF_DIR/report.conf"
     CONFIG_FILE_IS_DEFAULT=1
   fi
   case "$CONFIG_FILE" in /*) ;; *) CONFIG_FILE="$PWD/$CONFIG_FILE" ;; esac
@@ -153,7 +155,7 @@ else
       [[ -n "${CONFIG_SEEN[$svc]:-}" ]] || { SERVICE_ORDER+=("$svc"); CONFIG_SEEN[$svc]=1; }
       [[ -n "$label" && "$label" != "-" ]] && LABEL[$svc]=$label
       [[ -n "$dbname" && "$dbname" != "-" ]] && DBNAME[$svc]=$dbname
-      kind="${kind:-*}"
+      [[ -z "$kind" || "$kind" == "-" ]] && kind="*"
       [[ -n "$stmt" && "$stmt" != "-" ]] && OVR_STMT["$svc:$kind"]=$stmt
       [[ -n "$total" && "$total" != "-" ]] && OVR_TOTAL["$svc:$kind"]=$total
     done < "$CONFIG_FILE"
@@ -170,7 +172,7 @@ else
     echo "No service given on the command line — using the ${#SERVICES[@]} service(s) listed in $CONFIG_FILE" >&2
   fi
   if [[ ${#SERVICES[@]} -eq 0 ]]; then
-    echo "No service given. Pass one or more pg_service.conf service names as arguments, set REPORT_SERVICES, or list them in the config file (-c/--config, default \$HOME/pg_scripts/reports/report.conf), or use --localhost." >&2
+    echo "No service given. Pass one or more pg_service.conf service names as arguments, set REPORT_SERVICES, or list them in the config file (-c/--config, default $SELF_DIR/report.conf), or use --localhost." >&2
     usage >&2
     exit 2
   fi
