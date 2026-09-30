@@ -15,7 +15,7 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE AND (blk_read_time + blk_write_time > 0)
         THEN ((blk_read_time + blk_write_time)/reset_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s

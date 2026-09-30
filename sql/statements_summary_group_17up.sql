@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by sum(total_exec_time + total_plan_time) DESC) AS "N",
+    row_number() over(ORDER BY sum(total_exec_time + total_plan_time) DESC) AS "N",
     string_agg(DISTINCT rolname,', ')                          AS "User",
     queryid                                                    AS "QueryID",
     to_char(sum(calls / reset_days),          'FM999G999G999') AS "Calls/Day", 
@@ -20,7 +20,7 @@ SELECT
 	shared_blk_read_time + shared_blk_write_time + 
         local_blk_read_time + local_blk_write_time + 
         temp_blk_read_time + temp_blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')      AS "IO T/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
     pg_stat_statements s 

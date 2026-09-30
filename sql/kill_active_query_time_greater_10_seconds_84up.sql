@@ -3,7 +3,7 @@ SELECT
     usename AS "User",  
     client_addr AS "Client", 
     CURRENT_TIMESTAMP - query_start AS active_time, 
-    array_to_string(regexp_split_to_array(substr(current_query,1,50),'\s+'),' ') || CASE WHEN length(current_query) > 50 THEN '...' ELSE '' END AS query, 
+    array_to_string(regexp_split_to_array(substr(current_query,1,50),E'\\s+'),' ') || CASE WHEN length(current_query) > 50 THEN '...' ELSE '' END AS query, 
     pg_terminate_backend(procpid) AS "Killed?" 
 FROM pg_stat_activity 
 WHERE  

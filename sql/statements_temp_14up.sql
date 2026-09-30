@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by temp_blks_read + temp_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
+    row_number() over(ORDER BY temp_blks_read + temp_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
@@ -17,7 +17,7 @@ SELECT
         THEN to_char(((blk_read_time + blk_write_time)/reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')
         ELSE NULL END AS "I/O Time/Day",
     trunc(total_exec_time + total_plan_time/(1000 * reset_days)) * INTERVAL '1 millisecond' AS "Time/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || 
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
     pg_stat_statements s 
