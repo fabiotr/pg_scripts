@@ -348,6 +348,18 @@ class Review(unittest.TestCase):
                "AS $$ begin return 1; end $$;")
         self.assertEqual(found(sql), ["begin", "end"])
 
+    def test_language_as_set_value_is_not_the_language_clause(self):
+        for opt in ("SET search_path TO language", "SET search_path = language", "SET search_path TO a, language"):
+            sql = f"CREATE FUNCTION f() RETURNS int LANGUAGE plpgsql {opt} AS $$ begin return 1; end $$;"
+            with self.subTest(opt=opt):
+                self.assertEqual(found(sql), ["begin", "end"])
+
+    def test_reserved_word_after_as_is_syntax_unless_an_alias(self):
+        self.assertEqual(found("CREATE VIEW v AS select a FROM t"), ["select"])
+        self.assertEqual(found("CREATE TABLE t2 AS table t"), ["table"])
+        self.assertEqual(found("SELECT 1 AS order, 2 AS desc FROM t"), [])
+        self.assertEqual(found("SELECT (x AS order) , 1 AS end"), [])
+
     def test_fix_messages_count_items(self):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(lambda: __import__("shutil").rmtree(root))

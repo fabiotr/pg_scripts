@@ -5,20 +5,22 @@ and CONTRIBUTING.md):
 1. Reserved keywords are UPPERCASE. "Reserved" means PostgreSQL's own
    list: pg_get_keywords() categories R (reserved) and T (reserved, can be a
    function or type name), taken from PostgreSQL 15, plus SYSTEM_USER
-   (reserved since 16).
+   (reserved since 16). The second word of PRIMARY KEY, FOREIGN KEY,
+   ORDER BY and GROUP BY follows the first one.
 2. Unquoted identifiers are lowercase: table, column, alias, schema and
    function names, PL/pgSQL variables, EXTRACT fields such as epoch. A word
    is an identifier when it isn't a PostgreSQL keyword of any category;
    unreserved and column-name keywords (name, type, text, numeric,
    coalesce, ...) can't be told apart from identifiers without a full
    parser, so their case is free, and so is the case of role options and
-   privilege names that aren't keywords (LOGIN, NOLOGIN, USAGE, CONNECT). Words right after '.' are always
-   identifiers; a keyword right after AS may be an alias or syntax
-   (CREATE VIEW v AS SELECT, CAST(x AS integer)), so it's not checked.
+   privilege names that aren't keywords (LOGIN, NOLOGIN, USAGE, CONNECT).
+   Words right after '.' are always identifiers. A reserved word right
+   after AS is a column alias (free case) only when followed by ',', ')',
+   ';', FROM or the end (SELECT 1 AS order FROM t); otherwise it's syntax
+   (CREATE VIEW v AS SELECT ...) and must be uppercase.
 3. Unquoted identifiers and dollar-quote tags are ASCII-only: PostgreSQL
    case-folds non-ASCII letters differently depending on the server
    encoding, and client encodings may not convert them.
-
 4. Inside function bodies and DO blocks (CREATE [OR REPLACE] FUNCTION or
    PROCEDURE ... AS $$...$$, DO $$...$$) in LANGUAGE sql or plpgsql, which
    are scanned as code: PL/pgSQL reserved keywords (DECLARE, BEGIN, IF,
@@ -26,18 +28,18 @@ and CONTRIBUTING.md):
    PERFORM, ...) have a free case, and its special variables (FOUND,
    SQLSTATE, SQLERRM, NEW, OLD, TG_OP, ...) are UPPERCASE. Bodies in other
    languages stay literals.
+5. Plain '...' strings have no backslashes: with standard_conforming_strings
+   off (the default up to 9.0) '\\s+' means s+. --fix rewrites them as the
+   equivalent E'...' ('\\s+' -> E'\\\\s+'); E'...', U&'...' and dollar
+   literals are not affected. A backslash right before one of the quotes
+   ('a\\', 'can\\'t', 'a\\\'\'') is reported as ambiguous instead, since
+   even where the string ends depends on that setting; nothing after it in
+   that file is checked.
 
-Never checked, because case is part of the value there or it's not SQL:
-  - strings ('...', E'...') and $$...$$ / $tag$...$tag$ text literals (e.g.
-    to_char patterns, where 'Month' and 'MONTH' differ), "quoted"
-    identifiers, -- and /* */ comments (nested ones too), psql
-    \\meta-command lines, psql variables (:name)
-
-A plain '...' string with a backslash right before one of its quotes
-('a\\', 'can\\'t' or 'a\\''') is reported as ambiguous: where it ends
-depends on standard_conforming_strings (off by default up to 9.0, on since
-9.1). Nothing after it in that file is checked, since token boundaries are
-unknown from there on.
+Case is never checked or changed inside strings ('...', E'...') and $$...$$
+/ $tag$...$tag$ text literals (e.g. to_char patterns, where 'Month' and
+'MONTH' differ), "quoted" identifiers, -- and /* */ comments (nested ones
+too), psql \\meta-command lines and psql variables (:name, :{?name}).
 
 Requirements: python3 (standard library only).
 
@@ -139,6 +141,10 @@ ALL_KEYWORDS = set(KEYWORDS) | set(OTHER_KEYWORDS) | set(SYNTAX_WORDS)
 # (next token "("), they are function names, i.e. lowercase identifiers.
 # Other T words before "(" are SQL syntax: join (...), like (...).
 FUNCTIONS = {"left", "right", "current_schema"}
+# After AS, a reserved keyword followed by one of these is a column alias
+# (SELECT 1 AS order, 2 AS desc FROM t); otherwise it's syntax that must be
+# uppercase (CREATE VIEW v AS SELECT ..., CREATE TABLE t AS TABLE u)
+ALIAS_FOLLOWERS = {",", ")", ";", "from", ""}
 
 # PL/pgSQL (inside function bodies and DO blocks in LANGUAGE plpgsql),
 # from src/pl/plpgsql/src/pl_reserved_kwlist.h and pl_unreserved_kwlist.h.
@@ -300,8 +306,10 @@ def language_clause(span):
     found = None
     for j, (kind, _, _, text) in enumerate(span[:-1]):
         nkind, _, _, name = span[j + 1]
-        qualified = j > 0 and span[j - 1][3] == "."  # SET app.language TO ... is a GUC
-        if kind == WORD and text.lower() == "language" and not qualified and nkind in (WORD, LITERAL):
+        # not a clause after '.' (SET app.language TO ...) or in a SET value
+        # or list (SET search_path TO language, x = language, a, language)
+        value = j > 0 and span[j - 1][3].lower() in (".", "to", "=", ",")
+        if kind == WORD and text.lower() == "language" and not value and nkind in (WORD, LITERAL):
             found = name.strip("'\"").lower()
     return found
 
@@ -378,8 +386,8 @@ def scan_tokens(src, toks, mode, findings):
                     or (low not in reserved and low not in free):
                 if text != low:
                     findings.append((start, end, text, IDENTIFIER, low))
-            elif prev == "as":
-                pass  # a keyword after AS may be an alias or syntax (AS SELECT)
+            elif prev == "as" and nxt.lower() in ALIAS_FOLLOWERS:
+                pass  # AS order, ...: a reserved word used as a column alias
             elif (low in reserved or prev in PHRASES.get(low, ())) and text != text.upper():
                 findings.append((start, end, text, KEYWORD, text.upper()))
         prev3, prev2, prev = prev2, prev, low
