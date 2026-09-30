@@ -15,7 +15,7 @@ SELECT
 FROM (
     SELECT
         n.nspname,
-        SUM(pg_relation_size(c.oid)) AS size,
+        sum(pg_relation_size(c.oid)) AS size,
 		count(*) FILTER (WHERE c.relkind = 'r') AS "Tables",
 		count(*) FILTER (WHERE c.relkind = 'i') AS "Indexes",
 		count(*) FILTER (WHERE c.relkind = 'p') AS "P Tables", 

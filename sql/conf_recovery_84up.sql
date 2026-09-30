@@ -4,5 +4,5 @@ FROM (SELECT  row_number() OVER () AS n, unnest(string_to_array(pg_read_file(nam
         WHERE name LIKE 'recovery.conf') AS cat
 WHERE 
     l NOT LIKE '#%' AND 
-    l NOT LIKE CHR(9) ||'%' AND
+    l NOT LIKE chr(9) ||'%' AND
     l != '';
