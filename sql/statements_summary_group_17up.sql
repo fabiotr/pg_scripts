@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by sum(total_exec_time + total_plan_time) DESC) AS "N",
+    row_number() over(ORDER BY sum(total_exec_time + total_plan_time) DESC) AS "N",
     string_agg(DISTINCT rolname,', ')                          AS "User",
     queryid                                                    AS "QueryID",
     to_char(sum(calls / reset_days),          'FM999G999G999') AS "Calls/Day", 
@@ -20,13 +20,13 @@ SELECT
 	shared_blk_read_time + shared_blk_write_time + 
         local_blk_read_time + local_blk_write_time + 
         temp_blk_read_time + temp_blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')      AS "IO T/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     datname = current_database() AND
     calls > 0

@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(ORDER by calls  DESC) "N",
+    row_number() over(ORDER BY calls  DESC) "N",
     to_char(calls*100/sum(calls) OVER (),'FM99D99') || '%' AS "Calls_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
@@ -10,7 +10,7 @@ SELECT
     to_char(max_exec_time                * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS max,
     to_char(mean_exec_time               * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,
     to_char((total_exec_time) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s

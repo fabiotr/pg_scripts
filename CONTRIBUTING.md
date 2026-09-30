@@ -17,13 +17,15 @@ We are always looking for new scripts! To ensure consistency, please follow thes
    - Any external extensions needed (e.g., `pg_stat_statements`).
 3. **Coding Style**:
    - Use meaningful alias names for joins.
-   - Use uppercase for SQL keywords (`SELECT`, `FROM`, `WHERE`) for consistency with the existing library.
+   - Use uppercase for SQL keywords (`SELECT`, `FROM`, `WHERE`) and lowercase for identifiers (tables, columns, aliases, functions such as `sum()`/`now()`, `EXTRACT(epoch FROM ...)`), for consistency with the existing library.
+   - Keep unquoted identifiers and `$tag$` names ASCII-only; non-ASCII text belongs in strings, quoted identifiers or comments.
+   - No backslash in plain `'...'` strings (its meaning depends on `standard_conforming_strings`): write `E'\\s+'`, not `'\s+'`.
    - Avoid hardcoded schema names unless necessary.
 
 4. **Run the checks** before opening a PR (CI runs them too):
    - `./tools/check_dispatchers.sh` must print `All dispatchers OK`.
-   - `./tools/check_keywords.py` must print `All keywords OK`. `./tools/check_keywords.py --fix` uppercases the keywords it reports, but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before one of its quotes): rewrite that string by hand with `''` or `E'...'`.
-   - If you change `tools/check_keywords.py`, run its tests: `python3 -m unittest discover -s tools -p 'test_*.py'`.
+   - `./tools/check_sql_style.py` must print `All SQL style checks OK`. `./tools/check_sql_style.py --fix` fixes the case of the keywords and identifiers it reports (non-ASCII identifiers have to be renamed by hand), but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before one of its quotes): rewrite that string by hand with `''` or `E'...'`.
+   - If you change `tools/check_sql_style.py`, run its tests: `python3 -m unittest discover -s tools -p 'test_*.py'`.
 
 ### Improving Existing Scripts
 If you find a bug or a way to make a query more efficient (e.g., reducing I/O overhead), please submit a Pull Request!
