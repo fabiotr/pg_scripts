@@ -2,8 +2,8 @@
 
 # Find psql binary location
 PSQL=$(which psql)
-LIST_OPTS=(-t -c)
-RUN_OPTS=(-t -f)
+LIST_OPTS=(-X -t -c)
+RUN_OPTS=(-X -t -f)
 
 #Run psql and execute SQL that returns the list of existing databases
 function list_db_names () {
