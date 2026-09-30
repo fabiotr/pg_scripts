@@ -22,7 +22,7 @@ SELECT
   round(100.0 * p.num_dead_tuples / p.max_dead_tuples,1) AS dead_pct
 FROM 
   pg_stat_progress_vacuum p
-  JOIN pg_stat_activity a using (pid)
+  JOIN pg_stat_activity a USING (pid)
   JOIN pg_class c ON c.oid = p.relid
   JOIN (SELECT indrelid, count(1) AS index_qt FROM pg_index GROUP BY indrelid) i ON i.indrelid = c.oid
 ORDER BY now() - a.xact_start DESC;

@@ -17,6 +17,6 @@ SELECT
     lpad(date_trunc('second', blk_write_time  / reset_days * INTERVAL '1 MIlLISECOND')::text,11)                                 AS "Write time / Day",
     '--------------------'                                                                                                       AS "Reset",
     lpad(to_char(stats_reset, 'YYYY-MM-DD HH24:MI:SS')::text,20)                                                                 AS "Date",
-    lpad(date_trunc('second', current_timestamp - stats_reset)::text,20)                                                         AS "Age"
-FROM (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24) AS reset_days, * FROM pg_stat_database) AS d
+    lpad(date_trunc('second', CURRENT_TIMESTAMP - stats_reset)::text,20)                                                         AS "Age"
+FROM (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24) AS reset_days, * FROM pg_stat_database) AS d
 WHERE d.datname = current_database();

@@ -10,7 +10,7 @@ all_writes AS (
     SELECT sum(writes) AS total_writes
     FROM table_scans
 ),
-indexes as (
+indexes AS (
     SELECT 
         idx_stat.relid, 
         idx_stat.indexrelid,

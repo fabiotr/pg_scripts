@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(order by temp_blks_read + temp_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
+    row_number() over(ORDER by temp_blks_read + temp_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
@@ -22,7 +22,7 @@ SELECT
 FROM 
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
 AND ((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) > 500000 --500 KB
 ORDER BY temp_blks_read + temp_blks_written DESC

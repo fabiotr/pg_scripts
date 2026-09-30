@@ -4,8 +4,8 @@ SELECT
     datname AS db,
     host(client_addr) AS host,
     usename AS "user", 
-    to_char(current_timestamp - backend_start ,'HH24:MI:SS') AS "Q Conn",
-    to_char(current_timestamp - query_start   ,'HH24:MI:SS') AS "Q Start",
+    to_char(CURRENT_TIMESTAMP - backend_start ,'HH24:MI:SS') AS "Q Conn",
+    to_char(CURRENT_TIMESTAMP - query_start   ,'HH24:MI:SS') AS "Q Start",
     substr(current_query,1,50) AS query
 FROM pg_stat_activity
 WHERE

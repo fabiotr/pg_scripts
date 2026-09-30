@@ -25,7 +25,7 @@ FROM
     LEFT JOIN LATERAL (
         SELECT to_number(option_value,'99.99999') AS scale
             FROM pg_options_to_table(c.reloptions)
-            WHERE option_name = 'autovacuum_vacuum_scale_factor') AS t ON true,
+            WHERE option_name = 'autovacuum_vacuum_scale_factor') AS t ON TRUE,
     (SELECT to_number(current_setting('autovacuum_vacuum_scale_factor'),'99.999') AS scale) AS s
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables

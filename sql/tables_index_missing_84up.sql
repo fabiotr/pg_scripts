@@ -2,27 +2,27 @@ WITH
 index_usage AS (
     SELECT  sut.relid,
             current_database() AS database,
-            sut.schemaname::text as schema_name, 
+            sut.schemaname::text AS schema_name, 
             sut.relname::text AS table_name,
-            sut.seq_scan as table_scans,
-            sut.idx_scan as index_scans,
-            pg_total_relation_size(relid) as table_bytes,
+            sut.seq_scan AS table_scans,
+            sut.idx_scan AS index_scans,
+            pg_total_relation_size(relid) AS table_bytes,
             round((sut.n_tup_ins + sut.n_tup_del + sut.n_tup_upd + sut.n_tup_hot_upd) / 
-                (seq_tup_read::NUMERIC + 2), 2) as writes_per_scan
+                (seq_tup_read::NUMERIC + 2), 2) AS writes_per_scan
     FROM pg_stat_user_tables sut
 ),
 index_counts AS (
     SELECT sut.relid,
-        count(*) as index_count
+        count(*) AS index_count
     FROM pg_stat_user_tables sut LEFT OUTER JOIN pg_indexes
     ON sut.schemaname = pg_indexes.schemaname AND
         sut.relname = pg_indexes.tablename
     GROUP BY relid
 ),
 too_many_tablescans AS (
-    SELECT 'many table scans'::TEXT as reason, 
+    SELECT 'many table scans'::TEXT AS reason, 
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) as table_size,
+        table_scans, pg_size_pretty(table_bytes) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 1000
@@ -32,9 +32,9 @@ too_many_tablescans AS (
     ORDER BY table_scans DESC
 ),
 scans_no_index AS (
-    SELECT 'scans, few indexes'::TEXT as reason,
+    SELECT 'scans, few indexes'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) as table_size,
+        table_scans, pg_size_pretty(table_bytes) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100
@@ -45,9 +45,9 @@ scans_no_index AS (
     ORDER BY table_scans DESC
 ),
 big_tables_with_scans AS (
-    SELECT 'big table scans'::TEXT as reason,
+    SELECT 'big table scans'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) as table_size,
+        table_scans, pg_size_pretty(table_bytes) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100
@@ -57,9 +57,9 @@ big_tables_with_scans AS (
     ORDER BY table_bytes DESC
 ),
 scans_no_writes AS (
-    SELECT 'scans, no writes'::TEXT as reason,
+    SELECT 'scans, no writes'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) as table_size,
+        table_scans, pg_size_pretty(table_bytes) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100

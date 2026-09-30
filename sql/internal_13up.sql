@@ -1,8 +1,8 @@
 SELECT
   inet_server_addr() AS "Server IP",
   inet_server_port() AS "Server Port",
-  date_trunc('second',current_timestamp - pg_postmaster_start_time()) AS "Uptime",
-  date_trunc('second',current_timestamp - pg_conf_load_time()) AS "Reload time",
+  date_trunc('second',CURRENT_TIMESTAMP - pg_postmaster_start_time()) AS "Uptime",
+  date_trunc('second',CURRENT_TIMESTAMP - pg_conf_load_time()) AS "Reload time",
   pg_is_in_recovery()                 AS "Recovery?",
   CASE WHEN :'svp_not_aurora' AND :'svp_recovery' 
     THEN pg_is_wal_replay_paused()

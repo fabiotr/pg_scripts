@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
+    row_number() over(ORDER by coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
@@ -19,9 +19,9 @@ SELECT
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
-    (SELECT *, EXTRACT(EPOCH FROM current_timestamp - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
+    (SELECT *, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
     JOIN pg_database AS d ON d.oid = s.dbid,    
-    (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
 AND ((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) > 500000 --500 KB
 ORDER BY coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC
