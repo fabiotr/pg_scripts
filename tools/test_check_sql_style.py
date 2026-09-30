@@ -360,6 +360,39 @@ class Review(unittest.TestCase):
         self.assertEqual(found("SELECT 1 AS order, 2 AS desc FROM t"), [])
         self.assertEqual(found("SELECT (x AS order) , 1 AS end"), [])
 
+    def test_language_followed_by_an_option_is_not_the_clause(self):
+        for opt in ("SUPPORT language", "SET search_path TO language SECURITY DEFINER",
+                    "SUPPORT language LANGUAGE plpgsql"):
+            sql = f"CREATE FUNCTION f() RETURNS int LANGUAGE plpgsql {opt} AS $$ begin return 1; end $$;"
+            with self.subTest(opt=opt):
+                self.assertEqual(found(sql), ["begin", "end"])
+
+    def test_unterminated_dollar_quotes_are_linear(self):
+        # distinct unterminated tags used to rescan to the end each time
+        code = ("import importlib.util, sys; "
+                "spec = importlib.util.spec_from_file_location('ck', sys.argv[1]); "
+                "ck = importlib.util.module_from_spec(spec); spec.loader.exec_module(ck); "
+                "ck.scan('SELECT ' + ' '.join('$t%d$ x' % i for i in range(60000)))")
+        try:
+            subprocess.run([sys.executable, "-c", code, _spec.origin], check=True, timeout=5)
+        except subprocess.TimeoutExpired:
+            self.fail("scanning unterminated dollar quotes took more than 5s")
+
+    def test_unterminated_dollar_quote_is_literal_to_the_end(self):
+        self.assertEqual(found("select 1; SELECT $x$ select from"), ["select"])
+
+    def test_symlinked_checker_checks_the_invoking_repository(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(root))
+        (root / ".git").mkdir()
+        (root / "tools").mkdir()
+        (root / "tools" / "check_sql_style.py").symlink_to(Path(_spec.origin).resolve())
+        (root / "x.sql").write_text("select 1;\n")
+        r = subprocess.run([sys.executable, str(root / "tools" / "check_sql_style.py")],
+                           capture_output=True, text=True, timeout=30)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("x.sql:1: keyword 'select'", r.stdout)
+
     def test_fix_messages_count_items(self):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(lambda: __import__("shutil").rmtree(root))
