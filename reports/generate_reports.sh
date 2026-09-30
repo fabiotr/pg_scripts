@@ -88,8 +88,11 @@
 #                                       fenced code blocks (.md). Much
 #                                       lighter to render in Notion for
 #                                       big reports with many tables.
-#                             raw     - psql output untouched, no
-#                                       Markdown conversion (.txt).
+#                             raw     - psql output as printed, no
+#                                       Markdown conversion (.txt). Only
+#                                       psql's own \timing/\pset status
+#                                       lines ("Timing is on." ...) are
+#                                       dropped, as in the other formats.
 #   -t, --stmt-timeout DUR  Default statement_timeout. Default: 300s.
 #   -T, --total-timeout SEC Default per-report wall clock timeout (secs).
 #                           Default: 600.

@@ -107,7 +107,10 @@
       md-code - Markdown, but psql tables kept as-is (aligned columns)
                 inside fenced code blocks (.md). Much lighter to render in
                 Notion for big reports with many tables.
-      raw     - psql output untouched, no Markdown conversion (.txt).
+      raw     - psql output as printed, no Markdown conversion (.txt).
+                Only psql's own \timing/\pset status lines ("Timing is
+                on." ...) are dropped, as in the other formats; line
+                endings are the platform's.
 
 .PARAMETER StmtTimeout
     Default statement_timeout. Env: REPORT_STMT_TIMEOUT. Default: 300s.
