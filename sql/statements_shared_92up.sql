@@ -1,5 +1,5 @@
 SELECT
-row_number() over(order by shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
+row_number() over(ORDER by shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
     to_char((shared_blks_read + shared_blks_written) * 100 / sum(shared_blks_read) OVER (),'FM99D99') || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",

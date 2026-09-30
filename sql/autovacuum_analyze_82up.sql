@@ -16,8 +16,8 @@ SELECT
     CASE WHEN NOT e.enabled THEN 'X' END AS "Disabled"
 FROM
     pg_stat_user_tables t
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_analyze_scale_factor') c ON true
-    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON true
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_analyze_scale_factor') c ON TRUE
+    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON TRUE
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_analyze_scale_factor'
 WHERE
@@ -25,5 +25,5 @@ WHERE
     n_tup_del + n_tup_upd + n_tup_ins> 1000 AND
     n_mod_since_analyze > 1000 OR
     e.enabled = FALSE
-ORDER BY e.enabled, CASE n_live_tup WHEN 0 then 0 ELSE t.n_mod_since_analyze/t.n_live_tup END DESC
+ORDER BY e.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE t.n_mod_since_analyze/t.n_live_tup END DESC
 LIMIT 10;

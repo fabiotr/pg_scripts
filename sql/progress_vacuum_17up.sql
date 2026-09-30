@@ -22,6 +22,6 @@ SELECT
   round(100.0 * p.dead_tuple_bytes / p.max_dead_tuple_bytes,1) AS dead_pct
 FROM 
   pg_stat_progress_vacuum p
-  JOIN pg_stat_activity a using (pid)
+  JOIN pg_stat_activity a USING (pid)
   JOIN pg_class c ON c.oid = p.relid
 ORDER BY now() - a.xact_start DESC;

@@ -31,11 +31,11 @@ SELECT
     trunc(sum(shared_blks_hit) * 100 / sum(shared_blks_hit + shared_blks_read),1) || ' %' AS "Shared Hit",
     pg_size_pretty((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer) || ' - ' ||
     pg_size_pretty((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer) AS "(Local - Temp)/Day",
-    to_char(current_timestamp - stats_reset, 'DD HH24:MI') || ' - ' || 
+    to_char(CURRENT_TIMESTAMP - stats_reset, 'DD HH24:MI') || ' - ' || 
     to_char(stats_reset, 'YYYY-MM-DD HH24:MI') AS "Time since reset - Stats Reset"
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT dealloc, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
 WHERE datname = current_database()
 GROUP BY r.reset_days, r.stats_reset, r.dealloc;

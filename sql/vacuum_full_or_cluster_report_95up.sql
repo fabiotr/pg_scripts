@@ -14,7 +14,7 @@ FROM
             FROM 
                 (SELECT relid, max(idx_scan) AS idx_scan FROM pg_stat_all_indexes i GROUP BY relid) AS s
                 JOIN pg_stat_all_indexes i ON i.relid = s.relid AND i.idx_scan = s.idx_scan) i ON i.relid = c.oid
-    LEFT JOIN LATERAL (SELECT option_value AS fillfactor FROM pg_options_to_table(c.reloptions) WHERE option_name = 'fillfactor') o ON true,
+    LEFT JOIN LATERAL (SELECT option_value AS fillfactor FROM pg_options_to_table(c.reloptions) WHERE option_name = 'fillfactor') o ON TRUE,
     LATERAL (SELECT * FROM pgstattuple_approx(c.oid)) l
 WHERE 
         c.relkind IN ('r','p', 'm','f','')

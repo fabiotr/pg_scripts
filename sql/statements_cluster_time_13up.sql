@@ -1,6 +1,6 @@
 SELECT 
     --string_agg(datname,', ') db, 
-    row_number() over(order by sum(total_exec_time) desc) "N",
+    row_number() over(ORDER by sum(total_exec_time) DESC) "N",
     queryid,
     to_char(sum(calls),'FM999G999G999G999') AS "Calls", 
     to_char(min(min_exec_time)        * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,

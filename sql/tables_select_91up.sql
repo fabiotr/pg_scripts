@@ -8,7 +8,7 @@ SELECT
 FROM
     pg_stat_all_tables s JOIN
 	pg_class c ON relid = oid,
-    (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days
+    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days
         FROM pg_stat_database
         WHERE datname = current_database()) AS r
 WHERE

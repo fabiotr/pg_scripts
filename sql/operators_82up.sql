@@ -1,5 +1,5 @@
 SELECT 
-    n.nspname as "Schema",
+    n.nspname AS "Schema",
     o.oprname AS "Name",
     CASE WHEN o.oprkind='l' THEN NULL ELSE format_type(o.oprleft,  NULL) END AS "Left arg type",
     CASE WHEN o.oprkind='r' THEN NULL ELSE format_type(o.oprright, NULL) END AS "Right arg type",

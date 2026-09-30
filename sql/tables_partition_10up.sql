@@ -6,7 +6,7 @@ WITH RECURSIVE roots AS (
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE c.relkind = 'p'
-      AND c.relispartition = false
+      AND c.relispartition = FALSE
 ),
 part_tree AS (
     SELECT

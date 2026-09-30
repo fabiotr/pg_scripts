@@ -25,8 +25,8 @@ SELECT
     ,current_setting('server_version_num')::int >= 180000  AS pg_18
     ,current_setting('server_version_num')::int <  120000  AS under_pg_12
     ,current_setting('server_version')                     AS server_version
-    ,current_date                                          AS date
-    ,(SELECT rolsuper FROM pg_roles WHERE rolname = user)  AS rol_super
+    ,CURRENT_DATE                                          AS date
+    ,(SELECT rolsuper FROM pg_roles WHERE rolname = USER)  AS rol_super
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'logging_collector'                 AND setting = 'on')   AS logging_collector
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'track_io_timing'                   AND setting = 'on')   AS track_io
     ,(SELECT CASE WHEN count(1) = 1 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'pg_stat_statements.track_planning' AND setting = 'on')   AS plan
