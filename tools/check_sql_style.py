@@ -170,6 +170,8 @@ PLPGSQL_SPECIAL = """found sqlstate sqlerrm new old tg_op tg_name tg_when tg_lev
 tg_relid tg_relname tg_table_name tg_table_schema tg_nargs tg_argv tg_event
 tg_tag""".split()
 CODE_LANGUAGES = {"sql", "plpgsql"}  # bodies in other languages stay literals
+# Prefix of a quoted language name: LANGUAGE E'plpgsql', U&'sql'
+LITERAL_PREFIX_RE = re.compile(r"^(?:[EeNn]|[Uu]&)(?=['\"])")
 # Words that start a function option (or the body): never a language name
 FUNCTION_OPTIONS = {"as", "set", "support", "cost", "rows", "security", "strict",
                     "immutable", "stable", "volatile", "parallel", "leakproof",
@@ -325,7 +327,7 @@ def language_clause(span):
         # aren't clauses, whatever comes before them
         if (kind == WORD and text.lower() == "language" and not qualified
                 and nkind in (WORD, LITERAL) and name.lower() not in FUNCTION_OPTIONS):
-            found = name.strip("'\"").lower()
+            found = LITERAL_PREFIX_RE.sub("", name).strip("'\"").lower()
     return found
 
 
@@ -333,6 +335,17 @@ def body_language(toks, i):
     """Language of the dollar-quoted literal toks[i] when it's the body of
     CREATE [OR REPLACE] FUNCTION|PROCEDURE ... AS $$...$$ or of DO $$...$$
     (None when it's just text)."""
+    # Cheap check first: a body comes right after AS, DO or DO LANGUAGE x.
+    # Only those literals pay for scanning the whole statement, so a
+    # statement with many text literals stays linear.
+    prior = []
+    for j in range(i - 1, -1, -1):
+        if toks[j][0] != COMMENT:
+            prior.append(toks[j][3].lower())
+            if len(prior) == 3:
+                break
+    if not (prior[:1] in (["as"], ["do"]) or prior[1:3] == ["language", "do"]):
+        return None
     before, after = statement_span(toks, i)
     words = [t.lower() for k, _, _, t in before if k == WORD]
     last = [t.lower() for _, _, _, t in before[-3:]]
@@ -355,9 +368,12 @@ def is_psql_variable(src, start):
 
 
 def next_significant(toks, i):
-    """Text of the first non-comment token after toks[i] ("" at the end),
-    walking by index instead of copying the rest of the list."""
+    """Text of the first non-comment token after toks[i], walking by index
+    instead of copying the rest of the list. "" at the end, and also at a
+    psql \\meta line: \\gset, \\g, ... end the query in front of them."""
     for j in range(i + 1, len(toks)):
+        if toks[j][0] == META:
+            return ""
         if toks[j][0] != COMMENT:
             return toks[j][3]
     return ""
