@@ -6,9 +6,9 @@ reports/*.sql, as CONTRIBUTING.md and CLAUDE.md require.
 (reserved) and T (reserved, can be a function or type name), taken from
 PostgreSQL 15, plus SYSTEM_USER (reserved since 16). Not checked, because
 case doesn't matter there or the word isn't a keyword:
-  - strings ('...', E'...'), $$...$$ / $tag$...$tag$ literals, "quoted"
-    identifiers, -- and /* */ comments (nested ones too), psql
-    \\meta-command lines
+  - strings ('...', E'...'), $$...$$ / $tag$...$tag$ literals (tags follow
+    the identifier rule), "quoted" identifiers, -- and /* */ comments
+    (nested ones too), psql \\meta-command lines
   - words right after '.', AS or ':' (column labels, psql variables),
     also when a comment sits in between
   - left, right and current_schema used as function calls: left(...),
@@ -35,6 +35,9 @@ any problem is left. Problems are printed as "file:line: message".
 To run it before every commit, together with the dispatcher check:
   printf '#!/bin/sh\\n./tools/check_dispatchers.sh && ./tools/check_keywords.py\\n' > .git/hooks/pre-commit
   chmod +x .git/hooks/pre-commit
+
+Identifiers and dollar-quote tags accept non-ASCII characters, as in
+PostgreSQL's own lexer, so selecté or $café$...$café$ are single tokens.
 """
 
 import os
@@ -59,14 +62,19 @@ KEYWORDS = {w: "R" for w in RESERVED} | {w: "T" for w in FUNC_OR_TYPE}
 # Token kinds
 COMMENT, LITERAL, META, WORD, OTHER = "comment", "literal", "meta", "word", "other"
 
+# PostgreSQL identifier characters: its lexer treats every non-ASCII
+# character as a letter (ident_start/ident_cont in scan.l)
+IDENT_START = r"[A-Za-z_\u0080-\U0010FFFF]"
+IDENT_CONT = r"[A-Za-z0-9_\u0080-\U0010FFFF]"  # plus $, except in dollar-quote tags
+
 LITERAL_RE = re.compile(
-    r"\$((?:[A-Za-z_][A-Za-z0-9_]*)?)\$.*?\$\1\$"  # $$...$$ / $tag$...$tag$ (identifier rule)
+    r"\$((?:" + IDENT_START + IDENT_CONT + r"*)?)\$.*?\$\1\$"  # $$...$$ / $tag$...$tag$
     r"|[Ee]'(?:\\.|''|[^'\\])*'"                  # E'...' string (backslash escapes; the
                                                   # classes are disjoint to avoid ReDoS)
     r"|'(?:''|[^'])*'"                            # '...' string
     r"|\"[^\"]*\"",                               # "quoted" identifier
     re.S)
-WORD_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_$]*")
+WORD_RE = re.compile(IDENT_START + r"(?:" + IDENT_CONT + r"|\$)*")
 SPACE_RE = re.compile(r"\s+")
 # A quote preceded by an odd number of backslashes: inside a plain string
 # (at its end or at a doubled '' quote) its meaning depends on
@@ -199,8 +207,8 @@ def main(argv):
             src = f.read()
         keywords, ambiguous_at = scan(src)
         if ambiguous_at is not None:
-            print(f"{rel}:{line_of(src, ambiguous_at)}: string with a backslash before its "
-                  "closing quote is ambiguous across standard_conforming_strings; "
+            print(f"{rel}:{line_of(src, ambiguous_at)}: string with a backslash before one of "
+                  "its quotes is ambiguous across standard_conforming_strings; "
                   "use '' or E'...' (rest of this file not checked)")
             problems += 1
         if not keywords:
