@@ -38,6 +38,11 @@ def non_ascii(sql):
     return of_kind(sql, ck.NON_ASCII)
 
 
+def specials(sql):
+    """Non-uppercase PL/pgSQL special variables reported for sql."""
+    return of_kind(sql, ck.SPECIAL)
+
+
 class Keywords(unittest.TestCase):
     def test_reports_lowercase_reserved_words(self):
         self.assertEqual(found("select a from t where x is not null and y = true"),
@@ -178,6 +183,14 @@ class Identifiers(unittest.TestCase):
         self.assertEqual(idents(sql), [])
         self.assertEqual(found(sql), [])
 
+    def test_role_options_and_privileges_are_free(self):
+        sql = "CREATE ROLE r LOGIN; CREATE ROLE o NOLOGIN NOSUPERUSER; GRANT USAGE, CONNECT ON SCHEMA s TO r"
+        self.assertEqual(idents(sql), [])
+        self.assertEqual(idents("create role r login; grant usage on schema s to r"), [])
+
+    def test_record_type_is_an_identifier(self):
+        self.assertEqual(idents("DO $$ DECLARE v RECORD; BEGIN NULL; END $$;"), ["RECORD"])
+
     def test_extract_field_epoch_is_an_identifier(self):
         self.assertEqual(idents("SELECT EXTRACT(EPOCH FROM d), extract(epoch FROM d)"), ["EPOCH"])
 
@@ -219,6 +232,78 @@ class NonAscii(unittest.TestCase):
     def test_non_ascii_is_not_fixed(self):
         sql = "select café"
         self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), "SELECT café")
+
+
+class Bodies(unittest.TestCase):
+    def test_do_block_is_plpgsql_code(self):
+        sql = "DO $$ declare v int; begin if not found then raise notice 'x'; end if; end $$;"
+        self.assertEqual(found(sql), ["declare", "begin", "if", "not", "then", "end", "if", "end"])
+        self.assertEqual(specials(sql), ["found"])
+
+    def test_do_block_with_language(self):
+        self.assertEqual(found("DO LANGUAGE plpgsql $$ begin null; end $$;"), ["begin", "null", "end"])
+        self.assertEqual(found("DO $x$ begin null; end $x$ LANGUAGE plpgsql;"), ["begin", "null", "end"])
+
+    def test_function_body_language_before_or_after(self):
+        before = "CREATE OR REPLACE FUNCTION f() RETURNS int LANGUAGE plpgsql AS $function$ begin return 1; end $function$;"
+        after = "CREATE FUNCTION f() RETURNS int AS $$ begin return 1; end $$ LANGUAGE 'plpgsql';"
+        for sql in (before, after):
+            with self.subTest(sql=sql):
+                self.assertEqual(found(sql), ["begin", "end"])
+
+    def test_sql_function_and_procedure_bodies(self):
+        self.assertEqual(found("CREATE FUNCTION f() RETURNS int LANGUAGE sql AS $$ select 1 $$;"), ["select"])
+        self.assertEqual(idents("CREATE PROCEDURE p() LANGUAGE sql AS $$ SELECT COUNT(*) FROM t $$;"), ["COUNT"])
+
+    def test_other_languages_stay_literals(self):
+        self.assertEqual(found("CREATE FUNCTION f() RETURNS int LANGUAGE plpython3u AS $$ select from $$;"), [])
+
+    def test_text_dollar_literals_stay_literals(self):
+        self.assertEqual(found("SELECT $$select from$$ AS sql; SELECT $q$ begin $q$ AS b;"), [])
+
+    def test_nested_dollar_literal_in_body_is_text(self):
+        self.assertEqual(found("DO $$ BEGIN EXECUTE $q$ select from $q$; END $$;"), [])
+
+    def test_plpgsql_unreserved_keywords_are_free(self):
+        sql = "DO $$ BEGIN raise notice 'x'; PERFORM 1; GET DIAGNOSTICS n = row_count; EXCEPTION WHEN others THEN RETURN; END $$;"
+        self.assertEqual(found(sql), [])
+        self.assertEqual(idents(sql), [])
+
+    def test_special_variables_uppercase(self):
+        ok = "DO $$ BEGIN IF NOT FOUND THEN RAISE NOTICE '% %', SQLSTATE, SQLERRM; END IF; RETURN NEW; END $$;"
+        self.assertEqual(specials(ok), [])
+        self.assertEqual(specials("DO $$ BEGIN IF tg_op = 'x' THEN RETURN new; END IF; END $$;"), ["tg_op", "new"])
+
+    def test_special_variable_record_fields_are_identifiers(self):
+        sql = "DO $$ BEGIN NEW.Col := OLD.col; END $$;"
+        self.assertEqual(specials(sql), [])
+        self.assertEqual(idents(sql), ["Col"])
+
+    def test_special_variables_only_in_plpgsql(self):
+        self.assertEqual(specials("SELECT found FROM t"), [])
+
+    def test_type_attributes(self):
+        self.assertEqual(idents("DO $$ DECLARE r t%rowtype; c t.col%TYPE; BEGIN NULL; END $$;"), [])
+
+    def test_no_psql_variables_inside_bodies(self):
+        self.assertEqual(idents("DO $$ BEGIN x := a[1:N]; END $$;"), ["N"])
+        self.assertEqual(idents("SELECT :DBNAME"), [])
+
+    def test_no_psql_meta_lines_inside_bodies(self):
+        self.assertEqual(found("DO $$\n\\qecho select\nBEGIN NULL; END $$;"), ["select"])
+
+    def test_ambiguous_string_inside_body(self):
+        self.assertIsNotNone(ck.scan("DO $$ BEGIN RAISE NOTICE 'can\\'t'; END $$;")[1])
+
+    def test_fix_inside_body_keeps_positions(self):
+        sql = "select 1;\nDO $$ declare v record; begin if not found then v := SUM(1); end if; end $$;\nselect 2"
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]),
+                         "SELECT 1;\nDO $$ DECLARE v record; BEGIN IF NOT FOUND THEN v := sum(1); END IF; END $$;\nSELECT 2")
+
+    def test_line_numbers_inside_body(self):
+        sql = "DO $$\nBEGIN\n  select 1;\nEND $$;"
+        (start, _, _, _, _), = ck.scan(sql)[0]
+        self.assertEqual(ck.line_of(sql, start), 3)
 
 
 class Fix(unittest.TestCase):
@@ -291,10 +376,39 @@ class Main(unittest.TestCase):
         self.assertEqual((root / "sql" / "a.sql").read_text(), "SELECT sum(x), café;\n")
         self.assertIn("non-ASCII", out)
 
-    def test_not_a_pg_scripts_repo(self):
+    def test_no_sql_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(ck.main([tmp]), 2)
+
+    def generic_repo(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        for name, text in files.items():
+            (root / name).parent.mkdir(parents=True, exist_ok=True)
+            (root / name).write_text(text)
+        return root
+
+    def test_generic_repo_scans_every_sql_file(self):
+        root = self.generic_repo({"a/x.sql": "select 1;\n", "b/c/y.sql": "SELECT SUM(1);\n",
+                                  ".git/z.sql": "select 1;\n", "notes.txt": "select"})
+        code, out = self.run_main(str(root))
+        self.assertEqual(code, 1)
+        self.assertIn("a/x.sql:1: keyword 'select'", out)
+        self.assertIn("b/c/y.sql:1: identifier 'SUM'", out)
+        self.assertNotIn(".git", out)
+
+    def test_explicit_root_and_patterns(self):
+        root = self.generic_repo({"a/x.sql": "select 1;\n", "b/y.sql": "SELECT 1;\n"})
+        self.assertEqual(self.run_main("--root", str(root), "b/*.sql"), (0, "All SQL style checks OK\n"))
+        self.assertEqual(self.run_main("--root", str(root), "a/x.sql")[0], 1)
+
+    def test_pg_scripts_layout_only_checks_sql_and_reports(self):
+        root = self.repo({"sql/a.sql": "SELECT 1;\n"})
+        (root / "tools").mkdir()
+        (root / "tools" / "t.sql").write_text("select 1;\n")
+        self.assertEqual(self.run_main(str(root))[0], 0)
 
 
 if __name__ == "__main__":
