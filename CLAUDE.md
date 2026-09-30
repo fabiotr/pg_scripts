@@ -6,7 +6,7 @@ Everything is written in English (code, comments, column aliases, commit message
 ## Layout
 
 - `sql/` — all SQL scripts (flat, no subfolders). Run via psql; they rely on psql meta-commands.
-- `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf`.
+- `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf.example` (copy to the git-ignored `report.conf`).
 - `linux_bash/` — bash scripts. `windows_power_shell/` — PowerShell ports **mirroring the same file names** (`.sh` → `.ps1`).
 - `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.sh` validates the dispatcher rules below.
 - `psqlrc` — recommended `~/.psqlrc` (does `\cd $HOME/pg_scripts/sql`).
