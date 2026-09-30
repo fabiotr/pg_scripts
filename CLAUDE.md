@@ -83,6 +83,7 @@ Common suffixes: `_top5`, `_detail`, `_report`, `_plus` (more columns), `_adjust
 
 Match the existing code (it differs from what `CONTRIBUTING.md` says about lowercase):
 - **Uppercase** SQL keywords (`SELECT`, `FROM`, `WHERE`, `CASE WHEN`), including the function-like reserved words `CURRENT_TIMESTAMP`, `CURRENT_DATE`, `CURRENT_USER`. Real functions stay lowercase (`now()`, `count()`, `current_schema()`). `./tools/check_keywords.sh` enforces this; `--fix` uppercases what it reports.
+- Quotes inside strings are doubled (`'can''t'`), which works from 8.2 to 18. For backslash escapes use an explicit `E'...'`. Never end a plain `'...'` string with a backslash before its closing quote (`'can\'t'`, `'C:\'`): where it ends depends on `standard_conforming_strings` (off by default up to 9.0, on since 9.1), and `check_keywords.sh` reports it.
 - Quoted, human-readable column aliases, left-padded/formatted for psql output: `AS "Avg size"`, `lpad(to_char(x,'FM9G990D0'),8)`, `pg_size_pretty(...)`.
 - Protect divisions with `nullif(..., 0)`. Normalize rates per day using `stats_reset` (see `checkpoints_17up.sql`).
 - Meaningful table aliases on joins. No hardcoded schemas besides `pg_catalog`.
@@ -107,7 +108,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 ## Testing
 
 - `./tools/check_dispatchers.sh` (static checks: `\ir`, include targets, branch/file versions, branch order, unreachable files, message casing).
-- `./tools/check_keywords.sh` (reserved keywords in lowercase, outside strings, comments and quoted identifiers). Both run in CI on every PR.
+- `./tools/check_keywords.sh` (reserved keywords in lowercase, outside strings, comments and quoted identifiers; plain strings that depend on `standard_conforming_strings`). Both run in CI on every PR.
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.
