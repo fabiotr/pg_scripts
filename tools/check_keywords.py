@@ -61,7 +61,8 @@ COMMENT, LITERAL, META, WORD, OTHER = "comment", "literal", "meta", "word", "oth
 
 LITERAL_RE = re.compile(
     r"\$((?:[A-Za-z_][A-Za-z0-9_]*)?)\$.*?\$\1\$"  # $$...$$ / $tag$...$tag$ (identifier rule)
-    r"|[Ee]'(?:\\.|''|[^'])*'"                    # E'...' string (backslash escapes)
+    r"|[Ee]'(?:\\.|''|[^'\\])*'"                  # E'...' string (backslash escapes; the
+                                                  # classes are disjoint to avoid ReDoS)
     r"|'(?:''|[^'])*'"                            # '...' string
     r"|\"[^\"]*\"",                               # "quoted" identifier
     re.S)
