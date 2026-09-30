@@ -1,4 +1,4 @@
-name: Check dispatchers
+name: Check SQL scripts
 
 on:
   push:
@@ -12,3 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run tools/check_dispatchers.sh
         run: ./tools/check_dispatchers.sh
+      - name: Test tools/check_keywords.py
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Run tools/check_keywords.py
+        run: ./tools/check_keywords.py
