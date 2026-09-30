@@ -247,7 +247,7 @@ if ($Localhost) {
             $stmt = if ($fields.Length -gt 3) { $fields[3] } else { $null }
             $total = if ($fields.Length -gt 4) { $fields[4] } else { $null }
             $kind = if ($fields.Length -gt 5) { $fields[5] } else { $null }
-            if (-not $kind) { $kind = '*' }
+            if (-not $kind -or $kind -eq '-') { $kind = '*' }
 
             if (-not $ConfigSeen.ContainsKey($svc)) {
                 $ServiceOrder.Add($svc)
