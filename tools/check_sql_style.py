@@ -54,9 +54,11 @@ Usage:
 Exit code: 0 when everything is fine (or --fix fixed everything), 1 when
 any problem is left. Problems are printed as "file:line: message".
 
-To run it before every commit, together with the dispatcher check:
-  printf '#!/bin/sh\\n./tools/check_dispatchers.sh && ./tools/check_sql_style.py\\n' > .git/hooks/pre-commit
+To run it before every commit:
+  printf '#!/bin/sh\\n./tools/check_sql_style.py\\n' > .git/hooks/pre-commit
   chmod +x .git/hooks/pre-commit
+(in fabiotr/pg_scripts, chain it with the dispatcher check:
+ ./tools/check_dispatchers.sh && ./tools/check_sql_style.py)
 
 The tokenizer treats non-ASCII characters as identifier letters, as
 PostgreSQL's lexer does, so selecté or $café$...$café$ are single tokens
@@ -80,7 +82,8 @@ FUNC_OR_TYPE = """authorization binary collation concurrently cross current_sche
 freeze full ilike inner is isnull join left like natural notnull outer overlaps
 right similar tablesample verbose""".split()
 # Unreserved (U) and column-name (C) keywords of PostgreSQL 15, plus the ones
-# added in 16 and 17 (JSON syntax, MERGE_ACTION, ...). Their case is free.
+# added in 16 and 17 (JSON syntax, MERGE_ACTION, ...) and 18 (ENFORCED,
+# PERIOD, VIRTUAL). Their case is free.
 OTHER_KEYWORDS = """abort absolute access action add admin after aggregate also alter always
 asensitive assertion assignment at atomic attach attribute backward before begin
 breadth by cache call called cascade cascaded catalog chain characteristics
@@ -122,7 +125,8 @@ absent format json json_array json_arrayagg json_object json_objectagg keys
 scalar
 conditional empty error json_exists json_query json_scalar json_serialize
 json_table json_value keep merge_action nested omit path quotes string
-unconditional""".split()
+unconditional
+enforced period virtual""".split()
 KEYWORDS = {w: "R" for w in RESERVED} | {w: "T" for w in FUNC_OR_TYPE}
 # Syntax words that PostgreSQL's grammar reads as plain identifiers rather
 # than keywords (role options, privilege names); like unreserved keywords,
@@ -296,7 +300,8 @@ def language_clause(span):
     found = None
     for j, (kind, _, _, text) in enumerate(span[:-1]):
         nkind, _, _, name = span[j + 1]
-        if kind == WORD and text.lower() == "language" and nkind in (WORD, LITERAL):
+        qualified = j > 0 and span[j - 1][3] == "."  # SET app.language TO ... is a GUC
+        if kind == WORD and text.lower() == "language" and not qualified and nkind in (WORD, LITERAL):
             found = name.strip("'\"").lower()
     return found
 
@@ -482,18 +487,18 @@ def main(argv):
         if fix and fixable and ambiguous_at is None:
             with open(path, "w", newline="", encoding="utf-8") as f:
                 f.write(apply_fixes(src, findings))
-            print(f"{rel}: fixed the case of {len(fixable)} word(s)")
+            print(f"{rel}: fixed {len(fixable)} item(s)")
             fixed += len(fixable)
             findings = [f for f in findings if f[4] is None]
         elif fix and fixable:
-            print(f"{rel}: not fixed ({len(fixable)} word(s)) until the ambiguous "
+            print(f"{rel}: not fixed ({len(fixable)} item(s)) until the ambiguous "
                   "string above is rewritten")
         for start, _, text, kind, fixed_text in findings:
             print(f"{rel}:{line_of(src, start)}: {message(text, kind, fixed_text)}")
         problems += len(findings)
 
     if fixed:
-        print(f"\nFixed {fixed} word(s)")
+        print(f"\nFixed {fixed} item(s)")
     if problems:
         hint = "" if fix else (" (run ./tools/check_sql_style.py --fix to fix the case of keywords"
                                " and identifiers and rewrite backslash strings as E'...')")
