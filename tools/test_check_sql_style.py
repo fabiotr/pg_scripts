@@ -159,10 +159,15 @@ class Ambiguous(unittest.TestCase):
     def test_doubled_quotes_without_backslash_are_not_ambiguous(self):
         self.assertIsNone(ck.scan("SELECT 'can''t' AS a, '''' AS q, 'a\\\\''b' AS e")[1])
 
-    def test_even_backslashes_and_e_strings_are_not(self):
+    def test_even_backslashes_and_e_strings_are_not_ambiguous(self):
+        # "ambiguous" is only about where the string ends; plain strings with
+        # backslashes are still reported by the backslash rule
         for sql in ("SELECT '\\\\' AS a", "SELECT '\\s+' AS r", "SELECT E'can\\'t' AS e"):
             with self.subTest(sql=sql):
-                self.assertIsNone(ck.scan(sql)[1])
+                findings, ambiguous_at = ck.scan(sql)
+                self.assertIsNone(ambiguous_at)
+                kinds = [k for _, _, _, k, _ in findings]
+                self.assertEqual(kinds, [] if sql.startswith("SELECT E") else [ck.BACKSLASH])
 
     def test_scanning_stops_at_ambiguous_string(self):
         findings, at = ck.scan("select 1;\nSELECT 'can\\'t select from' AS a;\nselect 2")
@@ -331,6 +336,27 @@ class Review(unittest.TestCase):
     def test_last_language_clause_wins(self):
         sql = "CREATE FUNCTION f() RETURNS int LANGUAGE sql LANGUAGE plpython3u AS $$ select 1 $$;"
         self.assertEqual(found(sql), [])
+
+    def test_pg18_keywords(self):
+        sql = ("CREATE TABLE t (a int, b int GENERATED ALWAYS AS (a * 2) VIRTUAL, "
+               "CONSTRAINT c CHECK (a > 0) NOT ENFORCED, "
+               "FOREIGN KEY (a, PERIOD b) REFERENCES u (a, PERIOD b))")
+        self.assertEqual(idents(sql), [])
+
+    def test_qualified_language_is_not_the_language_clause(self):
+        sql = ("CREATE FUNCTION f() RETURNS int LANGUAGE plpgsql SET app.language TO 'sql' "
+               "AS $$ begin return 1; end $$;")
+        self.assertEqual(found(sql), ["begin", "end"])
+
+    def test_fix_messages_count_items(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(root))
+        (root / "a.sql").write_text("select regexp_split_to_array(q, '\\s+');\n")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            ck.main(["--fix", str(root)])
+        self.assertIn("a.sql: fixed 2 item(s)", out.getvalue())
+        self.assertIn("Fixed 2 item(s)", out.getvalue())
 
     def test_backslash_in_plain_string(self):
         sql = "SELECT regexp_split_to_array(q, '\\s+'), 'a\\\\b', E'\\\\s+', $$\\s+$$, U&'\\0061'"
