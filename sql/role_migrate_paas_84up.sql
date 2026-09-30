@@ -15,7 +15,7 @@
 
 -- Create roles
 SELECT 
-	'CREATE ROLE ' || quote_ident(rolname)  || ';' || CHR(10) ||
+	'CREATE ROLE ' || quote_ident(rolname)  || ';' || chr(10) ||
 	'ALTER ROLE  ' || quote_ident(rolname)  || 
 		CASE rolsuper	    WHEN FALSE THEN '' ELSE ' SUPERUSER '     END ||
 		CASE rolinherit     WHEN TRUE  THEN '' ELSE ' NOINHERIT '     END ||
