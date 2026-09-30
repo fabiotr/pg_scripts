@@ -27,7 +27,7 @@ if (-not $Psql) {
 }
 
 # Get the list of existing databases (excluding 'postgres' and templates)
-$DbNames = & $Psql -X -t -c "SELECT datname FROM pg_database WHERE datname != 'postgres' AND datistemplate = FALSE" |
+$DbNames = & $Psql -X -t -A -c "SELECT datname FROM pg_database WHERE datname != 'postgres' AND datistemplate = FALSE" |
     ForEach-Object { $_.Trim() } |
     Where-Object { $_ -ne '' }
 
