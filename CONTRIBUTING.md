@@ -22,7 +22,8 @@ We are always looking for new scripts! To ensure consistency, please follow thes
 
 4. **Run the checks** before opening a PR (CI runs them too):
    - `./tools/check_dispatchers.sh` must print `All dispatchers OK`.
-   - `./tools/check_keywords.sh` must print `All keywords OK`. `./tools/check_keywords.sh --fix` uppercases the keywords it reports, but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before its closing quote): rewrite that string by hand with `''` or `E'...'`.
+   - `./tools/check_keywords.py` must print `All keywords OK`. `./tools/check_keywords.py --fix` uppercases the keywords it reports, but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before its closing quote): rewrite that string by hand with `''` or `E'...'`.
+   - If you change `tools/check_keywords.py`, run its tests: `python3 -m unittest discover -s tools -p 'test_*.py'`.
 
 ### Improving Existing Scripts
 If you find a bug or a way to make a query more efficient (e.g., reducing I/O overhead), please submit a Pull Request!
