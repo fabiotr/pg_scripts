@@ -159,9 +159,13 @@ tg_tag""".split()
 CODE_LANGUAGES = {"sql", "plpgsql"}  # bodies in other languages stay literals
 
 # Token kinds
-COMMENT, LITERAL, META, WORD, OTHER = "comment", "literal", "meta", "word", "other"
+COMMENT, LITERAL, META, WORD, NUMBER, OTHER = "comment", "literal", "meta", "word", "number", "other"
 # Finding kinds
-KEYWORD, IDENTIFIER, NON_ASCII, SPECIAL = "keyword", "identifier", "non-ascii", "special"
+KEYWORD, IDENTIFIER, NON_ASCII, SPECIAL, BACKSLASH = (
+    "keyword", "identifier", "non-ascii", "special", "backslash")
+# Two-word phrases whose second word is an unreserved keyword but follows
+# the reserved first one: PRIMARY KEY, FOREIGN KEY, ORDER BY, GROUP BY
+PHRASES = {"key": {"primary", "foreign"}, "by": {"order", "group"}}
 
 # PostgreSQL identifier characters: its lexer treats every non-ASCII
 # character as a letter (ident_start/ident_cont in scan.l)
@@ -172,9 +176,17 @@ LITERAL_RE = re.compile(
     r"\$((?:" + IDENT_START + IDENT_CONT + r"*)?)\$.*?\$\1\$"  # $$...$$ / $tag$...$tag$
     r"|[Ee]'(?:\\.|''|[^'\\])*'"                  # E'...' string (backslash escapes; the
                                                   # classes are disjoint to avoid ReDoS)
-    r"|'(?:''|[^'])*'"                            # '...' string
+    r"|[Uu]&'(?:''|[^'])*'"                       # U&'...' Unicode string
+    r"|[Uu]&\"[^\"]*\""                            # U&"..." Unicode identifier
+    r"|[BbXx]'[^']*'"                             # B'1010' / X'CAFE' bit strings
+    r"|[Nn]?'(?:''|[^'])*'"                       # '...' and N'...' strings
     r"|\"[^\"]*\"",                               # "quoted" identifier
     re.S)
+# Numeric constants, so that the E of 1E10 or the X of 0X1F isn't read as
+# an identifier (hex/octal/binary and _ separators since PostgreSQL 16)
+NUMBER_RE = re.compile(
+    r"0[xX][0-9A-Fa-f_]+|0[oO][0-7_]+|0[bB][01_]+"
+    r"|(?:[0-9][0-9_]*(?:\.[0-9_]*)?|\.[0-9][0-9_]*)(?:[eE][+-]?[0-9][0-9_]*)?")
 DOLLAR_TAG_RE = re.compile(r"\$[^$]*\$")
 WORD_RE = re.compile(IDENT_START + r"(?:" + IDENT_CONT + r"|\$)*")
 SPACE_RE = re.compile(r"\s+")
@@ -226,6 +238,8 @@ def tokens(src, pos=0, endpos=None, meta=True):
             kind = META
         elif (m := LITERAL_RE.match(src, pos, endpos)):
             end, kind = m.end(), LITERAL
+        elif (m := NUMBER_RE.match(src, pos, endpos)):
+            end, kind = m.end(), NUMBER
         elif (m := WORD_RE.match(src, pos, endpos)):
             end, kind = m.end(), WORD
         else:
@@ -235,43 +249,71 @@ def tokens(src, pos=0, endpos=None, meta=True):
     return out
 
 
+def plain_string_body(text):
+    """The content of a plain '...' or N'...' literal, or None for any other
+    token (E'...', U&'...', B'...', $$...$$, "..." are not plain strings)."""
+    if text[:1] == "'":
+        return text[1:-1]
+    if text[:2] in ("N'", "n'"):
+        return text[2:-1]
+    return None
+
+
 def is_ambiguous_string(text):
-    """True for a plain '...' literal whose end depends on
-    standard_conforming_strings."""
-    return text[0] == "'" and bool(ESCAPED_QUOTE_RE.search(text, 1))
+    """True for a plain string whose end depends on standard_conforming_strings
+    (a quote preceded by an odd number of backslashes)."""
+    body = plain_string_body(text)
+    return body is not None and bool(ESCAPED_QUOTE_RE.search(body + "'"))
 
 
-def statement_words(toks, i):
-    """Lowercase words and punctuation of the statement around toks[i] (from
-    the previous ';' to the next one), split into (before, after)."""
+def backslash_fix(text):
+    """For a plain string containing backslashes, whose value depends on
+    standard_conforming_strings ('\\s+' is \\s+ with it on, s+ with it off):
+    the equivalent E'...' string (None for N'...', which has no E form)."""
+    body = plain_string_body(text)
+    if body is None or "\\" not in body:
+        return None
+    return "E'" + body.replace("\\", "\\\\") + "'" if text[0] == "'" else text
+
+
+def statement_span(toks, i):
+    """Tokens of the statement around toks[i] (from the previous ';' to the
+    next one, comments dropped), split into (before, after)."""
     start = i
     while start > 0 and toks[start - 1][3] != ";":
         start -= 1
     end = i + 1
     while end < len(toks) and toks[end][3] != ";":
         end += 1
-    pick = lambda span: [t.lower().strip("'\"") for k, _, _, t in span if k != COMMENT]
-    return pick(toks[start:i]), pick(toks[i + 1:end])
+    keep = lambda span: [t for t in span if t[0] != COMMENT]
+    return keep(toks[start:i]), keep(toks[i + 1:end])
+
+
+def language_clause(span):
+    """The name in the last LANGUAGE clause of span. Function options come
+    after the argument list and RETURNS, so a parameter or column named
+    language (f(language text)) never wins."""
+    found = None
+    for j, (kind, _, _, text) in enumerate(span[:-1]):
+        nkind, _, _, name = span[j + 1]
+        if kind == WORD and text.lower() == "language" and nkind in (WORD, LITERAL):
+            found = name.strip("'\"").lower()
+    return found
 
 
 def body_language(toks, i):
     """Language of the dollar-quoted literal toks[i] when it's the body of
     CREATE [OR REPLACE] FUNCTION|PROCEDURE ... AS $$...$$ or of DO $$...$$
     (None when it's just text)."""
-    before, after = statement_words(toks, i)
-    words = before + after
-
-    def language():
-        for j, w in enumerate(words[:-1]):
-            if w == "language":
-                return words[j + 1]
-        return None
-
-    if before[-1:] == ["do"] or before[-3:-1] == ["do", "language"]:
-        return language() or "plpgsql"
-    head = [w for w in before if w not in ("or", "replace")][:2]
-    if head[:1] == ["create"] and head[1:2] in (["function"], ["procedure"]) and before[-1:] == ["as"]:
-        return language()
+    before, after = statement_span(toks, i)
+    words = [t.lower() for k, _, _, t in before if k == WORD]
+    last = [t.lower() for _, _, _, t in before[-3:]]
+    language = language_clause(before + after)
+    if last[-1:] == ["do"] or last[-3:-1] == ["do", "language"]:
+        return language or "plpgsql"
+    head = [w for w in words if w not in ("or", "replace")][:2]
+    if head[:1] == ["create"] and head[1:2] in (["function"], ["procedure"]) and last[-1:] == ["as"]:
+        return language
     return None
 
 
@@ -292,13 +334,16 @@ def scan_tokens(src, toks, mode, findings):
     reserved = set(KEYWORDS) | (set(PLPGSQL_RESERVED) if mode == "plpgsql" else set())
     free = ALL_KEYWORDS | (set(PLPGSQL_UNRESERVED) if mode == "plpgsql" else set())
     special = set(PLPGSQL_SPECIAL) if mode == "plpgsql" else set()
-    prev = prev2 = ""
+    prev = prev2 = prev3 = ""
     for i, (kind, start, end, text) in enumerate(toks):
         if kind == COMMENT:
             continue  # comments are whitespace: keep the previous token
         if kind == LITERAL:
             if is_ambiguous_string(text):
                 return start
+            fixed = backslash_fix(text)
+            if fixed is not None:
+                findings.append((start, end, text, BACKSLASH, None if fixed == text else fixed))
             if text[0] == "$":
                 tag = DOLLAR_TAG_RE.match(text).group(0)
                 if NON_ASCII_RE.search(tag):
@@ -310,12 +355,13 @@ def scan_tokens(src, toks, mode, findings):
                     if at is not None:
                         return at
         if kind in (LITERAL, META):
-            prev = prev2 = ""
+            prev = prev2 = prev3 = ""
             continue
         low = text.lower()
-        # :name is a psql variable (top level only; psql doesn't touch
-        # bodies), but not ::type
-        skip = mode == "top" and prev == ":" and prev2 != ":"
+        # :name and :{?name} are psql variables (top level only; psql doesn't
+        # touch bodies), but ::type is a cast
+        skip = mode == "top" and ((prev == ":" and prev2 != ":") or
+                                  (prev == "?" and prev2 == "{" and prev3 == ":"))
         if kind == WORD and not skip:
             nxt = next((t for k, _, _, t in toks[i + 1:] if k != COMMENT), "")
             if NON_ASCII_RE.search(text):
@@ -329,24 +375,27 @@ def scan_tokens(src, toks, mode, findings):
                     findings.append((start, end, text, IDENTIFIER, low))
             elif prev == "as":
                 pass  # a keyword after AS may be an alias or syntax (AS SELECT)
-            elif low in reserved and text != text.upper():
+            elif (low in reserved or prev in PHRASES.get(low, ())) and text != text.upper():
                 findings.append((start, end, text, KEYWORD, text.upper()))
-        prev2, prev = prev, low
+        prev3, prev2, prev = prev2, prev, low
     return None
 
 
 def apply_fixes(src, findings):
-    """Return src with the case of every fixable finding corrected."""
+    """Return src with every fixable finding corrected: the case of words,
+    and plain strings with backslashes rewritten as the equivalent E'...'."""
     out, last = [], 0
-    for start, end, _, _, fixed in sorted(findings):
+    for start, end, text, kind, fixed in sorted(findings):
         if fixed is None:
             continue
+        if kind == BACKSLASH:
+            assert fixed == "E'" + text[1:-1].replace("\\", "\\\\") + "'", "bad E'' rewrite"
+        else:
+            assert fixed.lower() == text.lower(), "non case-only change"
         out += [src[last:start], fixed]
         last = end
     out.append(src[last:])
-    new = "".join(out)
-    assert new.lower() == src.lower(), "non case-only change"
-    return new
+    return "".join(out)
 
 
 def message(text, kind, fixed):
@@ -356,6 +405,10 @@ def message(text, kind, fixed):
         return f"identifier '{text}' should be lowercase ({fixed})"
     if kind == SPECIAL:
         return f"PL/pgSQL special variable '{text}' should be uppercase ({fixed})"
+    if kind == BACKSLASH:
+        how = f"use {fixed}" if fixed else "use an E'...' string"
+        return (f"string {text[:40]}{'...' if len(text) > 40 else ''} has a backslash, whose meaning "
+                f"depends on standard_conforming_strings; {how}")
     return (f"non-ASCII character in the unquoted identifier or dollar-quote tag "
             f"'{text}'; use ASCII, or quote the identifier")
 
@@ -442,7 +495,8 @@ def main(argv):
     if fixed:
         print(f"\nFixed {fixed} word(s)")
     if problems:
-        hint = "" if fix else " (run ./tools/check_sql_style.py --fix to fix the case of keywords and identifiers)"
+        hint = "" if fix else (" (run ./tools/check_sql_style.py --fix to fix the case of keywords"
+                               " and identifiers and rewrite backslash strings as E'...')")
         print(f"\n{problems} problem(s) found{hint}")
         return 1
     print("All SQL style checks OK")

@@ -306,6 +306,54 @@ class Bodies(unittest.TestCase):
         self.assertEqual(ck.line_of(sql, start), 3)
 
 
+class Review(unittest.TestCase):
+    """Cases from the Copilot review of #60/#14/#1."""
+
+    def test_psql_existence_test_variable(self):
+        self.assertEqual(idents("SELECT :{?DBNAME}, :{?Foo}"), [])
+        self.assertEqual(idents("SELECT a{?Foo}"), ["Foo"])  # no ':', so not a psql test
+
+    def test_prefixed_literals(self):
+        sql = "SELECT B'1010', b'01', X'CAFE', x'ff', U&'d\\0061t', U&\"Col\", N'abc'"
+        self.assertEqual(idents(sql), [])
+        self.assertEqual(found(sql), [])
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), sql)
+
+    def test_numeric_constants(self):
+        sql = "SELECT 1E10, 2.5E-3, 1e+2, .5E1, 0X1F, 0o17, 0B101, 1_000_000"
+        self.assertEqual(idents(sql), [])
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), sql)
+
+    def test_language_clause_outside_parentheses(self):
+        sql = "CREATE FUNCTION f(language text, x text DEFAULT 'language') RETURNS int LANGUAGE plpgsql AS $$ begin return 1; end $$;"
+        self.assertEqual(found(sql), ["begin", "end"])
+
+    def test_last_language_clause_wins(self):
+        sql = "CREATE FUNCTION f() RETURNS int LANGUAGE sql LANGUAGE plpython3u AS $$ select 1 $$;"
+        self.assertEqual(found(sql), [])
+
+    def test_backslash_in_plain_string(self):
+        sql = "SELECT regexp_split_to_array(q, '\\s+'), 'a\\\\b', E'\\\\s+', $$\\s+$$, U&'\\0061'"
+        self.assertEqual(of_kind(sql, ck.BACKSLASH), ["'\\s+'", "'a\\\\b'"])
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]),
+                         "SELECT regexp_split_to_array(q, E'\\\\s+'), E'a\\\\\\\\b', E'\\\\s+', $$\\s+$$, U&'\\0061'")
+
+    def test_backslash_in_national_string_is_reported_without_fix(self):
+        sql = "SELECT N'\\x'"
+        self.assertEqual(of_kind(sql, ck.BACKSLASH), ["N'\\x'"])
+        self.assertEqual(ck.apply_fixes(sql, ck.scan(sql)[0]), sql)
+
+    def test_backslash_inside_function_body(self):
+        sql = "DO $$ BEGIN PERFORM regexp_replace(x, '\\s', ''); END $$;"
+        self.assertEqual(of_kind(sql, ck.BACKSLASH), ["'\\s'"])
+
+    def test_phrase_keywords(self):
+        sql = "CREATE TABLE t (id int PRIMARY key, x int, FOREIGN key (x) REFERENCES u); SELECT 1 ORDER by 1; SELECT 1 GROUP by 1"
+        self.assertEqual(found(sql), ["key", "key", "by", "by"])
+        self.assertEqual(found("SELECT x AS key, y AS by FROM t; SELECT key FROM t"), [])
+        self.assertEqual(found("SELECT 1 OVER (PARTITION by x)"), [])
+
+
 class Fix(unittest.TestCase):
     def test_fix_uppercases_keywords_and_lowercases_identifiers(self):
         sql = "select SUM(x), t.Col FROM Tbl WHERE EXTRACT(EPOCH FROM d) > 0"
