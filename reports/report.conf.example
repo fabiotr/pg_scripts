@@ -27,11 +27,12 @@
 # run with no service on the command line (services are used in the order
 # they first appear here).
 #
-# This file is optional: generate_reports.sh looks for it at
+# This file is only an example. generate_reports.sh looks for
 # $HOME/pg_scripts/reports/report.conf by default and silently skips
-# loading if it isn't there. Copy/rename this example to that path (or
-# point -c/--config at your own file) to customize it; everything below is
-# illustrative, not a live default.
+# loading if it isn't there. Copy this example to report.conf in the same
+# directory (git-ignored, so local settings never get committed) or point
+# -c/--config at your own file; everything below is illustrative, not a
+# live default.
 
 # service             label            dbname        stmt_timeout  total_timeout  kind
 prod_primary          prod-primary     app_prod      -             -              -
