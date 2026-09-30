@@ -7,6 +7,8 @@ Run: python3 -m unittest discover -s tools -p 'test_*.py'
 import contextlib
 import importlib.util
 import io
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -60,6 +62,19 @@ class Literals(unittest.TestCase):
 
     def test_backslash_in_middle_of_line_is_not_meta(self):
         self.assertEqual(found("SELECT 1 \\gset\nselect 2"), ["select"])
+
+
+    def test_unterminated_e_string_is_linear(self):
+        # py/redos: overlapping alternatives made this exponential. A regex
+        # can't be interrupted, so run it in a subprocess with a timeout.
+        code = ("import importlib.util, sys; "
+                "spec = importlib.util.spec_from_file_location('ck', sys.argv[1]); "
+                "ck = importlib.util.module_from_spec(spec); spec.loader.exec_module(ck); "
+                "ck.tokens(\"SELECT E'\" + '\\\\&' * 5000)")
+        try:
+            subprocess.run([sys.executable, "-c", code, _spec.origin], check=True, timeout=5)
+        except subprocess.TimeoutExpired:
+            self.fail("tokenizing an unterminated E'...' string took more than 5s (ReDoS)")
 
 
 class Comments(unittest.TestCase):
