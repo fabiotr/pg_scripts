@@ -342,6 +342,57 @@ function Resolve-PgServiceFile {
 }
 
 # ---------------------------------------------------------------------------
+# Runs psql with a wall-clock timeout. Each argument goes through
+# ProcessStartInfo.ArgumentList, which quotes it for the child process —
+# Start-Process -ArgumentList just joins the array with spaces, so the
+# connection string and the -c/SQL values (which contain spaces) reached
+# psql split into several arguments. stdout/stderr are drained
+# concurrently with ReadToEndAsync (no pipe-buffer deadlock on large
+# output), and the timeout waits on the process, not on the streams, so a
+# stuck connection that never closes its output can't block it.
+# ---------------------------------------------------------------------------
+
+function Invoke-Psql {
+    param(
+        [string[]]$Arguments,
+        [int]$TimeoutSec,
+        [string]$WorkingDirectory = (Get-Location).Path
+    )
+
+    $psi = [System.Diagnostics.ProcessStartInfo]::new('psql')
+    foreach ($a in $Arguments) { $psi.ArgumentList.Add($a) }
+    $psi.WorkingDirectory = $WorkingDirectory
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+    $stderrTask = $proc.StandardError.ReadToEndAsync()
+
+    $finished = $proc.WaitForExit($TimeoutSec * 1000)
+    $timedOut = -not $finished
+    if ($timedOut) {
+        # Kill(true) (.NET Core 3+) terminates the whole process tree, not
+        # just this PID — psql itself is a single process, but this is
+        # cheap insurance against anything it might spawn.
+        try { $proc.Kill($true) } catch {}
+    }
+    # Also flushes the async stream reads once the process is gone.
+    $proc.WaitForExit()
+
+    [PSCustomObject]@{
+        ExitCode = if ($timedOut) { -1 } else { $proc.ExitCode }
+        TimedOut = $timedOut
+        StdOut   = $stdoutTask.GetAwaiter().GetResult()
+        StdErr   = $stderrTask.GetAwaiter().GetResult()
+    }
+}
+
+# ---------------------------------------------------------------------------
 # Auto-detects a database for "database" kind reports when neither the
 # config file nor -DefaultDbname picked one for this service (lowest
 # priority, see the header comment): connects (using the same conn string
@@ -374,39 +425,17 @@ SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_sta
 END;
 '@
 
-    # File-based redirection + WaitForExit(ms)-then-read (same pattern as
-    # Invoke-ReportPsql below, see its comment): reading via .StandardOutput
-    # would block indefinitely on a truly stuck connection that never closes
-    # its output, defeating the 30s timeout entirely.
-    $tmpOut = [System.IO.Path]::GetTempFileName()
-    $tmpErr = [System.IO.Path]::GetTempFileName()
     try {
-        $psqlArgs = @($ConnBase, '-X', '-q', '-t', '-A', '-c', $sql)
-        $proc = Start-Process -FilePath psql -ArgumentList $psqlArgs `
-            -RedirectStandardOutput $tmpOut -RedirectStandardError $tmpErr -NoNewWindow -PassThru
-
-        $finished = $proc.WaitForExit(30000)
-        if (-not $finished) {
-            try { $proc.Kill($true) } catch {}
-            $proc.WaitForExit()
-            return ''
-        }
-        if ($proc.ExitCode -ne 0) { return '' }
-        $stdout = Get-Content -Raw -Path $tmpOut -ErrorAction SilentlyContinue
-        if (-not $stdout) { return '' }
-        return $stdout.Trim()
+        $result = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-c', $sql) -TimeoutSec 30
+        if ($result.TimedOut -or $result.ExitCode -ne 0 -or -not $result.StdOut) { return '' }
+        return $result.StdOut.Trim()
     } catch {
         return ''
-    } finally {
-        Remove-Item -ErrorAction SilentlyContinue $tmpOut, $tmpErr
     }
 }
 
 # ---------------------------------------------------------------------------
-# Runs report_<kind>.sql through psql with a wall-clock timeout, redirecting
-# stdout/stderr to temp files (file-based redirection avoids the classic
-# .NET Process pipe-deadlock risk on large output — no fixed pipe buffer to
-# fill, unlike in-memory stream redirection).
+# Runs report_<kind>.sql through psql with a wall-clock timeout.
 # ---------------------------------------------------------------------------
 
 function Invoke-ReportPsql {
@@ -418,36 +447,12 @@ function Invoke-ReportPsql {
         [int]$TimeoutSec
     )
 
-    $tmpOut = [System.IO.Path]::GetTempFileName()
-    $tmpErr = [System.IO.Path]::GetTempFileName()
-    try {
-        $psqlArgs = @(
-            $Conn, '-X', '-q', '-v', "sql_dir=$SqlDir",
-            '-c', "SET statement_timeout='$Stmt'; SET lock_timeout='3s';",
-            '-f', $ReportFile
-        )
-        $proc = Start-Process -FilePath psql -ArgumentList $psqlArgs -WorkingDirectory $SelfDir `
-            -RedirectStandardOutput $tmpOut -RedirectStandardError $tmpErr -NoNewWindow -PassThru
-
-        $finished = $proc.WaitForExit($TimeoutSec * 1000)
-        $timedOut = -not $finished
-        if ($timedOut) {
-            # Kill(true) (.NET Core 3+) terminates the whole process tree, not
-            # just this PID — psql itself is a single process, but this is
-            # cheap insurance against anything it might spawn.
-            try { $proc.Kill($true) } catch {}
-            $proc.WaitForExit()
-        }
-
-        [PSCustomObject]@{
-            ExitCode = if ($timedOut) { -1 } else { $proc.ExitCode }
-            TimedOut = $timedOut
-            StdOut   = (Get-Content -Raw -Path $tmpOut -ErrorAction SilentlyContinue)
-            StdErr   = (Get-Content -Raw -Path $tmpErr -ErrorAction SilentlyContinue)
-        }
-    } finally {
-        Remove-Item -ErrorAction SilentlyContinue $tmpOut, $tmpErr
-    }
+    $psqlArgs = @(
+        $Conn, '-X', '-q', '-v', "sql_dir=$SqlDir",
+        '-c', "SET statement_timeout='$Stmt'; SET lock_timeout='3s';",
+        '-f', $ReportFile
+    )
+    Invoke-Psql -Arguments $psqlArgs -TimeoutSec $TimeoutSec -WorkingDirectory $SelfDir
 }
 
 if (-not $Localhost) {
