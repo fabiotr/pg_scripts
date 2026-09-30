@@ -107,11 +107,29 @@ class Context(unittest.TestCase):
     def test_reserved_word_before_paren_is_still_reported(self):
         self.assertEqual(found("SELECT 1 WHERE x in (1, 2)"), ["in"])
 
+    def test_type_keyword_syntax_before_paren_is_reported(self):
+        self.assertEqual(found("SELECT * FROM t join (SELECT 1) s ON TRUE"), ["join"])
+        self.assertEqual(found("SELECT 1 WHERE v like ('x') OR v ilike ('y')"), ["like", "ilike"])
+        self.assertEqual(found("SELECT (a, b) overlaps (c, d)"), ["overlaps"])
+
+    def test_function_names_among_type_keywords(self):
+        self.assertEqual(found("SELECT current_schema(), left(v, 1), right(v, 1)"), [])
+        self.assertEqual(found("SELECT current_schema"), ["current_schema"])
+
 
 class Ambiguous(unittest.TestCase):
     def test_backslash_quote_is_ambiguous(self):
         self.assertIsNotNone(ck.scan("SELECT 'can\\'t select' AS a")[1])
         self.assertIsNotNone(ck.scan("SELECT 'C:\\' AS path")[1])
+
+    def test_escaped_quote_at_doubled_quote_is_ambiguous(self):
+        # standard_conforming_strings on: 'a\' + '' + closing quote;
+        # off: \' is an escaped quote, so the string ends elsewhere
+        self.assertIsNotNone(ck.scan("SELECT 'a\\''' AS x")[1])
+        self.assertIsNotNone(ck.scan("SELECT 'x\\''y' AS x")[1])
+
+    def test_doubled_quotes_without_backslash_are_not_ambiguous(self):
+        self.assertIsNone(ck.scan("SELECT 'can''t' AS a, '''' AS q, 'a\\\\''b' AS e")[1])
 
     def test_even_backslashes_and_e_strings_are_not(self):
         for sql in ("SELECT '\\\\' AS a", "SELECT '\\s+' AS r", "SELECT E'can\\'t' AS e"):
