@@ -8,8 +8,8 @@ SELECT
     --to_char((rows::numeric/calls::numeric),'FM999G990D9') AS "Rows/Call",
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, 
     --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
-    pg_size_pretty(((temp_blks_read + temp_blks_written)/reset_days) * current_setting('block_size')::integer) AS "Temp/Day",
-    pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls) avg_temp,
+    lpad(pg_size_pretty(((temp_blks_read + temp_blks_written)/reset_days) * current_setting('block_size')::integer), 11) AS "Temp/Day",
+    lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls), 11) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN ((blk_read_time + blk_write_time)/reset_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "Temp Time/Day",

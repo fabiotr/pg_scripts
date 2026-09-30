@@ -43,7 +43,7 @@ FROM (
             THEN to_number(tfma.option_value ,'999999999999')
             ELSE NULL END AS max_age_toast,
         to_number(current_setting('vacuum_failsafe_age'),'999999999999') AS failsafe_age,
-        pg_size_pretty(pg_table_size(c.oid)) AS size
+        lpad(pg_size_pretty(pg_table_size(c.oid)), 11) AS size
     FROM
         pg_class c
         JOIN pg_namespace n ON c.relnamespace = n.oid

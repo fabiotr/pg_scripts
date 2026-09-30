@@ -1,6 +1,6 @@
 SELECT
     datname AS "Database",
-    pg_size_pretty(pg_database_size(datname)) AS "Size",
+    lpad(pg_size_pretty(pg_database_size(datname)), 11) AS "Size",
     round(age(datfrozenxid) * 100.0 / current_setting('autovacuum_freeze_max_age')::numeric, 1) || '%' AS "XID Max",
     round(age(datfrozenxid) * 100.0 / current_setting('vacuum_failsafe_age')::numeric, 1) || '%' AS "XID Failsafe",
     round(age(datfrozenxid) * 100.0 / 2147483648, 1) || '%' AS "XID Total",

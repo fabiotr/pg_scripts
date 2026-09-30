@@ -8,11 +8,11 @@ SELECT
     to_char(rows::numeric         / since_days,            'FM999G999G999') AS "Records/Day",
     to_char(rows::numeric         / calls::numeric,      'FM999G999G990D9') AS "Records/Call",
     to_char(wal_records::numeric  / calls::numeric, 'FM999G990D0')          AS "Wal/Call",
-    pg_size_pretty(trunc(nullif(wal_bytes::numeric/calls,0)))               AS "WAL Size/Call",
+    lpad(pg_size_pretty(trunc(nullif(wal_bytes::numeric/calls,0))), 11)               AS "WAL Size/Call",
     to_char(wal_records::numeric/since_days,  'FM999G999G999')              AS "WAL Records/Day",
     to_char(wal_fpi::numeric/since_days,          'FM9G999G999')            AS "WAL FPI/Day", 
     to_char(wal_buffers_full::numeric/since_days, 'FM999G999')              AS "WAL full buffers/Day", 
-    pg_size_pretty(nullif(wal_bytes::numeric/since_days,0))                 AS "WAL Size/Day",
+    lpad(pg_size_pretty(nullif(wal_bytes::numeric/since_days,0)), 11)                 AS "WAL Size/Day",
     to_char((total_exec_time + total_plan_time / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50 THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||

@@ -4,7 +4,7 @@ SELECT
 	seq_scan AS "Seq scan", 
 	idx_scan AS "Index scan", 
 	n_live_tup AS "Rows", 
-	pg_size_pretty(pg_relation_size(relid)) AS  "Size"
+	lpad(pg_size_pretty(pg_relation_size(relid)), 11) AS  "Size"
     FROM pg_stat_user_tables 
     WHERE 
         seq_scan + coalesce(idx_scan, 0) < 10 AND

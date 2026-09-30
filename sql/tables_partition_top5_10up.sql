@@ -94,15 +94,15 @@ SELECT
     part_name     AS "Partition",
     part_bound    AS "Bound",
     index_count   AS "Index Count",
-    pg_size_pretty(data_bytes)                                                AS "Heap size",
-    pg_size_pretty(toast_bytes)                                               AS "Toast size",
-    pg_size_pretty(table_bytes)                                               AS "Table size",
-    pg_size_pretty(indexes_bytes)                                             AS "Index size",
-    pg_size_pretty(total_bytes)                                               AS "Total size",
-    pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
-        / sa.days_since_reset)::bigint )                                      AS "Hit / Day",
-    pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
-        / sa.days_since_reset)::bigint )                                      AS "Reads / Day",
+    lpad(pg_size_pretty(data_bytes), 11)                                                AS "Heap size",
+    lpad(pg_size_pretty(toast_bytes), 11)                                               AS "Toast size",
+    lpad(pg_size_pretty(table_bytes), 11)                                               AS "Table size",
+    lpad(pg_size_pretty(indexes_bytes), 11)                                             AS "Index size",
+    lpad(pg_size_pretty(total_bytes), 11)                                               AS "Total size",
+    lpad(pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
+        / sa.days_since_reset)::bigint ), 11)                                      AS "Hit / Day",
+    lpad(pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
+        / sa.days_since_reset)::bigint ), 11)                                      AS "Reads / Day",
     ROUND(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
 FROM
     ranked,

@@ -1,5 +1,5 @@
 SELECT 
-    '/*** SIZE: ' || lpad(pg_size_pretty(pg_relation_size(indexrelid::regclass)),7) || '  ***/ ' || 
+    '/*** SIZE: ' || lpad(pg_size_pretty(pg_relation_size(indexrelid::regclass)),11) || '  ***/ ' || 
     'DROP INDEX CONCURRENTLY IF EXISTS ' || quote_ident(indexes.schemaname) || '.'  || quote_ident(idx_stat.indexrelname) || ';'
 FROM pg_stat_user_indexes AS idx_stat
 	JOIN pg_index

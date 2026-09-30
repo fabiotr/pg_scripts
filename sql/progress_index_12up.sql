@@ -9,8 +9,8 @@ SELECT
   ci.relname AS index,
   command,
   phase,
-  pg_size_pretty(blocks_total * current_setting('block_size')::int) || ' / ' ||
-    pg_size_pretty(blocks_done  * current_setting('block_size')::int) || ' / ' ||   
+  lpad(pg_size_pretty(blocks_total * current_setting('block_size')::int), 11) || ' / ' ||
+    lpad(pg_size_pretty(blocks_done  * current_setting('block_size')::int), 11) || ' / ' ||   
     trunc(blocks_done::numeric * 100 / nullif(blocks_total::numeric,0),1) 
     AS "Size (Total/Done/% Done)",
   tuples_total || ' / ' ||

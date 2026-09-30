@@ -3,7 +3,7 @@ SELECT
 	relname AS "Table", 
 	coalesce(seq_scan,0) + coalesce(idx_scan,0) AS "Scan", 
 	n_live_tup AS "Rows", 
-	pg_size_pretty(pg_table_size(relid)) AS  "Size"
+	lpad(pg_size_pretty(pg_table_size(relid)), 11) AS  "Size"
     FROM pg_stat_user_tables 
     WHERE 
         coalesce(seq_scan,0) + coalesce(idx_scan, 0) = 0 AND

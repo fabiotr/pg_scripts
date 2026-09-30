@@ -4,7 +4,7 @@ SELECT
 	pg_get_userbyid(c.relowner) AS "Owner",
 	--t.spcname                   AS "Tablespace",
 	to_char(c.reltuples,'FM999G999G999G990')  AS "Rows",
-	pg_size_pretty(pg_relation_size(c.oid)) AS "Size"
+	lpad(pg_size_pretty(pg_relation_size(c.oid)), 11) AS "Size"
 FROM 
 	pg_class c
 	LEFT JOIN pg_namespace n ON n.oid = c.relnamespace

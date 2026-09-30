@@ -4,7 +4,7 @@ SELECT
     "Index name",
     "Owner",
     rows AS "Rows",
-    lpad(pg_size_pretty(index_size),7) AS "Index size",
+    lpad(pg_size_pretty(index_size),11) AS "Index size",
     avg_leaf_density AS "Avg leaf density",
     leaf_fragmentation AS "Leaf fragmentation",
     version AS "Version",

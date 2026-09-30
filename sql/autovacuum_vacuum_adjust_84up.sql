@@ -18,7 +18,7 @@ SELECT
         || '); --' AS "Command", 
     coalesce(t.scale,s.scale) AS current,
     --round(c.scale,6) AS new,
-    pg_size_pretty(pg_relation_size(c.oid))  AS size
+    lpad(pg_size_pretty(pg_relation_size(c.oid)), 11)  AS size
 FROM 
     (SELECT
             (100*1024*1024) / pg_relation_size(oid)::NUMERIC AS scale, -- 100*1024*1024 = 100MB goal
