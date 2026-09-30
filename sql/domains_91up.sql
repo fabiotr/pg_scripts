@@ -13,7 +13,7 @@ SELECT
         THEN 'not null' END AS "Nullable",
     t.typdefault AS "Default",
     array_to_string(ARRAY(
-         SELECT pg_get_constraintdef(r.oid, true) 
+         SELECT pg_get_constraintdef(r.oid, TRUE) 
          FROM pg_constraint r 
          WHERE t.oid = r.contypid), ' ') AS "Check"
 FROM 

@@ -9,6 +9,6 @@ SELECT
     tablespaces_streamed            AS "Tablespaces Backuped"
 FROM  
     pg_stat_progress_basebackup AS p
-    JOIN pg_stat_activity AS a using (pid)
+    JOIN pg_stat_activity AS a USING (pid)
 ORDER BY now() - a.xact_start DESC;
 

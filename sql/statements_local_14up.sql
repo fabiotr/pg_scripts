@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by local_blks_read + local_blks_written + local_blks_dirtied desc) "N",
+    row_number() over(ORDER by local_blks_read + local_blks_written + local_blks_dirtied DESC) "N",
     to_char(local_blks_read + local_blks_written + local_blks_dirtied * 100 / sum(nullif(local_blks_read + local_blks_written + local_blks_dirtied,0)) OVER (),'FM99D99') || '%' AS "local_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
@@ -16,7 +16,7 @@ SELECT
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 	
     --datname = current_database()

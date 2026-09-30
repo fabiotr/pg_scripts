@@ -15,5 +15,5 @@ SELECT
 	ELSE to_char((coalesce(seq_scan,0) + coalesce(idx_scan,0))::numeric / ((coalesce(n_tup_ins,0) + coalesce(n_tup_upd,0) + coalesce(n_tup_del,0))),'FM999G990D9') END AS "R / W",
     to_char((coalesce(seq_scan,0) + coalesce(idx_scan,0) + coalesce(n_tup_ins,0) + coalesce(n_tup_upd,0) + coalesce(n_tup_del,0)),'FM999G999G999G999') AS "IOPS"
 FROM pg_stat_user_tables
-ORDER BY  n_tup_ins + n_tup_upd + n_tup_del desc
+ORDER BY  n_tup_ins + n_tup_upd + n_tup_del DESC
 LIMIT 20;

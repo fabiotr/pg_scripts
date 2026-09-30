@@ -1,7 +1,7 @@
 SELECT 
     t.spcname AS "Tbs",
-    n.nspname as "Schema",
-    c.relname as "Name",
+    n.nspname AS "Schema",
+    c.relname AS "Name",
     CASE c.relkind 
         WHEN 'i' THEN 'index' 
         WHEN 'I' THEN 'partitioned index' 

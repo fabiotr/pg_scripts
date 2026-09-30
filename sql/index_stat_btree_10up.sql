@@ -1,6 +1,6 @@
 SELECT 
-    n.nspname as "Schema",
-    c.relname as "Name",
+    n.nspname AS "Schema",
+    c.relname AS "Name",
     --pg_get_userbyid(c.relowner) AS "Owner",
     --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
     lpad(pg_size_pretty(index_size),7)   AS "Index Size",

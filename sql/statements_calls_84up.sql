@@ -1,6 +1,6 @@
 SET escape_string_warning TO off;
 SELECT
-    row_number() over(order by calls  desc) "N",
+    row_number() over(ORDER by calls  DESC) "N",
     to_char(calls*100/sum(calls) OVER (),'FM99D99') || '%' AS "Calls_%",
     datname AS "DB", 
     rolname AS "User",

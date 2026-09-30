@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by rows/calls  desc) "N",
+    row_number() over(ORDER by rows/calls  DESC) "N",
     datname AS "DB", userid::regrole AS "User",
     queryid,
     to_char(calls,'FM999G999G999') AS "Calls",

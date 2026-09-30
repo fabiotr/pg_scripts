@@ -19,7 +19,7 @@ SELECT
   partitions_total || ' / ' || partitions_done AS "Partitions (Total/Done)"
 FROM
   pg_stat_progress_create_index p
-  JOIN pg_stat_activity a using (pid)
+  JOIN pg_stat_activity a USING (pid)
   JOIN pg_class c ON c.oid = p.relid
   LEFT JOIN pg_class ci ON ci.oid = p.index_relid
 ORDER BY now() - a.xact_start DESC;

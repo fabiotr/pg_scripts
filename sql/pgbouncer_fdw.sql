@@ -20,7 +20,7 @@ CREATE VIEW pgbouncer.clients AS
     _.link,
     _.remote_pid,
     _.tls
-   FROM public.dblink('pgbouncer'::text, 'show clients'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp with time zone, request_time timestamp with time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
+   FROM public.dblink('pgbouncer'::text, 'show clients'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp WITH time zone, request_time timestamp WITH time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
 
 
 ALTER TABLE pgbouncer.clients OWNER TO postgres;
@@ -43,7 +43,7 @@ CREATE VIEW pgbouncer.clients_session AS
     _.link,
     _.remote_pid,
     _.tls
-   FROM public.dblink('pgbouncer_session'::text, 'show clients'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp with time zone, request_time timestamp with time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
+   FROM public.dblink('pgbouncer_session'::text, 'show clients'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp WITH time zone, request_time timestamp WITH time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
 
 
 ALTER TABLE pgbouncer.clients_session OWNER TO postgres;
@@ -66,7 +66,7 @@ CREATE VIEW pgbouncer.servers AS
     _.link,
     _.remote_pid,
     _.tls
-   FROM public.dblink('pgbouncer'::text, 'show servers'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp with time zone, request_time timestamp with time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
+   FROM public.dblink('pgbouncer'::text, 'show servers'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp WITH time zone, request_time timestamp WITH time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
 
 
 ALTER TABLE pgbouncer.servers OWNER TO postgres;
@@ -106,7 +106,7 @@ CREATE VIEW pgbouncer.servers_session AS
     _.link,
     _.remote_pid,
     _.tls
-   FROM public.dblink('pgbouncer_session'::text, 'show servers'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp with time zone, request_time timestamp with time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
+   FROM public.dblink('pgbouncer_session'::text, 'show servers'::text) _(type text, "user" text, database text, state text, addr text, port integer, local_addr text, local_port integer, connect_time timestamp WITH time zone, request_time timestamp WITH time zone, wait integer, wait_us integer, close_needed integer, ptr text, link text, remote_pid integer, tls text);
 
 
 ALTER TABLE pgbouncer.servers_session OWNER TO postgres;

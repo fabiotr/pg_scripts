@@ -11,7 +11,7 @@ SELECT
 	round(100 * idx_blks_read / sum(idx_blks_read) OVER(),1) AS "Read/Tot %"
 FROM 
 	pg_statio_all_indexes 
-	JOIN (SELECT datname, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
+	JOIN (SELECT datname, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
 WHERE schemaname != 'pg_toast'
 ORDER BY idx_blks_read DESC 
 LIMIT 10;

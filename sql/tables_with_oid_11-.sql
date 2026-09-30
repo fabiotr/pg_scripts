@@ -11,10 +11,10 @@ CASE relkind
 	WHEN 'c' THEN 'composite type'
 	WHEN 'p' THEN 'partitioned table'
 	WHEN 'I' THEN 'partitioned index'
-END as "Type"
+END AS "Type"
 , pg_size_pretty(pg_relation_size( relnamespace::regnamespace || '.' || relname))
 FROM pg_class 
 WHERE relkind = 'r' 
-AND relhasoids=true 
+AND relhasoids=TRUE 
 AND  relnamespace NOT IN ('pg_catalog'::regnamespace::oid,'information_schema'::regnamespace::oid);
 

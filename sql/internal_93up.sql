@@ -1,7 +1,7 @@
 SELECT 
   inet_server_addr() AS "Server Address", 
-  date_trunc('second',current_timestamp - pg_postmaster_start_time()) 	AS "Uptime",
-  date_trunc('second',current_timestamp - pg_conf_load_time()) 		AS "Reload time", 
+  date_trunc('second',CURRENT_TIMESTAMP - pg_postmaster_start_time()) 	AS "Uptime",
+  date_trunc('second',CURRENT_TIMESTAMP - pg_conf_load_time()) 		AS "Reload time", 
   pg_is_in_recovery() 			AS "Recovery?",
   current_setting('data_checksums') 	AS "Checksum?",
   current_setting('debug_assertions') 	AS "Debug?",

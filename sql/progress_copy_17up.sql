@@ -16,6 +16,6 @@ SELECT
   trunc(tuples_excluded::numeric * 100 / reltuples::numeric)                                  AS "% Rows excluded"
 FROM
   pg_stat_progress_copy p
-  JOIN pg_stat_activity a using (pid)
+  JOIN pg_stat_activity a USING (pid)
   JOIN pg_class c ON c.oid = p.relid
 ORDER BY now() - a.xact_start DESC;

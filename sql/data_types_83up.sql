@@ -1,7 +1,7 @@
 SELECT 
-    n.nspname as "Schema",
+    n.nspname AS "Schema",
     format_type(t.oid, NULL) AS "Name",
-    obj_description(t.oid, 'pg_type') as "Description"
+    obj_description(t.oid, 'pg_type') AS "Description"
 FROM 
     pg_type t
     LEFT JOIN pg_namespace n ON n.oid = t.typnamespace

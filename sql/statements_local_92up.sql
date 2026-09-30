@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by local_blks_read + local_blks_written + local_blks_dirtied desc) "N",
+    row_number() over(ORDER by local_blks_read + local_blks_written + local_blks_dirtied DESC) "N",
     to_char(local_blks_read + local_blks_written + local_blks_dirtied * 100 / sum(nullif(local_blks_read + local_blks_written + local_blks_dirtied,0)) OVER (),'FM99D99') || '%' AS "local_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,

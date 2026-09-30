@@ -6,9 +6,9 @@ SELECT
     a.datname AS db,
     host(a.client_addr) AS host,
     a.usename AS "user",
-    to_char(current_timestamp - a.backend_start ,'HH24:MI:SS') AS "Q Conn",
-    to_char(current_timestamp - a.xact_start    ,'HH24:MI:SS') AS "Q Xact",
-    to_char(current_timestamp - a.query_start   ,'HH24:MI:SS') AS "Q Start",
+    to_char(CURRENT_TIMESTAMP - a.backend_start ,'HH24:MI:SS') AS "Q Conn",
+    to_char(CURRENT_TIMESTAMP - a.xact_start    ,'HH24:MI:SS') AS "Q Xact",
+    to_char(CURRENT_TIMESTAMP - a.query_start   ,'HH24:MI:SS') AS "Q Start",
     round(io.reads / t.secs, 2)                       AS reads_per_sec,
     pg_size_pretty(round(io.read_bytes / t.secs))  || '/s' AS read_bytes_per_sec,
     round(io.writes / t.secs, 2)                      AS writes_per_sec,
@@ -22,8 +22,8 @@ SELECT
     array_to_string(regexp_split_to_array(substr(a.query,1,50),'\s+'),' ') || CASE WHEN length(a.query) > 50 THEN '...' ELSE '' END AS query
 FROM pg_stat_activity a
 LEFT JOIN LATERAL (
-    SELECT NULLIF(EXTRACT(EPOCH FROM (current_timestamp - a.backend_start)),0)::numeric AS secs
-) t ON true
+    SELECT NULLIF(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - a.backend_start)),0)::numeric AS secs
+) t ON TRUE
 LEFT JOIN LATERAL (
     SELECT
         sum(reads)       AS reads,
@@ -34,11 +34,11 @@ LEFT JOIN LATERAL (
         sum(hits)        AS hits,
         sum(evictions)   AS evictions
     FROM pg_stat_get_backend_io(a.pid)
-) io ON true
+) io ON TRUE
 LEFT JOIN LATERAL (
     SELECT wal_records, wal_bytes
     FROM pg_stat_get_backend_wal(a.pid)
-) wal ON true
+) wal ON TRUE
 WHERE
     a.pid != pg_backend_pid()
 ORDER BY (io.read_bytes / t.secs + io.write_bytes / t.secs) DESC NULLS LAST

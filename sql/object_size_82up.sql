@@ -1,7 +1,7 @@
 SELECT 
     coalesce(t.spcname, nullif(current_setting('default_tablespace'),''), 'pg_default') AS "Tablespace",
-    n.nspname as "Schema",
-    c.relname as "Name",
+    n.nspname AS "Schema",
+    c.relname AS "Name",
     CASE c.relkind 
         WHEN 'r' THEN 'table' 
         WHEN 'v' THEN 'view' 
