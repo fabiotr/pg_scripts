@@ -60,8 +60,9 @@
     Also doubles as the service list when none is given on the command
     line (services used in file order). Use "-" (or omit trailing columns)
     to skip just one column while still setting others on the same line.
-    Default: $HOME\pg_scripts\reports\report.conf if it exists, otherwise
-    nothing is loaded/overridden.
+    Default: report.conf next to this script (git-ignored; see
+    report.conf.example) if it exists, otherwise nothing is
+    loaded/overridden.
 
     Output: <OutDir>\YYYY-MM-DD\YYYY-MM-DD_<label>_<kind>.md
 
@@ -72,11 +73,12 @@
 
 .PARAMETER ScriptsDir
     Dir with the sql\ fragment library (variables.sql, internal.sql, ...).
-    Env: REPORT_SCRIPTS_DIR. Default: $HOME\pg_scripts\sql.
+    Env: REPORT_SCRIPTS_DIR. Default: ..\sql next to this script (the
+    repo's own sql\).
 
 .PARAMETER NormalizeScript
     Path to normalize_md.py, or a directory containing it. Env:
-    REPORT_NORMALIZE_SCRIPT. Default: $HOME\pg_scripts\reports.
+    REPORT_NORMALIZE_SCRIPT. Default: this script's directory.
 
 .PARAMETER OutDir
     Base output directory. Env: REPORT_OUT_DIR. Default: $HOME\reports.
@@ -88,8 +90,9 @@
 
 .PARAMETER ConfigFile
     Path to the unified config file (see .DESCRIPTION). Env:
-    REPORT_CONFIG_FILE. Default: $HOME\pg_scripts\reports\report.conf if
-    it exists, otherwise nothing is loaded/overridden.
+    REPORT_CONFIG_FILE. Default: report.conf next to this script
+    (git-ignored; see report.conf.example) if it exists, otherwise nothing
+    is loaded/overridden.
 
 .PARAMETER DefaultDbname
     Fallback database for "database" kind reports, for any service without
@@ -152,10 +155,10 @@ $SelfDir = $PSScriptRoot
 # ---------------------------------------------------------------------------
 
 if (-not $ScriptsDir) {
-    $ScriptsDir = if ($env:REPORT_SCRIPTS_DIR) { $env:REPORT_SCRIPTS_DIR } else { Join-Path $HOME 'pg_scripts\sql' }
+    $ScriptsDir = if ($env:REPORT_SCRIPTS_DIR) { $env:REPORT_SCRIPTS_DIR } else { Join-Path (Split-Path -Parent $SelfDir) 'sql' }
 }
 if (-not $NormalizeScript) {
-    $NormalizeScript = if ($env:REPORT_NORMALIZE_SCRIPT) { $env:REPORT_NORMALIZE_SCRIPT } else { Join-Path $HOME 'pg_scripts\reports' }
+    $NormalizeScript = if ($env:REPORT_NORMALIZE_SCRIPT) { $env:REPORT_NORMALIZE_SCRIPT } else { $SelfDir }
 }
 if (-not $OutDir) {
     $OutDir = if ($env:REPORT_OUT_DIR) { $env:REPORT_OUT_DIR } else { Join-Path $HOME 'reports' }
@@ -221,7 +224,7 @@ if ($Localhost) {
     $Services = @($HostnameLabel)
 } else {
     if (-not $ConfigFile) {
-        $ConfigFile = Join-Path $HOME 'pg_scripts\reports\report.conf'
+        $ConfigFile = Join-Path $SelfDir 'report.conf'
         $ConfigFileIsDefault = $true
     }
     $ConfigFile = Resolve-AbsolutePath $ConfigFile
@@ -269,7 +272,7 @@ if ($Localhost) {
         Write-Warning "No service given on the command line — using the $($Services.Count) service(s) listed in $ConfigFile"
     }
     if ($Services.Count -eq 0) {
-        Write-Host "No service given. Pass one or more pg_service.conf service names as arguments, set REPORT_SERVICES, or list them in the config file (-ConfigFile, default `$HOME\pg_scripts\reports\report.conf), or use -Localhost."
+        Write-Host "No service given. Pass one or more pg_service.conf service names as arguments, set REPORT_SERVICES, or list them in the config file (-ConfigFile, default $(Join-Path $SelfDir 'report.conf')), or use -Localhost."
         exit 2
     }
 }
