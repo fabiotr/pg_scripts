@@ -14,6 +14,10 @@
 #   - T keywords used as function calls, e.g. left(...), right(...)
 #   - functions such as now() or current_schema(), which are lowercase
 #
+# A plain '...' string with a backslash right before its closing quote
+# ('a\' or 'can\'t') is reported as ambiguous instead: where it ends
+# depends on standard_conforming_strings, so it can't be scanned safely.
+#
 # Requirements: bash and python3 (standard library only).
 #
 # Usage:
@@ -112,28 +116,48 @@ def tokens(src):
             yield pos, m.end(), m.group(0), m.re is LITERAL; pos = m.end(); continue
         yield pos, pos + 1, src[pos], False; pos += 1
 
-def lowercase_keywords(src):
-    """Yield (start, end, word) for every reserved keyword that isn't uppercase."""
-    prev = ""
+# A plain '...' string whose closing quote follows an odd number of
+# backslashes ('a\' or 'can\'t ...') ends in different places depending on
+# standard_conforming_strings (off by default up to 9.0, on since 9.1), so
+# it can't be scanned safely. Use '' for a quote, or an explicit E'...'.
+AMBIGUOUS_END = re.compile(r"(?<!\\)(?:\\\\)*\\'$")
+
+def scan(src):
+    """Return (keywords, ambiguous): lowercase reserved keywords as
+    (start, end, word), and the start of every ambiguous plain string."""
+    keywords, ambiguous, prev = [], [], ""
     for start, end, t, literal in tokens(src):
         if literal:
+            if t[0] == "'" and AMBIGUOUS_END.search(t):
+                ambiguous.append(start)
             prev = ""
             continue
         lw = t.lower()
         if lw in KW and t != t.upper() and prev not in (".", "as", ":"):
             if not (KW[lw] == "T" and src[end:].lstrip()[:1] == "("):
-                yield start, end, t
+                keywords.append((start, end, t))
         prev = lw
+    return keywords, ambiguous
+
+def line_of(src, pos):
+    return src.count("\n", 0, pos) + 1
 
 fix = os.environ.get("FIX") == "1"
-found = fixed = 0
+found = fixed = skipped = 0
 for path in sys.argv[1:]:
     with open(path, newline="") as f:
         src = f.read()
-    hits = list(lowercase_keywords(src))
+    hits, ambiguous = scan(src)
+    for pos in ambiguous:
+        print(f"{path}:{line_of(src, pos)}: string with a backslash before its closing quote is "
+              f"ambiguous across standard_conforming_strings; use '' or E'...'")
+    found += len(ambiguous)
     if not hits:
         continue
-    if fix:
+    if fix and ambiguous:
+        print(f"{path}: not fixed ({len(hits)} keyword(s)) until the ambiguous string(s) above are rewritten")
+        skipped += len(hits)
+    elif fix:
         out, last = [], 0
         for start, end, t in hits:
             out += [src[last:start], t.upper()]
@@ -147,15 +171,20 @@ for path in sys.argv[1:]:
         print(f"{path}: uppercased {len(hits)} keyword(s)")
     else:
         for start, end, t in hits:
-            line = src.count("\n", 0, start) + 1
-            print(f"{path}:{line}: keyword '{t}' should be uppercase ({t.upper()})")
+            print(f"{path}:{line_of(src, start)}: keyword '{t}' should be uppercase ({t.upper()})")
         found += len(hits)
 
 if fix:
-    print(f"\nFixed {fixed} keyword(s)" if fixed else "All keywords OK")
+    if fixed:
+        print(f"\nFixed {fixed} keyword(s)")
+    if found or skipped:
+        print(f"{found} ambiguous string(s) to rewrite by hand; {skipped} keyword(s) left unfixed")
+        sys.exit(1)
+    if not fixed:
+        print("All keywords OK")
     sys.exit(0)
 if found:
-    print(f"\n{found} problem(s) found (run ./tools/check_keywords.sh --fix to fix them)")
+    print(f"\n{found} problem(s) found (run ./tools/check_keywords.sh --fix to fix the keywords)")
     sys.exit(1)
 print("All keywords OK")
 PY
