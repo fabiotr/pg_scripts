@@ -28,6 +28,7 @@ already opened itself (e.g. \\qecho '```sql' around generated commands).
 import argparse
 import re
 import sys
+import unicodedata
 
 RECORD_HEADER = re.compile(r'^-\[ RECORD \d+ \]')
 FENCE = re.compile(r'^(`{3,}|~{3,})')
@@ -38,13 +39,44 @@ SEP_LINE = re.compile(r'^[-+ ]*-[-+ ]*$')
 
 
 def split_row(line: str):
-    """Split a 'a | b | c' line (with or without leading/trailing space/pipe) into cells."""
-    s = line.strip()
+    """Split a 'a | b | c' line into cells. Outer pipes are dropped only when
+    the line itself starts with one (\\pset border 2): with border 1, a
+    leading/trailing '|' after whitespace is the edge of an empty first/last
+    cell, not a border."""
+    s = line.rstrip()
     if s.startswith('|'):
         s = s[1:]
-    if s.endswith('|'):
-        s = s[:-1]
+        if s.endswith('|'):
+            s = s[:-1]
     return [c.strip() for c in s.split('|')]
+
+
+def display_width(ch: str) -> int:
+    """Terminal columns psql uses for ch: 2 for wide (CJK, most emoji),
+    0 for combining marks and format characters, 1 otherwise."""
+    if unicodedata.combining(ch) or unicodedata.category(ch) in ('Mn', 'Me', 'Cf'):
+        return 0
+    return 2 if unicodedata.east_asian_width(ch) in ('W', 'F') else 1
+
+
+def split_by_separator(line: str, sep: str):
+    """Split a border-1 row at the columns where its separator line has '+',
+    for rows whose data itself contains '|' (e.g. SQL's || operator). The
+    separator is ASCII, so its indexes are display columns; the row is
+    walked by display width. '|' left inside a cell is escaped for
+    Markdown."""
+    cuts = [k for k, c in enumerate(sep) if c == '+']
+    cells, cur, col = [], [], 0
+    for ch in line:
+        if cuts and col == cuts[0] and ch == '|':
+            cells.append(''.join(cur))
+            cur = []
+            cuts.pop(0)
+        else:
+            cur.append(ch)
+        col += display_width(ch)
+    cells.append(''.join(cur))
+    return [c.strip().replace('|', '\\|') for c in cells]
 
 
 def to_md_row(cells) -> str:
@@ -96,11 +128,13 @@ def normalize(text: str, tables: str = 'md') -> str:
         psql doesn't always print a blank line between consecutive results,
         so the next table's header also ends the current one. A one-column
         row may be all hyphens (e.g. the ' - ' null display), so the
-        separator check only applies to multi-column rows."""
+        separator check only applies to multi-column rows; it may also be
+        just ' ' (an empty string value), so only a truly empty line ends a
+        one-column table."""
+        if one_column:
+            return lines[j].startswith(' ') and not starts_table(j)
         if not lines[j].strip() or starts_table(j):
             return False
-        if one_column:
-            return lines[j].startswith(' ')
         return '|' in lines[j] and not SEP_LINE.match(lines[j])
 
     while i < n:
@@ -162,7 +196,11 @@ def normalize(text: str, tables: str = 'md') -> str:
                 # the value is a single cell: escape any '|' inside it
                 cells_of = lambda l: [l.strip().replace('|', '\\|')]
             else:
-                cells_of = split_row
+                sep, ncols = lines[i + 1], lines[i + 1].count('+') + 1
+
+                def cells_of(l, sep=sep, ncols=ncols):
+                    cells = split_row(l)
+                    return cells if len(cells) == ncols else split_by_separator(l, sep)
             header_cells = cells_of(line)
             out.append(to_md_row(header_cells))
             out.append('|' + '---|' * max(len(header_cells), 1))
