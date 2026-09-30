@@ -22,7 +22,7 @@ SELECT
     array_to_string(regexp_split_to_array(substr(a.query,1,50),'\s+'),' ') || CASE WHEN length(a.query) > 50 THEN '...' ELSE '' END AS query
 FROM pg_stat_activity a
 LEFT JOIN LATERAL (
-    SELECT NULLIF(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - a.backend_start)),0)::numeric AS secs
+    SELECT NULLIF(EXTRACT(epoch FROM (CURRENT_TIMESTAMP - a.backend_start)),0)::numeric AS secs
 ) t ON TRUE
 LEFT JOIN LATERAL (
     SELECT

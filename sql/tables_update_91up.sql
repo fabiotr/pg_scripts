@@ -7,7 +7,7 @@ SELECT
         nullif(sum(n_tup_upd) OVER (),0),1) || ' %)',9)          AS "UPDATE Rows/Day"
 FROM
     pg_stat_all_tables,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days 
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days 
     	FROM pg_stat_database 
     	WHERE datname = current_database()) AS r
 WHERE

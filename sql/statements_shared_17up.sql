@@ -30,9 +30,9 @@ SELECT
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
-    (SELECT *, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
+    (SELECT *, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT stats_reset, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
     datname = current_database()
