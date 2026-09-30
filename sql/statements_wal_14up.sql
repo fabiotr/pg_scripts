@@ -18,7 +18,7 @@ SELECT
 FROM
     pg_stat_statements AS s
     JOIN pg_database AS d ON d.oid = s.dbid,
-    (SELECT stats_reset, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE
     wal_bytes > 0 AND 
     datname = current_database()
