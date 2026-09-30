@@ -417,6 +417,26 @@ class Review(unittest.TestCase):
         except subprocess.TimeoutExpired:
             self.fail("scanning 100k words took more than 5s")
 
+    def test_psql_meta_line_ends_the_query(self):
+        self.assertEqual(found("SELECT 1 AS order\n\\gset\nSELECT 2 AS desc\n\\g"), [])
+        self.assertEqual(found("SELECT 1 AS order\n\\gset\nSELECT 2 FROM t\n"), [])
+
+    def test_many_text_dollar_literals_are_linear(self):
+        code = ("import importlib.util, sys; "
+                "spec = importlib.util.spec_from_file_location('ck', sys.argv[1]); "
+                "ck = importlib.util.module_from_spec(spec); spec.loader.exec_module(ck); "
+                "ck.scan('SELECT ' + ', '.join('$$x$$' for i in range(20000)))")
+        try:
+            subprocess.run([sys.executable, "-c", code, _spec.origin], check=True, timeout=5)
+        except subprocess.TimeoutExpired:
+            self.fail("scanning 20000 dollar literals in one statement took more than 5s")
+
+    def test_prefixed_language_names(self):
+        for lang in ("E'plpgsql'", "U&'plpgsql'", "'plpgsql'", "plpgsql"):
+            sql = f"CREATE FUNCTION f() RETURNS int LANGUAGE {lang} AS $$ begin return 1; end $$;"
+            with self.subTest(lang=lang):
+                self.assertEqual(found(sql), ["begin", "end"])
+
     def test_fix_messages_count_items(self):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(lambda: __import__("shutil").rmtree(root))
