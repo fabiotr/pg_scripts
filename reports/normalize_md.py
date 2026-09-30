@@ -15,17 +15,22 @@ a Markdown table in tools that store every table row as its own object
 
 Handles two psql table forms:
   1) Aligned table (\\pset border 1): header line, a separator line of
-     '-', '+' and spaces, then data lines.
+     '-', '+' and spaces, then data lines. A one-column table has no '|'
+     at all: it's recognized by a header exactly as wide as its
+     all-'-' separator, and its data lines start with a space.
   2) Expanded block (\\x auto), for single-row results: starts with
      "-[ RECORD N ]---...", followed by "key | value" lines.
 
-Any other line (headings, \\qecho, [[_TOC_]], blank lines) passes through unchanged.
+Any other line (headings, \\qecho, [[_TOC_]], blank lines) passes through
+unchanged, and so does everything inside a fenced code block the report
+already opened itself (e.g. \\qecho '```sql' around generated commands).
 """
 import argparse
 import re
 import sys
 
 RECORD_HEADER = re.compile(r'^-\[ RECORD \d+ \]')
+FENCE = re.compile(r'^(`{3,}|~{3,})')
 # aligned-table separator: only '-', '+' and spaces, at least one '-'
 SEP_LINE = re.compile(r'^[-+ ]*-[-+ ]*$')
 
@@ -60,28 +65,51 @@ def normalize(text: str, tables: str = 'md') -> str:
 
     def starts_table(j):
         """True if lines[j] is an aligned-table header (next line is its separator)."""
-        return (
+        if not (
             lines[j].strip()
-            and '|' in lines[j]
             and not lines[j].startswith('#')
             and not lines[j].startswith('-')
             and j + 1 < n
             and SEP_LINE.match(lines[j + 1])
+        ):
+            return False
+        if '|' in lines[j]:
+            return True
+        # one column: " name " over a separator of the same width, no '+'
+        return (
+            lines[j].startswith(' ')
+            and '+' not in lines[j + 1]
+            and len(lines[j]) == len(lines[j + 1])
         )
 
-    def in_table(j):
+    def in_table(j, one_column=False):
         """True if lines[j] is still a data row of the current aligned table.
         psql doesn't always print a blank line between consecutive results,
         so the next table's header also ends the current one."""
         return (
             lines[j].strip()
-            and '|' in lines[j]
+            and (lines[j].startswith(' ') if one_column else '|' in lines[j])
             and not SEP_LINE.match(lines[j])
             and not starts_table(j)
         )
 
     while i < n:
         line = lines[i]
+
+        # ── Fenced code block opened by the report itself: copy it verbatim
+        fence = FENCE.match(line)
+        if fence:
+            marker = fence.group(1)
+            out.append(line)
+            i += 1
+            while i < n and not (lines[i].startswith(marker[0] * len(marker))
+                                 and not lines[i].strip(marker[0]).strip()):
+                out.append(lines[i])
+                i += 1
+            if i < n:
+                out.append(lines[i])  # closing fence
+                i += 1
+            continue
 
         # ── Expanded block: -[ RECORD N ]---+---
         if RECORD_HEADER.match(line) and code:
@@ -112,19 +140,25 @@ def normalize(text: str, tables: str = 'md') -> str:
 
         # ── Aligned table: header + separator line + data lines
         if starts_table(i):
+            one_column = '|' not in line
             if code:
                 start = i
                 i += 2
-                while i < n and in_table(i):
+                while i < n and in_table(i, one_column):
                     i += 1
                 out.extend(to_code_block(lines[start:i]))
                 continue
-            header_cells = split_row(line)
+            if one_column:
+                # the value is a single cell: escape any '|' inside it
+                cells_of = lambda l: [l.strip().replace('|', '\\|')]
+            else:
+                cells_of = split_row
+            header_cells = cells_of(line)
             out.append(to_md_row(header_cells))
             out.append('|' + '---|' * max(len(header_cells), 1))
             i += 2  # skip header + separator
-            while i < n and in_table(i):
-                out.append(to_md_row(split_row(lines[i])))
+            while i < n and in_table(i, one_column):
+                out.append(to_md_row(cells_of(lines[i])))
                 i += 1
             continue
 
