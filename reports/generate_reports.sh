@@ -155,7 +155,7 @@ else
       [[ -n "${CONFIG_SEEN[$svc]:-}" ]] || { SERVICE_ORDER+=("$svc"); CONFIG_SEEN[$svc]=1; }
       [[ -n "$label" && "$label" != "-" ]] && LABEL[$svc]=$label
       [[ -n "$dbname" && "$dbname" != "-" ]] && DBNAME[$svc]=$dbname
-      kind="${kind:-*}"
+      [[ -z "$kind" || "$kind" == "-" ]] && kind="*"
       [[ -n "$stmt" && "$stmt" != "-" ]] && OVR_STMT["$svc:$kind"]=$stmt
       [[ -n "$total" && "$total" != "-" ]] && OVR_TOTAL["$svc:$kind"]=$total
     done < "$CONFIG_FILE"
