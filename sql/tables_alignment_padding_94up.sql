@@ -42,7 +42,7 @@ WITH recursive constants AS (
     FALSE AS is_orig,
     table_schema,
     table_name,
-    row_number() over (partition by table_schema, table_name ORDER by alt_order_group, column_name) AS ordinal_position,
+    row_number() over (partition by table_schema, table_name ORDER BY alt_order_group, column_name) AS ordinal_position,
     column_name,
     udt_name,
     typalign,
@@ -67,15 +67,15 @@ WITH recursive constants AS (
     '{}'::text[] COLLATE "C" AS padded_columns,
     '{}'::int[] AS pads,
     (SELECT max(ordinal_position) FROM columns c WHERE c.table_name = _.table_name AND c.table_schema = _.table_schema) AS col_cnt,
-    array_agg(_.column_name::text ORDER by ordinal_position) AS cols,
-    array_agg(_.udt_name::text ORDER by ordinal_position) AS types,
-    array_agg(shift ORDER by ordinal_position) AS shifts,
+    array_agg(_.column_name::text ORDER BY ordinal_position) AS cols,
+    array_agg(_.udt_name::text ORDER BY ordinal_position) AS types,
+    array_agg(shift ORDER BY ordinal_position) AS shifts,
     NULL::int AS curleft,
     NULL::text COLLATE "C" AS prev_column_name,
     FALSE AS has_varlena
   FROM
     combined_columns _
-  GROUP by is_orig, table_schema, table_name
+  GROUP BY is_orig, table_schema, table_name
   UNION ALL
   SELECT
     is_orig,
@@ -131,7 +131,7 @@ WITH recursive constants AS (
   JOIN pg_class c ON n.oid = c.relnamespace AND c.relname = table_name
   JOIN pg_stat_user_tables s ON s.schemaname = table_schema AND s.relname = table_name
   JOIN constants ON TRUE
-  ORDER by is_orig, table_schema, table_name, analyzed DESC
+  ORDER BY is_orig, table_schema, table_name, analyzed DESC
 ), result_both AS (
   SELECT
     *,
@@ -184,8 +184,8 @@ SELECT
       WITH cols1(c) AS (
         SELECT array_to_string(array_agg(elem::text), ', ')
         FROM (SELECT * FROM unnest(alt_cols) WITH ordinality AS __(elem, i)) _
-        GROUP by (i - 1) / 3
-        ORDER by (i - 1) / 3
+        GROUP BY (i - 1) / 3
+        ORDER BY (i - 1) / 3
       )
       SELECT array_to_string(array_agg(c), e'\n') FROM cols1
     )
@@ -193,7 +193,7 @@ SELECT
   END AS "Suggested Columns Reorder"
   --case when padding_total_est > 0 then array_to_string(alt_cols, ', ') else null end as "Suggested Columns Reorder"
 FROM result r1
-ORDER by table_bytes DESC
+ORDER BY table_bytes DESC
 ;
 
 

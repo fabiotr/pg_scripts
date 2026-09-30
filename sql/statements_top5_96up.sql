@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(ORDER by total_time DESC) "#",
+    row_number() over(ORDER BY total_time DESC) "#",
     to_char(total_time*100/sum(total_time) OVER (),'FM99D99') || '%' AS "load_%",
     datname db, --rolname,
     to_char(calls, 'FM999G999G999G999G999') AS calls,
@@ -16,7 +16,7 @@ SELECT
     pg_size_pretty(local_blks_read   * (pg_control_init()).database_block_size) AS local_read,
     pg_size_pretty(temp_blks_read    * (pg_control_init()).database_block_size) AS temp_read,
     pg_size_pretty(temp_blks_written * (pg_control_init()).database_block_size) AS temp_written,
-    array_to_string(regexp_split_to_array(substr(query,1,5000),'\s+'),' ') AS query
+    array_to_string(regexp_split_to_array(substr(query,1,5000),E'\\s+'),' ') AS query
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid

@@ -1,10 +1,10 @@
 SELECT 
-    row_number() over(ORDER by total_exec_time + total_plan_time DESC) "N", 
+    row_number() over(ORDER BY total_exec_time + total_plan_time DESC) "N", 
     to_char((total_exec_time + total_plan_time) * 100/sum(total_exec_time + total_plan_time) OVER (),'FM90D00') || '%' AS "load_%",
     queryid id, 
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",
-    array_to_string(regexp_split_to_array(query,'\s+'),' ') AS query
+    array_to_string(regexp_split_to_array(query,E'\\s+'),' ') AS query
 FROM 
      (SELECT *, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
     JOIN pg_database AS d ON d.oid = s.dbid,

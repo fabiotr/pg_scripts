@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by sum(total_exec_time + total_plan_time) DESC) AS "N",
+    row_number() over(ORDER BY sum(total_exec_time + total_plan_time) DESC) AS "N",
     string_agg(DISTINCT datname,', ')                        AS "DB",
     string_agg(DISTINCT rolname,', ')                        AS "User",
     queryid                                                  AS "QueryID",
@@ -16,7 +16,7 @@ SELECT
     pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(temp_blks_read + temp_blks_written) 
         / reset_days),0))                                                                                       AS "Temp/Day",
     to_char((sum(blk_read_time + blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')       AS "IO T/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
     pg_stat_statements s 

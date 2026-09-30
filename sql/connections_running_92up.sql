@@ -10,7 +10,7 @@ SELECT
     to_char(CURRENT_TIMESTAMP - xact_start    ,'HH24:MI:SS') AS "Q Xact",
     to_char(CURRENT_TIMESTAMP - query_start   ,'HH24:MI:SS') AS "Q Start",
     to_char(CURRENT_TIMESTAMP - state_change  ,'HH24:MI:SS') AS "Q State",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM pg_stat_activity
 WHERE
         state != 'idle' 

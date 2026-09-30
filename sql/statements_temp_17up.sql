@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(ORDER by coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
+    row_number() over(ORDER BY coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
@@ -16,7 +16,7 @@ SELECT
         THEN ((shared_blk_read_time + shared_blk_write_time + local_blk_read_time + local_blk_write_time + temp_blk_read_time + temp_blk_write_time)/since_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",
     trunc(total_exec_time + total_plan_time / (1000 * reset_days)) * INTERVAL '1 millisecond' AS "Total Time/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || 
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
     (SELECT *, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s

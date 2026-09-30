@@ -19,7 +19,7 @@ SELECT
     round(wal.wal_records / t.secs, 2)                AS wal_records_per_sec,
     pg_size_pretty(round(wal.wal_bytes / t.secs))  || '/s' AS wal_bytes_per_sec,
     a.query_id,
-    array_to_string(regexp_split_to_array(substr(a.query,1,50),'\s+'),' ') || CASE WHEN length(a.query) > 50 THEN '...' ELSE '' END AS query
+    array_to_string(regexp_split_to_array(substr(a.query,1,50),E'\\s+'),' ') || CASE WHEN length(a.query) > 50 THEN '...' ELSE '' END AS query
 FROM pg_stat_activity a
 LEFT JOIN LATERAL (
     SELECT NULLIF(EXTRACT(epoch FROM (CURRENT_TIMESTAMP - a.backend_start)),0)::numeric AS secs
