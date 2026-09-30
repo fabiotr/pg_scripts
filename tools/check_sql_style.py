@@ -141,10 +141,13 @@ ALL_KEYWORDS = set(KEYWORDS) | set(OTHER_KEYWORDS) | set(SYNTAX_WORDS)
 # (next token "("), they are function names, i.e. lowercase identifiers.
 # Other T words before "(" are SQL syntax: join (...), like (...).
 FUNCTIONS = {"left", "right", "current_schema"}
-# After AS, a reserved keyword followed by one of these is a column alias
-# (SELECT 1 AS order, 2 AS desc FROM t); otherwise it's syntax that must be
-# uppercase (CREATE VIEW v AS SELECT ..., CREATE TABLE t AS TABLE u)
-ALIAS_FOLLOWERS = {",", ")", ";", "from", ""}
+# After AS, a reserved keyword followed by one of these (the end of a target
+# list item) is a column alias (SELECT 1 AS order, 2 AS desc FROM t WHERE ...);
+# otherwise it's syntax that must be uppercase (CREATE VIEW v AS SELECT ...,
+# CREATE TABLE t AS TABLE u)
+ALIAS_FOLLOWERS = {",", ")", ";", "", "from", "where", "group", "order", "having",
+                   "window", "limit", "offset", "fetch", "for", "union", "intersect",
+                   "except", "into", "returning"}
 
 # PL/pgSQL (inside function bodies and DO blocks in LANGUAGE plpgsql),
 # from src/pl/plpgsql/src/pl_reserved_kwlist.h and pl_unreserved_kwlist.h.
@@ -342,6 +345,24 @@ def body_language(toks, i):
     return None
 
 
+def is_psql_variable(src, start):
+    """True when the word at start is written as psql's :name or :{?name},
+    i.e. directly after ':' (but not '::', a cast) or ':{?' with nothing in
+    between, so a[1: Upper] or ': /* x */ Upper' aren't psql variables."""
+    if src[start - 3:start] == ":{?":
+        return True
+    return start >= 1 and src[start - 1] == ":" and (start < 2 or src[start - 2] != ":")
+
+
+def next_significant(toks, i):
+    """Text of the first non-comment token after toks[i] ("" at the end),
+    walking by index instead of copying the rest of the list."""
+    for j in range(i + 1, len(toks)):
+        if toks[j][0] != COMMENT:
+            return toks[j][3]
+    return ""
+
+
 def scan(src):
     """Return (findings, ambiguous_at). findings are (start, end, text,
     kind, fixed_text) with kind KEYWORD, IDENTIFIER, SPECIAL or NON_ASCII
@@ -359,7 +380,7 @@ def scan_tokens(src, toks, mode, findings):
     reserved = set(KEYWORDS) | (set(PLPGSQL_RESERVED) if mode == "plpgsql" else set())
     free = ALL_KEYWORDS | (set(PLPGSQL_UNRESERVED) if mode == "plpgsql" else set())
     special = set(PLPGSQL_SPECIAL) if mode == "plpgsql" else set()
-    prev = prev2 = prev3 = ""
+    prev = ""
     for i, (kind, start, end, text) in enumerate(toks):
         if kind == COMMENT:
             continue  # comments are whitespace: keep the previous token
@@ -380,15 +401,14 @@ def scan_tokens(src, toks, mode, findings):
                     if at is not None:
                         return at
         if kind in (LITERAL, META):
-            prev = prev2 = prev3 = ""
+            prev = ""
             continue
         low = text.lower()
         # :name and :{?name} are psql variables (top level only; psql doesn't
         # touch bodies), but ::type is a cast
-        skip = mode == "top" and ((prev == ":" and prev2 != ":") or
-                                  (prev == "?" and prev2 == "{" and prev3 == ":"))
+        skip = mode == "top" and is_psql_variable(src, start)
         if kind == WORD and not skip:
-            nxt = next((t for k, _, _, t in toks[i + 1:] if k != COMMENT), "")
+            nxt = next_significant(toks, i)
             if NON_ASCII_RE.search(text):
                 findings.append((start, end, text, NON_ASCII, None))
             elif low in special and prev != ".":
@@ -402,7 +422,7 @@ def scan_tokens(src, toks, mode, findings):
                 pass  # AS order, ...: a reserved word used as a column alias
             elif (low in reserved or prev in PHRASES.get(low, ())) and text != text.upper():
                 findings.append((start, end, text, KEYWORD, text.upper()))
-        prev3, prev2, prev = prev2, prev, low
+        prev = low
     return None
 
 

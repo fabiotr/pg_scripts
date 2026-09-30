@@ -393,6 +393,30 @@ class Review(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn("x.sql:1: keyword 'select'", r.stdout)
 
+    def test_reserved_alias_before_any_clause(self):
+        for tail in ("WHERE TRUE", "GROUP BY 1", "ORDER BY 1", "HAVING TRUE", "LIMIT 1", "OFFSET 1",
+                     "UNION SELECT 1", "EXCEPT SELECT 1", "INTERSECT SELECT 1", "FETCH FIRST 1 ROW ONLY",
+                     "FOR UPDATE", "INTO t2", "WINDOW w AS ()"):
+            with self.subTest(tail=tail):
+                self.assertEqual(found(f"SELECT 1 AS order {tail}"), [])
+        self.assertEqual(found("INSERT INTO t VALUES (1) RETURNING id AS order"), [])
+
+    def test_psql_variable_needs_an_adjacent_colon(self):
+        self.assertEqual(idents("SELECT a[1: Upper], a[1:Upper] FROM t"), ["Upper"])
+        self.assertEqual(idents("SELECT a[1: /* x */ Upper] FROM t"), ["Upper"])
+        self.assertEqual(idents("SELECT :{? Foo}"), ["Foo"])
+        self.assertEqual(idents("SELECT :DBNAME, :{?DBNAME}, x::REGCLASS"), ["REGCLASS"])
+
+    def test_scan_is_linear_in_tokens(self):
+        code = ("import importlib.util, sys; "
+                "spec = importlib.util.spec_from_file_location('ck', sys.argv[1]); "
+                "ck = importlib.util.module_from_spec(spec); spec.loader.exec_module(ck); "
+                "ck.scan('SELECT ' + ', '.join('c%d' % i for i in range(100000)) + ' FROM t')")
+        try:
+            subprocess.run([sys.executable, "-c", code, _spec.origin], check=True, timeout=5)
+        except subprocess.TimeoutExpired:
+            self.fail("scanning 100k words took more than 5s")
+
     def test_fix_messages_count_items(self):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(lambda: __import__("shutil").rmtree(root))
