@@ -40,6 +40,10 @@ class Keywords(unittest.TestCase):
     def test_real_functions_stay_lowercase(self):
         self.assertEqual(found("SELECT now(), count(*), current_schema()"), [])
 
+    def test_non_ascii_identifiers_are_whole_words(self):
+        self.assertEqual(found("SELECT selecté, éselect, ñandu_order, fromção FROM t"), [])
+        self.assertEqual(found("SELECT açúcar from t"), ["from"])
+
     def test_non_reserved_keywords_are_ignored(self):
         self.assertEqual(found("SELECT 1 AS schema, 2 AS name, 3 AS begin"), [])
 
@@ -53,6 +57,11 @@ class Literals(unittest.TestCase):
 
     def test_dollar_quotes_with_and_without_tags(self):
         self.assertEqual(found("SELECT $$order by$$, $body1$select from$body1$, $a_2$ where $a_2$"), [])
+
+    def test_non_ascii_dollar_quote_tags(self):
+        sql = "SELECT $café$select from$café$ AS x, $ñ$ where $ñ$ AS y"
+        self.assertEqual(found(sql), [])
+        self.assertEqual(ck.uppercase(sql, ck.scan(sql)[0]), sql)
 
     def test_positional_parameters_are_not_dollar_quotes(self):
         self.assertEqual(found("SELECT x FROM t WHERE id = $1 and y = $2"), ["and"])
@@ -191,7 +200,7 @@ class Main(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual((root / "sql" / "a.sql").read_text(), text)
         self.assertEqual((root / "sql" / "b.sql").read_text(), "SELECT 1;\n")
-        self.assertIn("ambiguous", out)
+        self.assertIn("backslash before one of its quotes is ambiguous", out)
 
     def test_not_a_pg_scripts_repo(self):
         with tempfile.TemporaryDirectory() as tmp:
