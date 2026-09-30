@@ -26,9 +26,10 @@ if (-not $Psql) {
     exit 1
 }
 
-# Get the list of existing databases (excluding 'postgres' and templates)
+# Get the list of existing databases (excluding 'postgres' and templates).
+# -A prints names unpadded, so they're used as-is (no Trim: names may have
+# leading/trailing spaces); only the empty record is dropped.
 $DbNames = & $Psql -X -t -A -c "SELECT datname FROM pg_database WHERE datname != 'postgres' AND datistemplate = FALSE" |
-    ForEach-Object { $_.Trim() } |
     Where-Object { $_ -ne '' }
 
 # Run comando.sql against each database
