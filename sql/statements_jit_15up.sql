@@ -17,12 +17,12 @@ SELECT
     to_char((jit_inlining_time                 / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Inlining/Day",
     to_char((jit_optimization_time             / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Optimization/Day",
     to_char((jit_emission_time                 / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Emission/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements AS s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT stats_reset, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE
     jit_functions > 0 AND
     datname = current_database()

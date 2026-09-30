@@ -42,7 +42,7 @@ leaf_statio AS (
 ),
 stats_age AS (
     SELECT GREATEST(
-        EXTRACT(EPOCH FROM (now() - COALESCE(sd.stats_reset, pg_postmaster_start_time()))) / 86400.0,
+        EXTRACT(epoch FROM (now() - COALESCE(sd.stats_reset, pg_postmaster_start_time()))) / 86400.0,
         1.0 / 86400.0
     ) AS days_since_reset
     FROM pg_stat_database sd
@@ -63,7 +63,7 @@ ranked AS (
         ls.index_count,
         COALESCE(st.cache_blks, 0)                                            AS cache_blks,
         COALESCE(st.disk_blks, 0)                                             AS disk_blks,
-        ROW_NUMBER() OVER (PARTITION BY r.relid ORDER BY ls.total_bytes DESC) AS part_rank
+        row_number() OVER (PARTITION BY r.relid ORDER BY ls.total_bytes DESC) AS part_rank
     FROM roots r
     JOIN leaf_sizes ls ON ls.root_relid = r.relid
     LEFT JOIN leaf_statio st ON st.relid = ls.relid
@@ -81,11 +81,11 @@ SELECT
     pg_size_pretty(table_bytes)                                               AS "Table size",
     pg_size_pretty(indexes_bytes)                                             AS "Index size",
     pg_size_pretty(total_bytes)                                               AS "Total size",
-    pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
+    pg_size_pretty( round(cache_blks * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Hit / Day",
-    pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
+    pg_size_pretty( round(disk_blks  * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Reads / Day",
-    ROUND(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
+    round(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
 FROM
     ranked,
     stats_age sa

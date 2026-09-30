@@ -8,7 +8,7 @@ Everything is written in English (code, comments, column aliases, commit message
 - `sql/` — all SQL scripts (flat, no subfolders). Run via psql; they rely on psql meta-commands.
 - `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf.example` (copy to the git-ignored `report.conf`).
 - `linux_bash/` — bash scripts. `windows_power_shell/` — PowerShell ports **mirroring the same file names** (`.sh` → `.ps1`).
-- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.sh` validates the dispatcher rules below; `tools/check_keywords.py` validates keyword case (SQL style).
+- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.sh` validates the dispatcher rules below; `tools/check_sql_style.py` validates the SQL style rules (keyword and identifier case, ASCII identifiers, ambiguous strings).
 - `psqlrc` — recommended `~/.psqlrc` (does `\cd $HOME/pg_scripts/sql`).
 - `README.md` — the script catalog. `TODO.md` — roadmap (done items are ~~struck through~~ with a "(see `file.sql`)" note).
 
@@ -82,8 +82,13 @@ Common suffixes: `_top5`, `_detail`, `_report`, `_plus` (more columns), `_adjust
 ## SQL style
 
 Match the existing code (it differs from what `CONTRIBUTING.md` says about lowercase):
-- **Uppercase** SQL keywords (`SELECT`, `FROM`, `WHERE`, `CASE WHEN`), including the function-like reserved words `CURRENT_TIMESTAMP`, `CURRENT_DATE`, `CURRENT_USER`. Real functions stay lowercase (`now()`, `count()`, `current_schema()`). `./tools/check_keywords.py` enforces this; `--fix` uppercases what it reports.
-- Quotes inside strings are doubled (`'can''t'`), which works from 8.2 to 18. For backslash escapes use an explicit `E'...'`. Never put a backslash right before a quote inside a plain `'...'` string (`'can\'t'`, `'C:\'`, `'a\'''`): where it ends depends on `standard_conforming_strings` (off by default up to 9.0, on since 9.1), and `check_keywords.py` reports it.
+- **Uppercase** SQL keywords (`SELECT`, `FROM`, `WHERE`, `CASE WHEN`), including the function-like reserved words `CURRENT_TIMESTAMP`, `CURRENT_DATE`, `CURRENT_USER`, and the second word of `PRIMARY KEY`, `FOREIGN KEY`, `ORDER BY`, `GROUP BY`.
+- **Lowercase** unquoted identifiers: table, column, alias, schema and function names, PL/pgSQL and psql variables you define, and `EXTRACT` fields: `sum(x)`, `round(...)`, `now()`, `count(*)`, `current_schema()`, `t.relname`, `EXTRACT(epoch FROM ...)`, `SET client_min_messages TO warning`. PostgreSQL folds unquoted identifiers to lowercase anyway, so this is only style. psql's own variables stay as psql defines them (`:DBNAME`).
+- **ASCII-only** unquoted identifiers and dollar-quote tags (`$body$`, not `$café$`): PostgreSQL case-folds non-ASCII letters differently depending on the server encoding. Non-ASCII text is fine inside strings, quoted identifiers (`"σ"`), comments and `\qecho`.
+- Case inside strings is never changed: it can be meaningful, e.g. `to_char` patterns (`'Month'` gives `September`, `'MONTH'` gives `SEPTEMBER`).
+- Inside function bodies and `DO` blocks in `LANGUAGE sql`/`plpgsql` (`CREATE FUNCTION ... AS $$ ... $$`, `DO $$ ... $$`) the same rules apply, since the body is code: PL/pgSQL reserved keywords (`DECLARE`, `BEGIN`, `IF`, `LOOP`, `STRICT`, ...) are uppercase, and its special variables (`FOUND`, `SQLSTATE`, `SQLERRM`, `NEW`, `OLD`, `TG_OP`, ...) are **always uppercase**. Other `$$ ... $$` literals (e.g. generated `ALTER SYSTEM` text) are strings.
+- `./tools/check_sql_style.py` enforces these rules; `--fix` fixes the case of keywords, identifiers and special variables (non-ASCII identifiers have to be renamed by hand). Keywords PostgreSQL doesn't reserve (`coalesce`, `nullif`, `text`, `numeric`, `year`, `name`, `raise`, `notice`, ...) and syntax words it reads as identifiers (`LOGIN`, `NOLOGIN`, `USAGE`, `CONNECT`) can't be told apart from identifiers without a full parser, so their case is free. Types that aren't keywords (`record`, `jsonb`, `regclass`) are identifiers: lowercase.
+- Quotes inside strings are doubled (`'can''t'`), which works from 8.2 to 18. **No backslash in a plain `'...'` string**: its meaning depends on `standard_conforming_strings` (off by default up to 9.0, on since 9.1), e.g. `'\s+'` is `s+` with it off, so `regexp_split_to_array(x, '\s+')` splits on the letter s. Use an explicit `E'\\s+'`, which is the same on every version. A backslash right before a quote (`'can\'t'`, `'C:\'`) is worse: where the string ends changes. `check_sql_style.py` reports both, and `--fix` rewrites the first kind as `E'...'`.
 - Quoted, human-readable column aliases, left-padded/formatted for psql output: `AS "Avg size"`, `lpad(to_char(x,'FM9G990D0'),8)`, `pg_size_pretty(...)`.
 - Protect divisions with `nullif(..., 0)`. Normalize rates per day using `stats_reset` (see `checkpoints_17up.sql`).
 - Meaningful table aliases on joins. No hardcoded schemas besides `pg_catalog`.
@@ -108,7 +113,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 ## Testing
 
 - `./tools/check_dispatchers.sh` (static checks: `\ir`, include targets, branch/file versions, branch order, unreachable files, message casing).
-- `./tools/check_keywords.py` (reserved keywords in lowercase, outside strings, comments and quoted identifiers; plain strings that depend on `standard_conforming_strings`). Its tests: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_keywords.py` when changing the checker). Both checks and the tests run in CI on every PR.
+- `./tools/check_sql_style.py` (keyword and identifier case, non-ASCII identifiers and dollar-quote tags, plain strings that depend on `standard_conforming_strings`; strings, comments and quoted identifiers are never checked). Its tests: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_sql_style.py` when changing the checker). Both checks and the tests run in CI on every PR.
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.

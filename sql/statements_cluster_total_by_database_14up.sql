@@ -23,7 +23,7 @@ SELECT
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT dealloc, nullif(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24)::numeric,0) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, nullif(EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24)::numeric,0) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
 WHERE datname NOT IN ('template1', 'template0')
 GROUP BY d.datname, r.reset_days, r.stats_reset, r.dealloc
 ORDER BY sum(total_plan_time + total_exec_time) DESC;
