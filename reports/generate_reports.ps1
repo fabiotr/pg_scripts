@@ -406,17 +406,22 @@ function Invoke-Psql {
 # isn't installed, so the size fallback never ran. An empty/failed
 # pg_stat_statements query (extension created but not preloaded) also falls
 # back to size. total_exec_time/total_plan_time only exist from
-# pg_stat_statements 1.8 (PG 13); older versions use total_time.
+# pg_stat_statements 1.8 (PG 13); older versions use total_time. The probe
+# uses pg_class + pg_table_is_visible() rather than to_regclass() (PG 9.4+)
+# so it works on every server version the SQL scripts support; if it fails
+# anyway, the size query still runs.
 # ---------------------------------------------------------------------------
 
 function Resolve-AutoDbname {
     param([string]$ConnBase)
 
     $probeSql = @'
-SELECT to_regclass('pg_stat_statements') IS NOT NULL,
-       EXISTS (SELECT 1 FROM pg_attribute
-               WHERE attrelid = to_regclass('pg_stat_statements')
-                 AND attname = 'total_exec_time');
+SELECT EXISTS (SELECT 1 FROM pg_class c
+               WHERE c.relname = 'pg_stat_statements' AND pg_table_is_visible(c.oid)),
+       EXISTS (SELECT 1 FROM pg_class c
+               JOIN pg_attribute a ON a.attrelid = c.oid
+               WHERE c.relname = 'pg_stat_statements' AND pg_table_is_visible(c.oid)
+                 AND a.attname = 'total_exec_time');
 '@
     $sizeSql = @'
 SELECT datname FROM pg_database
@@ -427,8 +432,7 @@ LIMIT 1;
 
     try {
         $probe = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-F', ' ', '-c', $probeSql) -TimeoutSec 30
-        if ($probe.TimedOut -or $probe.ExitCode -ne 0 -or -not $probe.StdOut) { return '' }
-        $probeOut = $probe.StdOut.Trim()
+        $probeOut = if (-not $probe.TimedOut -and $probe.ExitCode -eq 0 -and $probe.StdOut) { $probe.StdOut.Trim() } else { '' }
 
         if ($probeOut -like 't *') {
             $load = if ($probeOut -eq 't t') { 'sum(s.total_plan_time) + sum(s.total_exec_time)' } else { 'sum(s.total_time)' }
