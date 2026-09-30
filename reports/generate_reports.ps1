@@ -398,37 +398,58 @@ function Invoke-Psql {
 # priority, see the header comment): connects (using the same conn string
 # the caller is about to use, minus any dbname) to whatever database that
 # resolves to by default, and prefers the busiest database by
-# pg_stat_statements load, if that extension is installed there, otherwise
-# the largest by size. Returns the resolved dbname, or '' on failure.
+# pg_stat_statements load, if that view is usable there, otherwise the
+# largest by size. Returns the resolved dbname, or '' on failure.
+#
+# Two steps on purpose (same as generate_reports.sh): a single
+# CASE WHEN EXISTS (...) query fails at parse time when pg_stat_statements
+# isn't installed, so the size fallback never ran. An empty/failed
+# pg_stat_statements query (extension created but not preloaded) also falls
+# back to size. total_exec_time/total_plan_time only exist from
+# pg_stat_statements 1.8 (PG 13); older versions use total_time.
 # ---------------------------------------------------------------------------
 
 function Resolve-AutoDbname {
     param([string]$ConnBase)
 
-    $sql = @'
-SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements')
-  THEN (
-    SELECT d.datname
-    FROM pg_stat_statements s
-    JOIN pg_database d ON d.oid = s.dbid
-    WHERE d.datistemplate IS FALSE
-    GROUP BY d.datname
-    ORDER BY sum(s.total_plan_time) + sum(s.total_exec_time) DESC
-    LIMIT 1
-  )
-  ELSE (
-    SELECT datname FROM pg_database
-    WHERE datistemplate IS FALSE
-    ORDER BY pg_database_size(datname) DESC
-    LIMIT 1
-  )
-END;
+    $probeSql = @'
+SELECT to_regclass('pg_stat_statements') IS NOT NULL,
+       EXISTS (SELECT 1 FROM pg_attribute
+               WHERE attrelid = to_regclass('pg_stat_statements')
+                 AND attname = 'total_exec_time');
+'@
+    $sizeSql = @'
+SELECT datname FROM pg_database
+WHERE datistemplate IS FALSE
+ORDER BY pg_database_size(datname) DESC
+LIMIT 1;
 '@
 
     try {
-        $result = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-c', $sql) -TimeoutSec 30
-        if ($result.TimedOut -or $result.ExitCode -ne 0 -or -not $result.StdOut) { return '' }
-        return $result.StdOut.Trim()
+        $probe = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-F', ' ', '-c', $probeSql) -TimeoutSec 30
+        if ($probe.TimedOut -or $probe.ExitCode -ne 0 -or -not $probe.StdOut) { return '' }
+        $probeOut = $probe.StdOut.Trim()
+
+        if ($probeOut -like 't *') {
+            $load = if ($probeOut -eq 't t') { 'sum(s.total_plan_time) + sum(s.total_exec_time)' } else { 'sum(s.total_time)' }
+            $pssSql = @"
+SELECT d.datname
+FROM pg_stat_statements s
+JOIN pg_database d ON d.oid = s.dbid
+WHERE d.datistemplate IS FALSE
+GROUP BY d.datname
+ORDER BY $load DESC
+LIMIT 1;
+"@
+            $pss = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-c', $pssSql) -TimeoutSec 30
+            if (-not $pss.TimedOut -and $pss.ExitCode -eq 0 -and $pss.StdOut -and $pss.StdOut.Trim()) {
+                return $pss.StdOut.Trim()
+            }
+        }
+
+        $size = Invoke-Psql -Arguments @($ConnBase, '-X', '-q', '-t', '-A', '-c', $sizeSql) -TimeoutSec 30
+        if ($size.TimedOut -or $size.ExitCode -ne 0 -or -not $size.StdOut) { return '' }
+        return $size.StdOut.Trim()
     } catch {
         return ''
     }
