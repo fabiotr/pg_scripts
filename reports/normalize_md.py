@@ -138,6 +138,13 @@ def normalize(text: str, tables: str = 'md') -> str:
             return False
         return '|' in lines[j] and not SEP_LINE.match(lines[j])
 
+    def end_md_table(j):
+        """A Markdown table only ends at a blank line (GFM turns any other
+        following line into one more row), and psql doesn't always print
+        one between consecutive results, so add it when it's missing."""
+        if j < n and lines[j].strip():
+            out.append('')
+
     while i < n:
         line = lines[i]
 
@@ -173,14 +180,14 @@ def normalize(text: str, tables: str = 'md') -> str:
             while i < n and lines[i].strip() and not RECORD_HEADER.match(lines[i]) and not starts_table(i):
                 row = lines[i]
                 if '|' in row:
-                    cells = split_row(row)
-                    # value may itself contain pipes; rejoin the rest
-                    if len(cells) > 2:
-                        cells = [cells[0], ' | '.join(cells[1:])]
-                    out.append(to_md_row(cells))
+                    # "key | value": split at the first '|' only, the value
+                    # may itself contain pipes (e.g. SQL's ||)
+                    key, value = row.split('|', 1)
+                    out.append(to_md_row([key.strip(), value.strip().replace('|', '\\|')]))
                 else:
                     out.append(row)
                 i += 1
+            end_md_table(i)
             continue
 
         # ── Aligned table: header + separator line + data lines
@@ -209,6 +216,7 @@ def normalize(text: str, tables: str = 'md') -> str:
             while i < n and in_table(i, one_column):
                 out.append(to_md_row(cells_of(lines[i])))
                 i += 1
+            end_md_table(i)
             continue
 
         out.append(line)
