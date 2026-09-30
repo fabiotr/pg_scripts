@@ -31,6 +31,8 @@ import sys
 
 RECORD_HEADER = re.compile(r'^-\[ RECORD \d+ \]')
 FENCE = re.compile(r'^(`{3,}|~{3,})')
+# \pset null used by report_*.sql, stripped
+NULL_DISPLAY = '-'
 # aligned-table separator: only '-', '+' and spaces, at least one '-'
 SEP_LINE = re.compile(r'^[-+ ]*-[-+ ]*$')
 
@@ -75,9 +77,16 @@ def normalize(text: str, tables: str = 'md') -> str:
             return False
         if '|' in lines[j]:
             return True
-        # one column: " name " over a separator of the same width, no '+'
+        # One column: " name " over a separator of the same width, no '+'.
+        # psql pads the header on both sides, so it ends with a space; data
+        # rows aren't padded on the right, so two consecutive rows of equal
+        # length (" ab" then " --") can't pass for a header + separator.
+        # The only data row that ends with a space in these reports is the
+        # ' - ' null display (\pset null ' - '), excluded explicitly.
         return (
             lines[j].startswith(' ')
+            and lines[j].endswith(' ')
+            and lines[j].strip() != NULL_DISPLAY
             and '+' not in lines[j + 1]
             and len(lines[j]) == len(lines[j + 1])
         )
