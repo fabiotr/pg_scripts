@@ -9,7 +9,7 @@ WITH stats_age AS (
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    pg_size_pretty(pg_relation_size(t.relid)) AS "Size",
+    lpad(pg_size_pretty(pg_relation_size(t.relid)), 11) AS "Size",
     to_char(t.last_vacuum,     'YYYY-MM-DD HH24:MI:SS') AS "V Last",
     to_char(t.last_autovacuum, 'YYYY-MM-DD HH24:MI:SS') AS "AV Last",
     to_char(t.vacuum_count     / sa.days_since_reset, 'FM999G990D00') AS "V Count/Day",

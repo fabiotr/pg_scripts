@@ -18,7 +18,7 @@ SELECT
         || '); --' AS "Command", 
     coalesce(t.scale,s.scale) AS current,
     --round(c.scale,6) AS new,
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7)  AS size
+    lpad(pg_size_pretty(pg_table_size(c.oid)),11)  AS size
 FROM 
     (SELECT
             (100*1024*1024) / pg_table_size(oid)::NUMERIC scale, -- 100*1024*1024 = 100MB goal

@@ -1,8 +1,8 @@
 SELECT
     backend_type,
     lpad(round(sum(writes) * 100 / t_writes,1) || ' %',6)                               AS "Write",
-    lpad(pg_size_pretty(round(coalesce(sum(writes)  * op_bytes / reset_days, 0))),7)    AS "Write/Day",
-    lpad(pg_size_pretty(round(coalesce(sum(extends) * op_bytes / reset_days, 0))),7)    AS "Extend/Day",
+    lpad(pg_size_pretty(round(coalesce(sum(writes)  * op_bytes / reset_days, 0))),11)    AS "Write/Day",
+    lpad(pg_size_pretty(round(coalesce(sum(extends) * op_bytes / reset_days, 0))),11)    AS "Extend/Day",
     to_char(coalesce(sum(write_time),      0) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Write T/Day",
     to_char(coalesce(sum(extend_time),     0) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Extend T/Day",
     to_char(coalesce(sum(writeback_time ), 0) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Writeback T/Day",

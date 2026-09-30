@@ -1,7 +1,7 @@
 SELECT 
     'VACUUM ' || quote_ident(n.nspname) || '.' || quote_ident(c.relname) || '; --' AS command,
     greatest(age(c.relfrozenxid), age(t.relfrozenxid)) AS "Current Age",
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7) AS "Size"
+    lpad(pg_size_pretty(pg_table_size(c.oid)),11) AS "Size"
 FROM 
     pg_class c 
     JOIN pg_namespace n ON c.relnamespace = n.oid
@@ -24,7 +24,7 @@ UNION
 SELECT 
     'VACUUM ' || quote_ident(n.nspname) || '.' || quote_ident(c.relname) || '; --' AS command,
     greatest(mxid_age(c.relminmxid), mxid_age(t.relminmxid)) AS "Current Age",
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7) AS "Size"
+    lpad(pg_size_pretty(pg_table_size(c.oid)),11) AS "Size"
 FROM 
     pg_class c 
     JOIN pg_namespace n ON c.relnamespace = n.oid

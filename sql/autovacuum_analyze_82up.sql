@@ -5,7 +5,7 @@ SELECT
     --lpad(to_char(idx_scan,'FM999G999G999G999'),15) AS "Idx Scan",
     --CASE WHEN coalesce(idx_scan,0) +coalesce(seq_scan,0) = 0 THEN NULL ELSE idx_scan*100 / (idx_scan + seq_scan) END AS "Idx %",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),11)          AS "Live Rows",
-    lpad(pg_size_pretty(pg_relation_size(t.relid)),7)            AS "Size",
+    lpad(pg_size_pretty(pg_relation_size(t.relid)),11)            AS "Size",
     lpad(to_char(t.n_mod_since_analyze, 'FM999G999G999G999'),11) AS "Mod",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE round(t.n_mod_since_analyze*100::NUMERIC/(t.n_live_tup)::NUMERIC,3) END AS "M%",
     round(to_number(coalesce(c.scale,s.setting),'99.99999') * 100,3) AS "S%",

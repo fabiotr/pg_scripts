@@ -8,10 +8,10 @@ SELECT
     to_char(rows::numeric,        'FM999G999G999') AS "Rows",
     to_char(rows::numeric,      'FM999G999G990D9') AS "Rows/Call",
     to_char(wal_records::numeric,   'FM999G990D9') AS "Wal/Call",
-    pg_size_pretty(trunc(nullif(wal_bytes::numeric/calls,0))) AS "WAL Size/Call",
+    lpad(pg_size_pretty(trunc(nullif(wal_bytes::numeric/calls,0))), 11) AS "WAL Size/Call",
     to_char(wal_records::numeric, 'FM999G999G999') AS "WAL Records",
     to_char(wal_fpi::numeric,     'FM9G999G999')   AS "WAL FPI", 
-    pg_size_pretty(nullif(wal_bytes::numeric,0)) AS "WAL Size",
+    lpad(pg_size_pretty(nullif(wal_bytes::numeric,0)), 11) AS "WAL Size",
     to_char((total_exec_time + total_plan_time) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
     array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query

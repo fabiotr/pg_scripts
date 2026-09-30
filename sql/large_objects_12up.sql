@@ -1,7 +1,7 @@
 SELECT 
     oid AS "ID",
     pg_get_userbyid(lomowner) AS "Owner",
-    pg_size_pretty(sum(length(data))) AS "Size",
+    lpad(pg_size_pretty(sum(length(data))), 11) AS "Size",
     obj_description(oid, 'pg_largeobject') AS "Description"
 FROM 
     pg_largeobject_metadata AS lm

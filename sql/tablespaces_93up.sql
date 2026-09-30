@@ -4,7 +4,7 @@ SELECT
     pg_tablespace_location(t.oid) AS "Location",
     array_to_string(t.spcacl, E'\n') AS "Access privileges",
     t.spcoptions AS "Options",
-    pg_size_pretty(pg_tablespace_size(t.oid)) AS "Size",
+    lpad(pg_size_pretty(pg_tablespace_size(t.oid)), 11) AS "Size",
 	'' AS "Databases"
 FROM pg_tablespace t
 WHERE  t.spcname = 'pg_global'
@@ -16,7 +16,7 @@ SELECT
     pg_tablespace_location(t.oid) AS "Location",
     array_to_string(t.spcacl, E'\n') AS "Access privileges",
     t.spcoptions AS "Options",
-    pg_size_pretty(pg_tablespace_size(t.oid)) AS "Size",
+    lpad(pg_size_pretty(pg_tablespace_size(t.oid)), 11) AS "Size",
 	string_agg(d.datname, ', ') AS "Databases"
 FROM 
 	pg_tablespace t

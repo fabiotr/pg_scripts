@@ -22,12 +22,12 @@ SELECT
             * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE 'Disabled' END                                                                                   AS "Temp T/Day",
     trunc(sum(shared_blks_hit) * 100 / nullif(sum(shared_blks_hit + shared_blks_read),0),1) || ' %'           AS "Shared Hit",
-    pg_size_pretty(trunc((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer)) AS "S Hit/Day",
-    pg_size_pretty(trunc((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer)) AS "S Read/Day",
-    pg_size_pretty((trunc(nullif((sum(shared_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "S Write/Day",
-    pg_size_pretty(trunc((nullif((sum(shared_blks_dirtied))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "S Dirty/Day",
-    pg_size_pretty(trunc((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)) AS "Local/Day",
-    pg_size_pretty(trunc((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer)) AS "Temp/Day"
+    lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer)), 11) AS "S Hit/Day",
+    lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer)), 11) AS "S Read/Day",
+    lpad(pg_size_pretty((trunc(nullif((sum(shared_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)), 11) AS "S Write/Day",
+    lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_dirtied))::numeric,0) / reset_days) * current_setting('block_size')::integer)), 11) AS "S Dirty/Day",
+    lpad(pg_size_pretty(trunc((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)), 11) AS "Local/Day",
+    lpad(pg_size_pretty(trunc((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer)), 11) AS "Temp/Day"
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,

@@ -10,8 +10,8 @@ SELECT
     to_char((total_plan_time::numeric/reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')           AS "Plan/Day",
     trunc(total_plan_time::numeric * 100 / (total_plan_time + total_exec_time)::numeric, 1)           AS "Plan %",
     trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read),0)::numeric,1) AS "Hit %" ,
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read::numeric)                   / reset_days),0)),7) AS "Read/Day",
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * temp_blks_read + temp_blks_written)::numeric / reset_days),0)),7) AS "Temp/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read::numeric)                   / reset_days),0)),11) AS "Read/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * temp_blks_read + temp_blks_written)::numeric / reset_days),0)),11) AS "Temp/Day",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE AND (blk_read_time + blk_write_time > 0)
         THEN ((blk_read_time + blk_write_time)/reset_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",

@@ -1,8 +1,8 @@
 SELECT 
     -- string_agg(datname,',') db,
     sum(calls) AS calls, 
-    pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer) total_temp,
-    pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer / sum(calls)) avg_temp,
+    lpad(pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer), 11) total_temp,
+    lpad(pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer / sum(calls)), 11) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN (sum(blk_read_time) + sum(blk_write_time)) * INTERVAL '1 millisecond'
         ELSE NULL END tot_temp_time,

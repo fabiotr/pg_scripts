@@ -94,18 +94,18 @@ SELECT
     partition_key  AS "Part Key",
     part_count     AS "Part Count",
     avg_idx_count  AS "Index Count",
-    pg_size_pretty(data_bytes)                                                AS "Heap size",
-    pg_size_pretty(toast_bytes)                                               AS "Toast size",
-    pg_size_pretty(table_bytes)                                               AS "Table size",
-    pg_size_pretty(idx_bytes)                                                 AS "Index size",
-    pg_size_pretty(total_bytes)                                               AS "Total size",
-    pg_size_pretty( (table_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg size",
-    pg_size_pretty( (idx_bytes   / NULLIF(part_count, 0))::bigint )           AS "Avg index size",
-    pg_size_pretty( (total_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg partition size",
-    pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
-        / sa.days_since_reset)::bigint )                                      AS "Hit / Day",
-    pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
-        / sa.days_since_reset)::bigint )                                      AS "Reads / Day",
+    lpad(pg_size_pretty(data_bytes), 11)                                                AS "Heap size",
+    lpad(pg_size_pretty(toast_bytes), 11)                                               AS "Toast size",
+    lpad(pg_size_pretty(table_bytes), 11)                                               AS "Table size",
+    lpad(pg_size_pretty(idx_bytes), 11)                                                 AS "Index size",
+    lpad(pg_size_pretty(total_bytes), 11)                                               AS "Total size",
+    lpad(pg_size_pretty( (table_bytes / NULLIF(part_count, 0))::bigint ), 11)           AS "Avg size",
+    lpad(pg_size_pretty( (idx_bytes   / NULLIF(part_count, 0))::bigint ), 11)           AS "Avg index size",
+    lpad(pg_size_pretty( (total_bytes / NULLIF(part_count, 0))::bigint ), 11)           AS "Avg partition size",
+    lpad(pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
+        / sa.days_since_reset)::bigint ), 11)                                      AS "Hit / Day",
+    lpad(pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
+        / sa.days_since_reset)::bigint ), 11)                                      AS "Reads / Day",
     ROUND(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
 FROM
     agg,

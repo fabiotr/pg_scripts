@@ -4,14 +4,14 @@ SELECT
     lpad(to_char(100 * (coalesce(num_requested,0) + coalesce(num_timed,0) - coalesce(num_done,0))::numeric / 
         nullif(coalesce(num_requested,0) + coalesce(num_timed,0),0)::numeric, 'FM990D0') || ' %',8)            AS "Not done",
     lpad(pg_size_pretty((buffers_written * current_setting('block_size')::numeric) / 
-        nullif(coalesce(num_timed,0) + coalesce(num_requested,0),0)::numeric),8)                               AS "Avg size",
+        nullif(coalesce(num_timed,0) + coalesce(num_requested,0),0)::numeric),11)                               AS "Avg size",
     '--------' AS "-----------------------------",
     lpad(to_char(restartpoints_timed::numeric / reset_days,'FM9G990D0'),8)                          AS "Restartpoints timed     / Day",
     lpad(to_char(restartpoints_req::numeric   / reset_days,'FM9G990D0'),8)                          AS "Restartpoints requested / Day",
     lpad(to_char(restartpoints_done::numeric  / reset_days,'FM9G990D0'),8)                          AS "Restartpoints done      / Day",
     '--------' AS "-----------------------------",
-    lpad(pg_size_pretty(round((buffers_written * current_setting('block_size')::numeric) / reset_days)),8) AS "Shared / Day",
-    lpad(pg_size_pretty(round((slru_written    * current_setting('block_size')::numeric) / reset_days)),8) AS "SLRU   / Day",
+    lpad(pg_size_pretty(round((buffers_written * current_setting('block_size')::numeric) / reset_days)),11) AS "Shared / Day",
+    lpad(pg_size_pretty(round((slru_written    * current_setting('block_size')::numeric) / reset_days)),11) AS "SLRU   / Day",
     date_trunc('second',write_time / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Write time  / Day",
     date_trunc('second',sync_time  / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Sync  time  / Day",
     '--------' AS "-----------------------------",
