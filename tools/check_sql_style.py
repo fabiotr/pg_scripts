@@ -167,6 +167,11 @@ PLPGSQL_SPECIAL = """found sqlstate sqlerrm new old tg_op tg_name tg_when tg_lev
 tg_relid tg_relname tg_table_name tg_table_schema tg_nargs tg_argv tg_event
 tg_tag""".split()
 CODE_LANGUAGES = {"sql", "plpgsql"}  # bodies in other languages stay literals
+# Words that start a function option (or the body): never a language name
+FUNCTION_OPTIONS = {"as", "set", "support", "cost", "rows", "security", "strict",
+                    "immutable", "stable", "volatile", "parallel", "leakproof",
+                    "window", "called", "returns", "transform", "not", "external",
+                    "begin", "return", "language", "reset"}
 
 # Token kinds
 COMMENT, LITERAL, META, WORD, NUMBER, OTHER = "comment", "literal", "meta", "word", "number", "other"
@@ -182,9 +187,11 @@ PHRASES = {"key": {"primary", "foreign"}, "by": {"order", "group"}}
 IDENT_START = r"[A-Za-z_\u0080-\U0010FFFF]"
 IDENT_CONT = r"[A-Za-z0-9_\u0080-\U0010FFFF]"  # plus $, except in dollar-quote tags
 
+# Opening $$ / $tag$ (tag: identifier rule); the closing one is found with
+# str.find, so unterminated tags don't make scanning quadratic
+DOLLAR_OPEN_RE = re.compile(r"\$(?:" + IDENT_START + IDENT_CONT + r"*)?\$")
 LITERAL_RE = re.compile(
-    r"\$((?:" + IDENT_START + IDENT_CONT + r"*)?)\$.*?\$\1\$"  # $$...$$ / $tag$...$tag$
-    r"|[Ee]'(?:\\.|''|[^'\\])*'"                  # E'...' string (backslash escapes; the
+    r"[Ee]'(?:\\.|''|[^'\\])*'"                  # E'...' string (backslash escapes; the
                                                   # classes are disjoint to avoid ReDoS)
     r"|[Uu]&'(?:''|[^'])*'"                       # U&'...' Unicode string
     r"|[Uu]&\"[^\"]*\""                            # U&"..." Unicode identifier
@@ -246,6 +253,9 @@ def tokens(src, pos=0, endpos=None, meta=True):
             end = src.find("\n", pos, endpos)  # psql \\meta-command line
             end = endpos if end < 0 else end
             kind = META
+        elif (m := DOLLAR_OPEN_RE.match(src, pos, endpos)):
+            close = src.find(m.group(0), m.end(), endpos)  # unterminated: rest of range
+            end, kind = (endpos if close < 0 else close + len(m.group(0))), LITERAL
         elif (m := LITERAL_RE.match(src, pos, endpos)):
             end, kind = m.end(), LITERAL
         elif (m := NUMBER_RE.match(src, pos, endpos)):
@@ -306,10 +316,12 @@ def language_clause(span):
     found = None
     for j, (kind, _, _, text) in enumerate(span[:-1]):
         nkind, _, _, name = span[j + 1]
-        # not a clause after '.' (SET app.language TO ...) or in a SET value
-        # or list (SET search_path TO language, x = language, a, language)
-        value = j > 0 and span[j - 1][3].lower() in (".", "to", "=", ",")
-        if kind == WORD and text.lower() == "language" and not value and nkind in (WORD, LITERAL):
+        qualified = j > 0 and span[j - 1][3] == "."  # SET app.language TO ...
+        # a language name can't be AS or another function option, so
+        # SUPPORT language AS, SET search_path TO language SECURITY ... etc.
+        # aren't clauses, whatever comes before them
+        if (kind == WORD and text.lower() == "language" and not qualified
+                and nkind in (WORD, LITERAL) and name.lower() not in FUNCTION_OPTIONS):
             found = name.strip("'\"").lower()
     return found
 
@@ -431,9 +443,11 @@ def line_of(src, pos):
 
 
 def default_root():
-    """The repository this script lives in (tools/..), or the git top level
-    when it's run through a copy or symlink elsewhere (e.g. a git hook)."""
-    root = Path(__file__).resolve().parent.parent
+    """The repository this script is invoked from (tools/..), or the git top
+    level when that isn't a repository (e.g. run from .git/hooks). The path
+    isn't resolved, so a tools/check_sql_style.py symlink in another
+    repository checks that repository, not the one the link points to."""
+    root = Path(__file__).absolute().parent.parent
     if not (root / ".git").exists():
         top = subprocess.run(["git", "rev-parse", "--show-toplevel"],
                              capture_output=True, text=True)
