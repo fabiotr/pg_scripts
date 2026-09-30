@@ -19,6 +19,7 @@
 #   reports/report_cluster.sql    <- found next to this script, always
 #   reports/report_database.sql   <- found next to this script, always
 #   reports/normalize_md.py       <- found via --normalize-script, see below
+#                                     (not needed with --format raw)
 #   sql/*.sql                     <- fragment library \ir'd by report_*.sql,
 #                                     found via --scripts-dir, see below
 #
@@ -79,6 +80,16 @@
 #                           reports, for any service without a config-file
 #                           dbname (see the priority order above). No
 #                           default — omit it to auto-detect instead.
+#   -f, --format FMT        Output format. Default: md.
+#                             md      - Markdown, psql tables converted to
+#                                       Markdown tables (.md).
+#                             md-code - Markdown, but psql tables kept
+#                                       as-is (aligned columns) inside
+#                                       fenced code blocks (.md). Much
+#                                       lighter to render in Notion for
+#                                       big reports with many tables.
+#                             raw     - psql output untouched, no
+#                                       Markdown conversion (.txt).
 #   -t, --stmt-timeout DUR  Default statement_timeout. Default: 300s.
 #   -T, --total-timeout SEC Default per-report wall clock timeout (secs).
 #                           Default: 600.
@@ -90,10 +101,11 @@
 #
 # Env var equivalents: REPORT_SCRIPTS_DIR, REPORT_NORMALIZE_SCRIPT,
 # REPORT_OUT_DIR, REPORT_KINDS, REPORT_CONFIG_FILE, REPORT_DEFAULT_DBNAME,
-# REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT, REPORT_SERVICES
+# REPORT_FORMAT, REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT, REPORT_SERVICES
 # (space/comma separated, used when no service is given on the command line).
 #
-# Output: <out-dir>/YYYY-MM-DD/YYYY-MM-DD_<label>_<kind>.md
+# Output: <out-dir>/YYYY-MM-DD/YYYY-MM-DD_<label>_<kind>.md (.txt with
+# --format raw)
 set -uo pipefail
 
 SELF_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
@@ -106,11 +118,12 @@ CONFIG_FILE="${REPORT_CONFIG_FILE:-}"
 CONFIG_FILE_IS_DEFAULT=1
 [[ -n "$CONFIG_FILE" ]] && CONFIG_FILE_IS_DEFAULT=0
 DEFAULT_DBNAME="${REPORT_DEFAULT_DBNAME:-}"
+FORMAT="${REPORT_FORMAT:-md}"
 STMT_TIMEOUT="${REPORT_STMT_TIMEOUT:-300s}"
 TOTAL_TIMEOUT="${REPORT_TOTAL_TIMEOUT:-600}"
 LOCALHOST=0
 
-usage() { sed -n '2,94p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -120,6 +133,7 @@ while [[ $# -gt 0 ]]; do
     -k|--kinds) KINDS=$2; shift 2 ;;
     -c|--config) CONFIG_FILE=$2; CONFIG_FILE_IS_DEFAULT=0; shift 2 ;;
     -n|--default-dbname) DEFAULT_DBNAME=$2; shift 2 ;;
+    -f|--format) FORMAT=$2; shift 2 ;;
     -t|--stmt-timeout) STMT_TIMEOUT=$2; shift 2 ;;
     -T|--total-timeout) TOTAL_TIMEOUT=$2; shift 2 ;;
     --localhost) LOCALHOST=1; shift ;;
@@ -129,6 +143,13 @@ while [[ $# -gt 0 ]]; do
     *) break ;;
   esac
 done
+
+case "$FORMAT" in
+  md)      EXT=md;  NORMALIZE_ARGS=(--tables md) ;;
+  md-code) EXT=md;  NORMALIZE_ARGS=(--tables code) ;;
+  raw)     EXT=txt; NORMALIZE_ARGS=() ;;
+  *) echo "Invalid --format '$FORMAT' (expected md, md-code or raw)." >&2; exit 2 ;;
+esac
 
 declare -A LABEL=()
 declare -A DBNAME=()
@@ -197,7 +218,7 @@ if [[ ! -f "$SELF_DIR/report_cluster.sql" && " ${KIND_LIST[*]} " == *" cluster "
 fi
 
 [[ -d "$NORMALIZE_SCRIPT" ]] && NORMALIZE_SCRIPT="$NORMALIZE_SCRIPT/normalize_md.py"
-if [[ ! -f "$NORMALIZE_SCRIPT" ]]; then
+if [[ "$FORMAT" != raw && ! -f "$NORMALIZE_SCRIPT" ]]; then
   echo "normalize_md.py not found at '$NORMALIZE_SCRIPT'. Point -m/--normalize-script (or REPORT_NORMALIZE_SCRIPT) at it." >&2
   exit 2
 fi
@@ -278,6 +299,16 @@ mkdir -p "$OUT"
 
 declare -A AUTO_DBNAME_CACHE=()
 
+# Last stage of the report pipeline: Markdown conversion, or a plain
+# passthrough with --format raw.
+normalize() {
+  if [[ "$FORMAT" == raw ]]; then
+    cat
+  else
+    python3 "$NORMALIZE_SCRIPT" "${NORMALIZE_ARGS[@]}"
+  fi
+}
+
 fail=0
 for svc in "${SERVICES[@]}"; do
   label=${LABEL[$svc]:-$svc}
@@ -291,7 +322,7 @@ for svc in "${SERVICES[@]}"; do
     [[ -n "${OVR_TOTAL[$svc:*]:-}" ]] && total=${OVR_TOTAL[$svc:*]}
     [[ -n "${OVR_TOTAL[$svc:$kind]:-}" ]] && total=${OVR_TOTAL[$svc:$kind]}
 
-    f="$OUT/${DATE}_${label}_${kind}.md"
+    f="$OUT/${DATE}_${label}_${kind}.${EXT}"
     if [[ "$LOCALHOST" -eq 1 ]]; then
       conn="connect_timeout=60"
     else
@@ -324,7 +355,7 @@ for svc in "${SERVICES[@]}"; do
         -c "SET statement_timeout='${stmt}'; SET lock_timeout='3s';" \
         -f "report_${kind}.sql" 2>"$f.err" \
         | grep -vE '^(Timing is|Expanded display is|Null display is|Border style is|Pager usage is|Output format is|Tuples only is|Footer is|Title is)' \
-        | python3 "$NORMALIZE_SCRIPT" > "$f"; then
+        | normalize > "$f"; then
       if [[ -s "$f" ]]; then
         echo "OK    $svc $kind -> $f"
         rm -f "$f.err"
