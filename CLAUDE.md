@@ -83,7 +83,7 @@ Common suffixes: `_top5`, `_detail`, `_report`, `_plus` (more columns), `_adjust
 
 Match the existing code (it differs from what `CONTRIBUTING.md` says about lowercase):
 - **Uppercase** SQL keywords (`SELECT`, `FROM`, `WHERE`, `CASE WHEN`), including the function-like reserved words `CURRENT_TIMESTAMP`, `CURRENT_DATE`, `CURRENT_USER`. Real functions stay lowercase (`now()`, `count()`, `current_schema()`). `./tools/check_keywords.py` enforces this; `--fix` uppercases what it reports.
-- Quotes inside strings are doubled (`'can''t'`), which works from 8.2 to 18. For backslash escapes use an explicit `E'...'`. Never end a plain `'...'` string with a backslash before its closing quote (`'can\'t'`, `'C:\'`): where it ends depends on `standard_conforming_strings` (off by default up to 9.0, on since 9.1), and `check_keywords.py` reports it.
+- Quotes inside strings are doubled (`'can''t'`), which works from 8.2 to 18. For backslash escapes use an explicit `E'...'`. Never put a backslash right before a quote inside a plain `'...'` string (`'can\'t'`, `'C:\'`, `'a\'''`): where it ends depends on `standard_conforming_strings` (off by default up to 9.0, on since 9.1), and `check_keywords.py` reports it.
 - Quoted, human-readable column aliases, left-padded/formatted for psql output: `AS "Avg size"`, `lpad(to_char(x,'FM9G990D0'),8)`, `pg_size_pretty(...)`.
 - Protect divisions with `nullif(..., 0)`. Normalize rates per day using `stats_reset` (see `checkpoints_17up.sql`).
 - Meaningful table aliases on joins. No hardcoded schemas besides `pg_catalog`.

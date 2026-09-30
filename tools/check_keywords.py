@@ -11,12 +11,12 @@ case doesn't matter there or the word isn't a keyword:
     \\meta-command lines
   - words right after '.', AS or ':' (column labels, psql variables),
     also when a comment sits in between
-  - T keywords used as function calls, e.g. left(...) or
-    left /* ... */ (...)
+  - left, right and current_schema used as function calls: left(...),
+    left /* ... */ (...); other T words before "(" are still checked
   - functions such as now() or current_schema(), which are lowercase
 
-A plain '...' string with a backslash right before its closing quote
-('a\\' or 'can\\'t') is reported as ambiguous instead: where it ends
+A plain '...' string with a backslash right before one of its quotes
+('a\\', 'can\\'t' or 'a\\''') is reported as ambiguous instead: where it ends
 depends on standard_conforming_strings (off by default up to 9.0, on since
 9.1). Nothing after it in that file is checked, since token boundaries are
 unknown from there on.
@@ -68,8 +68,14 @@ LITERAL_RE = re.compile(
     re.S)
 WORD_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_$]*")
 SPACE_RE = re.compile(r"\s+")
-# A plain string whose closing quote follows an odd number of backslashes
-AMBIGUOUS_END_RE = re.compile(r"(?<!\\)(?:\\\\)*\\'$")
+# A quote preceded by an odd number of backslashes: inside a plain string
+# (at its end or at a doubled '' quote) its meaning depends on
+# standard_conforming_strings
+ESCAPED_QUOTE_RE = re.compile(r"(?<!\\)(?:\\\\)*\\'")
+# Category-T keywords that PostgreSQL also has as functions and that are
+# called as such (other T words before "(" are SQL syntax: join (...),
+# like (...), (a, b) overlaps (c, d))
+FUNCTIONS = {"left", "right", "current_schema"}
 
 
 def block_comment_end(src, pos):
@@ -122,7 +128,7 @@ def tokens(src):
 def is_ambiguous_string(text):
     """True for a plain '...' literal whose end depends on
     standard_conforming_strings."""
-    return text[0] == "'" and bool(AMBIGUOUS_END_RE.search(text))
+    return text[0] == "'" and bool(ESCAPED_QUOTE_RE.search(text, 1))
 
 
 def scan(src):
@@ -142,7 +148,7 @@ def scan(src):
         low = text.lower()
         if low in KEYWORDS and text != text.upper() and prev not in (".", "as", ":"):
             nxt = next((t for k, _, _, t in toks[i + 1:] if k != COMMENT), "")
-            if not (KEYWORDS[low] == "T" and nxt == "("):
+            if not (low in FUNCTIONS and nxt == "("):
                 keywords.append((start, end, text))
         prev = low
     return keywords, None
