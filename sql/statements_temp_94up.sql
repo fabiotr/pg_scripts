@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(order by temp_blks_read + temp_blks_written desc) "N", 
+    row_number() over(ORDER by temp_blks_read + temp_blks_written DESC) "N", 
     queryid,
     datname db, 
     rolname AS "User",

@@ -15,6 +15,6 @@ SELECT
     index_rebuild_count                                                    AS "Rebuilt indexes"
 FROM  
     pg_stat_progress_cluster AS p
-    JOIN pg_stat_activity AS a using (pid)
+    JOIN pg_stat_activity AS a USING (pid)
     JOIN pg_class AS c ON c.oid = p.relid
 ORDER BY now() - a.xact_start DESC;

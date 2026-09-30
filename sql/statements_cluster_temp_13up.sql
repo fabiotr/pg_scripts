@@ -1,6 +1,6 @@
 SELECT 
     -- string_agg(datname,',') db,
-    row_number() over(order by sum(temp_blks_read + temp_blks_written) desc) "N",
+    row_number() over(ORDER by sum(temp_blks_read + temp_blks_written) DESC) "N",
     queryid, 
     sum(calls) AS calls, 
     pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer) total_temp,

@@ -1,7 +1,7 @@
 SELECT 
-    row_number() over(order by sum(total_exec_time + total_plan_time) desc) AS "N",
-    string_agg(distinct datname,', ')                        AS "DB",
-    string_agg(distinct rolname,', ')                        AS "User",
+    row_number() over(ORDER by sum(total_exec_time + total_plan_time) DESC) AS "N",
+    string_agg(DISTINCT datname,', ')                        AS "DB",
+    string_agg(DISTINCT rolname,', ')                        AS "User",
     queryid                                                  AS "QueryID",
     to_char(sum(calls / reset_days),          'FM999G999G999') AS "Calls/Day", 
     to_char(sum(plans / reset_days),          'FM999G999G999') AS "Plans/Day", 
@@ -27,7 +27,7 @@ FROM
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 GROUP BY reset_days, queryid, query
 ORDER BY sum(total_exec_time + total_plan_time) DESC
 LIMIT 20;

@@ -25,7 +25,7 @@ SELECT
         ELSE NULL END AS "type/event",
     array_to_string(regexp_split_to_array(substr(l.query,1,200),'\s+'),' ') AS query
   FROM 
-        (SELECT pid, unnest(pg_blocking_pids(pid)) as lpid
+        (SELECT pid, unnest(pg_blocking_pids(pid)) AS lpid
             FROM pg_stat_activity
             WHERE cardinality(pg_blocking_pids(pid)) > 0) b
     JOIN pg_stat_activity w ON w.pid = b.pid

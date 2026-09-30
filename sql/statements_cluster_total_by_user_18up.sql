@@ -28,6 +28,6 @@ SELECT
 FROM
     pg_stat_statements s
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT dealloc, EXTRACT(EPOCH FROM current_timestamp - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
 GROUP BY u.rolname, r.reset_days, r.stats_reset, r.dealloc
 ORDER BY 6 DESC;

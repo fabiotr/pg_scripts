@@ -1,6 +1,6 @@
 SELECT 
     l.lanname AS "Name",
-    pg_get_userbyid(l.lanowner) as "Owner",
+    pg_get_userbyid(l.lanowner) AS "Owner",
     l.lanpltrusted AS "Trusted",
     d.description AS "Description"
 FROM 

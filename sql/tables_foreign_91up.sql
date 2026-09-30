@@ -2,7 +2,7 @@ SELECT
 	s.srvname AS "Server",
 	n.nspname AS "Schema",
 	c.relname AS "Table",
-	pg_get_userbyid(c.relowner) as "Owner",
+	pg_get_userbyid(c.relowner) AS "Owner",
 	CASE WHEN ftoptions 
 		IS NULL THEN '' 
 		ELSE   '(' || array_to_string(ARRAY(

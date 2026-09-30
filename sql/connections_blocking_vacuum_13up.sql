@@ -7,8 +7,8 @@ SELECT
     a.state AS "Status",
     a.wait_event_type AS "Wait",
     a.wait_event,
-    to_char(current_timestamp - xact_start    ,'HH24:MI:SS') AS "Xact T",
-    to_char(current_timestamp - query_start   ,'HH24:MI:SS') AS "Query T",
+    to_char(CURRENT_TIMESTAMP - xact_start    ,'HH24:MI:SS') AS "Xact T",
+    to_char(CURRENT_TIMESTAMP - query_start   ,'HH24:MI:SS') AS "Query T",
     to_char(age(a.backend_xid), 'FM999G999G999')             AS xid_age,
     to_char(age(a.backend_xmin),'FM999G999G999')             AS xmin_age,
     CASE 

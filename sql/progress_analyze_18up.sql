@@ -20,7 +20,7 @@ SELECT
       ELSE 'disabled' END AS delay_time
 FROM
   pg_stat_progress_analyze p
-  JOIN pg_stat_activity a using (pid)
+  JOIN pg_stat_activity a USING (pid)
   JOIN pg_class c ON c.oid = p.relid
   LEFT JOIN pg_class cc ON c.oid = p.current_child_table_relid
 ORDER BY now() - a.xact_start DESC;

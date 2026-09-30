@@ -18,6 +18,6 @@ FROM
     JOIN pg_class      c ON c.oid = con.conrelid
     JOIN pg_namespace  n ON n.oid = c.relnamespace
 WHERE 
-    con.convalidated = false AND 
+    con.convalidated = FALSE AND 
     n.nspname NOT IN ('pg_catalog', 'information_schema')
 ORDER BY n.nspname, c.relname, con.conname;

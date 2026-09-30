@@ -4,7 +4,7 @@ SELECT
         s.subowner::regrole AS owner,
         s.subenabled AS enabled,
         ss.pid,
-        ss.relid::regclass table,
+        ss.relid::regclass TABLE,
         ss.last_msg_send_time,
         ss.last_msg_receipt_time,
         ss.latest_end_time

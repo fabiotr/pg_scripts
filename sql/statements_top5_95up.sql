@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(order by total_time desc) "N",
+    row_number() over(ORDER by total_time DESC) "N",
     to_char(total_time*100/sum(total_time) OVER (),'FM99D99') || '%' AS "load_%",
     queryid,
     array_to_string(regexp_split_to_array(substr(query,1,5000),'\s+'),' ') AS query

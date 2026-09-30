@@ -1,10 +1,10 @@
 SELECT 
     '/*** SIZE: ' || lpad(pg_size_pretty(pg_relation_size(indexrelid::regclass)),7) || '  ***/ ' || 
     'DROP INDEX CONCURRENTLY IF EXISTS ' || quote_ident(indexes.schemaname) || '.'  || quote_ident(idx_stat.indexrelname) || ';'
-FROM pg_stat_user_indexes as idx_stat
+FROM pg_stat_user_indexes AS idx_stat
 	JOIN pg_index
 		USING (indexrelid)
-	JOIN pg_indexes as indexes
+	JOIN pg_indexes AS indexes
 		ON idx_stat.schemaname = indexes.schemaname
 			AND idx_stat.relname = indexes.tablename
 			AND idx_stat.indexrelname = indexes.indexname

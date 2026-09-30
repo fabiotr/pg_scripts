@@ -9,8 +9,8 @@
       lpad(to_char(stream_count::numeric  / reset_days,'FM9999G990'),7) AS "Stream count/Day", 
       lpad(pg_size_pretty(round(stream_bytes::numeric / reset_days)),8) AS "Stream size/Day",
       lpad(pg_size_pretty(round(total_bytes::numeric  / reset_days)),8) AS "Total size/Day",
-      date_trunc('second', current_timestamp - stats_reset)             AS "Age"
-    FROM (SELECT *, (EXTRACT(EPOCH FROM current_timestamp - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_replication_slots) AS rs
+      date_trunc('second', CURRENT_TIMESTAMP - stats_reset)             AS "Age"
+    FROM (SELECT *, (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_replication_slots) AS rs
     ORDER BY 1;
   \else
     SELECT 

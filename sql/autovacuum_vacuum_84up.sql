@@ -16,14 +16,14 @@ SELECT
     CASE WHEN NOT e.enabled THEN 'X' END AS "disabled"
 FROM 
     pg_stat_all_tables t
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_vacuum_scale_factor') c ON true
-    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON true
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_vacuum_scale_factor') c ON TRUE
+    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON TRUE
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
     n_live_tup > 0 AND
     n_tup_del + n_tup_upd > 1000 AND
     n_dead_tup >  1000 
     OR e.enabled = FALSE
-ORDER BY e.enabled, CASE n_live_tup WHEN 0 then 0 ELSE (pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+ORDER BY e.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE (pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
 LIMIT 20;
 

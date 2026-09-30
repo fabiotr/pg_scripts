@@ -9,6 +9,6 @@ SELECT
     to_char(100 * tup_deleted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM000D99') || ' %' AS "Rows DELETE",
     '------------'                                        AS "Reset",
     to_char(stats_reset, 'YYYY-MM-DD HH24:MI:SS')         AS "Date",
-    date_trunc('second', current_timestamp - stats_reset) AS "Age"
+    date_trunc('second', CURRENT_TIMESTAMP - stats_reset) AS "Age"
 FROM pg_stat_database d
 WHERE d.datname = current_database();

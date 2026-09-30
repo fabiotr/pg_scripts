@@ -5,7 +5,7 @@ SELECT
     id AS "Id",
     status AS "Status",
     to_char(age,'FM999G999G999') AS "Age",
-    to_char(current_timestamp - duration,'HH24:MI:SS') AS "Duration",
+    to_char(CURRENT_TIMESTAMP - duration,'HH24:MI:SS') AS "Duration",
     CASE
         WHEN pg_is_in_recovery() THEN 'N/A'
         ELSE to_char(coalesce(pg_current_xact_id_if_assigned(), pg_current_xact_id())::text::int8 - pg_snapshot_xmin(pg_current_snapshot())::text::int8,'FM999G999G999') 

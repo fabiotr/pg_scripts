@@ -19,16 +19,16 @@ SELECT
     to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS') 
         || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END "Last",
     t.autovacuum_count "Qt A",
-    CASE t.autovacuum_count when 0 THEN NULL ELSE to_char((now() - d.stats_reset) / t.autovacuum_count,'DD HH24:MI:SS') END "Avg time",
+    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - d.stats_reset) / t.autovacuum_count,'DD HH24:MI:SS') END "Avg time",
     CASE WHEN NOT e.enabled THEN 'X' END "disabled"
 FROM 
     pg_stat_all_tables t
     JOIN pg_class c ON t.relid = c.oid
     LEFT JOIN pg_class ct ON c.reltoastrelid = ct.oid
     LEFT JOIN pg_stat_all_tables tt ON tt.relid = ct.oid
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sc ON true
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(ct.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sct ON true
-    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON true
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sc ON TRUE
+    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(ct.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sct ON TRUE
+    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON TRUE
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
@@ -37,6 +37,6 @@ WHERE
     t.n_tup_del + t.n_tup_upd > 1000 AND
     t.n_dead_tup >  1000 
     OR e.enabled = FALSE
-ORDER BY e.enabled, CASE t.n_live_tup WHEN 0 then 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+ORDER BY e.enabled, CASE t.n_live_tup WHEN 0 THEN 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
 LIMIT 40;
 
