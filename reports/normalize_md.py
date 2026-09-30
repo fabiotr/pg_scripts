@@ -76,7 +76,7 @@ def split_by_separator(line: str, sep: str):
             cur.append(ch)
         col += display_width(ch)
     cells.append(''.join(cur))
-    return [c.strip().replace('|', '\\|') for c in cells]
+    return [c.strip().replace('\\', '\\\\').replace('|', '\\|') for c in cells]
 
 
 def to_md_row(cells) -> str:
