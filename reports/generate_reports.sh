@@ -244,14 +244,19 @@ resolve_pg_service_file() {
 # isn't in shared_preload_libraries (the view then errors out), so an empty
 # result falls back to size as well. total_exec_time/total_plan_time only
 # exist from pg_stat_statements 1.8 (PG 13); older versions use total_time.
+# The probe uses pg_class + pg_table_is_visible() rather than to_regclass()
+# (PG 9.4+) so it works on every server version the SQL scripts support; if
+# it fails anyway, the size query still runs.
 resolve_auto_dbname() {
   local conn_base="$1" probe load dbname
   probe=$(timeout 30 psql "$conn_base" -X -q -t -A -F ' ' -c "
-    SELECT to_regclass('pg_stat_statements') IS NOT NULL,
-           EXISTS (SELECT 1 FROM pg_attribute
-                   WHERE attrelid = to_regclass('pg_stat_statements')
-                     AND attname = 'total_exec_time');
-  " 2>/dev/null) || return 0
+    SELECT EXISTS (SELECT 1 FROM pg_class c
+                   WHERE c.relname = 'pg_stat_statements' AND pg_table_is_visible(c.oid)),
+           EXISTS (SELECT 1 FROM pg_class c
+                   JOIN pg_attribute a ON a.attrelid = c.oid
+                   WHERE c.relname = 'pg_stat_statements' AND pg_table_is_visible(c.oid)
+                     AND a.attname = 'total_exec_time');
+  " 2>/dev/null) || probe=""
 
   if [[ "$probe" == "t "* ]]; then
     if [[ "$probe" == "t t" ]]; then
