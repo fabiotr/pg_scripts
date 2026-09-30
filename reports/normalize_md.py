@@ -109,7 +109,8 @@ def normalize(text: str, tables: str = 'md') -> str:
             return False
         if '|' in lines[j]:
             return True
-        # One column: " name " over a separator of the same width, no '+'.
+        # One column: " name " over a separator of the same display width
+        # (psql pads by terminal columns: CJK/emoji count as 2), no '+'.
         # psql pads the header on both sides, so it ends with a space; data
         # rows aren't padded on the right, so two consecutive rows of equal
         # length (" ab" then " --") can't pass for a header + separator.
@@ -120,7 +121,7 @@ def normalize(text: str, tables: str = 'md') -> str:
             and lines[j].endswith(' ')
             and lines[j].strip() != NULL_DISPLAY
             and '+' not in lines[j + 1]
-            and len(lines[j]) == len(lines[j + 1])
+            and sum(map(display_width, lines[j])) == len(lines[j + 1])
         )
 
     def in_table(j, one_column=False):
