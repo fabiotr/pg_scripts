@@ -3,8 +3,8 @@
 
 Usage:
     python3 normalize_md.py [--tables md|code] [raw.txt] > report.md
-    psql service=<svc> -f <script>.sql > raw.txt && python3 normalize_md.py raw.txt > report.md
-    psql service=<svc> -f <script>.sql | python3 normalize_md.py > report.md
+    psql -X service=<svc> -f <script>.sql > raw.txt && python3 normalize_md.py raw.txt > report.md
+    psql -X service=<svc> -f <script>.sql | python3 normalize_md.py > report.md
 
 --tables md (default) turns each psql table into a Markdown table.
 --tables code keeps each psql table exactly as psql printed it (aligned
