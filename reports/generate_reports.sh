@@ -233,29 +233,49 @@ resolve_pg_service_file() {
 # priority, see the header comment): connects (using the same conn string
 # the caller is about to use, minus any dbname) to whatever database that
 # resolves to by default, and prefers the busiest database by
-# pg_stat_statements load, if that extension is installed there, otherwise
-# the largest by size. Prints the resolved dbname on stdout, or nothing on
+# pg_stat_statements load, if that view is usable there, otherwise the
+# largest by size. Prints the resolved dbname on stdout, or nothing on
 # failure/empty cluster.
+#
+# Two steps on purpose: a single CASE WHEN EXISTS (...) query fails at
+# parse time when pg_stat_statements isn't installed (the relation is
+# resolved even in the branch that never runs), so the size fallback never
+# ran. The pg_stat_statements query also runs when the extension exists but
+# isn't in shared_preload_libraries (the view then errors out), so an empty
+# result falls back to size as well. total_exec_time/total_plan_time only
+# exist from pg_stat_statements 1.8 (PG 13); older versions use total_time.
 resolve_auto_dbname() {
-  local conn_base="$1"
+  local conn_base="$1" probe load dbname
+  probe=$(timeout 30 psql "$conn_base" -X -q -t -A -F ' ' -c "
+    SELECT to_regclass('pg_stat_statements') IS NOT NULL,
+           EXISTS (SELECT 1 FROM pg_attribute
+                   WHERE attrelid = to_regclass('pg_stat_statements')
+                     AND attname = 'total_exec_time');
+  " 2>/dev/null) || return 0
+
+  if [[ "$probe" == "t "* ]]; then
+    if [[ "$probe" == "t t" ]]; then
+      load="sum(s.total_plan_time) + sum(s.total_exec_time)"
+    else
+      load="sum(s.total_time)"
+    fi
+    dbname=$(timeout 30 psql "$conn_base" -X -q -t -A -c "
+      SELECT d.datname
+      FROM pg_stat_statements s
+      JOIN pg_database d ON d.oid = s.dbid
+      WHERE d.datistemplate IS FALSE
+      GROUP BY d.datname
+      ORDER BY $load DESC
+      LIMIT 1;
+    " 2>/dev/null)
+    [[ -n "$dbname" ]] && { printf '%s\n' "$dbname"; return 0; }
+  fi
+
   timeout 30 psql "$conn_base" -X -q -t -A -c "
-    SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements')
-      THEN (
-        SELECT d.datname
-        FROM pg_stat_statements s
-        JOIN pg_database d ON d.oid = s.dbid
-        WHERE d.datistemplate IS FALSE
-        GROUP BY d.datname
-        ORDER BY sum(s.total_plan_time) + sum(s.total_exec_time) DESC
-        LIMIT 1
-      )
-      ELSE (
-        SELECT datname FROM pg_database
-        WHERE datistemplate IS FALSE
-        ORDER BY pg_database_size(datname) DESC
-        LIMIT 1
-      )
-    END;
+    SELECT datname FROM pg_database
+    WHERE datistemplate IS FALSE
+    ORDER BY pg_database_size(datname) DESC
+    LIMIT 1;
   " 2>/dev/null
 }
 
