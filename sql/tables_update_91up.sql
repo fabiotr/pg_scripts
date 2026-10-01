@@ -1,8 +1,8 @@
 SELECT 
     schemaname AS "Schema",
     relname    AS "Table",  
-    lpad(to_char(n_live_tup,            'FM999G999G999G999'),15) AS "Rows",
-    lpad(to_char(n_tup_upd / reset_days,'FM999G999G999G999'),15) 
+    lpad(to_char(n_live_tup,            'FM999G999G999G999'),16) AS "Rows",
+    lpad(to_char(n_tup_upd / reset_days,'FM999G999G999G999'),16) 
         || lpad(' (' || round(100 * n_tup_upd / 
         nullif(sum(n_tup_upd) OVER (),0),1) || ' %)',9)          AS "UPDATE Rows/Day"
 FROM

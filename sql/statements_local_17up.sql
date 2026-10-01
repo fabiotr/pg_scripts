@@ -1,14 +1,14 @@
 SELECT
     row_number() over(ORDER BY coalesce(local_blks_read,0) + coalesce(local_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / 
-        sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (),'FM99D99') || '%' AS "I/O %",
+    lpad(to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / 
+        sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (),'FM99D99'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
     calls,
-    to_char(calls::numeric / since_days::numeric, 'FM999G999G990D0') AS "Calls/Day",
+    lpad(to_char(calls::numeric / since_days::numeric, 'FM999G999G990D0'), 14) AS "Calls/Day",
     --to_char(rows::numeric  / since_days,          'FM999G999G999')   AS "Rows/Day",
-    to_char(rows::numeric  / calls::numeric,      'FM999G990D0')     AS "Rows/Call",
+    lpad(to_char(rows::numeric  / calls::numeric,      'FM999G990D0'), 10)     AS "Rows/Call",
     --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_hit)::numeric     / calls),     0)) AS "Hit/Call",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_read)::numeric    / calls),     0)), 11) AS "Reads/Call",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_written)::numeric / calls),     0)), 11) AS "Writes/Call",

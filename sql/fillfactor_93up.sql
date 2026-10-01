@@ -2,10 +2,10 @@ SELECT
     schemaname AS "Schema",
     relname AS "Table",      
     --to_char(n_tup_upd,'FM999G999G999G999') AS "UPDATEs", 
-    to_char(n_tup_upd::NUMERIC * 60 * 60 * 24 / (EXTRACT (epoch FROM CURRENT_TIMESTAMP - stats_reset))::BIGINT,'FM999G999G990') AS "UPDs / day",
-    to_char((n_tup_upd::NUMERIC / tup_updated::NUMERIC) * 100,'FM990D999') AS "DB UPD %",
+    lpad(to_char(n_tup_upd::NUMERIC * 60 * 60 * 24 / (EXTRACT (epoch FROM CURRENT_TIMESTAMP - stats_reset))::BIGINT,'FM999G999G990'), 12) AS "UPDs / day",
+    lpad(to_char((n_tup_upd::NUMERIC / tup_updated::NUMERIC) * 100,'FM990D999'), 8) AS "DB UPD %",
     --to_char(n_tup_hot_upd, 'FM999G999G999G999') AS "HOT UPD",
-    to_char(n_tup_hot_upd::numeric *100 / n_tup_upd,'FM990D0') AS "HOT UPD %",
+    lpad(to_char(n_tup_hot_upd::numeric *100 / n_tup_upd,'FM990D0'), 6) AS "HOT UPD %",
     coalesce (fillfactor::integer, 100) AS "Fillfactor"
 FROM 
     pg_stat_user_tables t

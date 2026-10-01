@@ -10,7 +10,7 @@ SELECT
     pg_get_userbyid(c.relowner) AS "Owner",
     lpad(pg_size_pretty(pg_total_relation_size(c.oid)),11) AS "Total Size",
     lpad(pg_size_pretty(pg_table_size(c.oid)),11)          AS "Size",
-    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20) AS "Rows",
     lpad(pg_size_pretty(trunc(pg_table_size(c.oid) / c.reltuples)::numeric), 11) AS "Avg Row Size"
 FROM pg_class c
      LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace

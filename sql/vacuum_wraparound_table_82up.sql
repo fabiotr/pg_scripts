@@ -1,26 +1,26 @@
 SELECT
     n.nspname AS "Schema", 
     c.relname AS "Table",
-    to_char(age(c.relfrozenxid),'FM999G999G999G999') ||
+    lpad(to_char(age(c.relfrozenxid),'FM999G999G999G999'), 16) ||
         CASE 
             WHEN t.relfrozenxid IS NOT NULL 
                 THEN ' (T ' || to_char(age(t.relfrozenxid),'FM999G999G999G999') || ')'
             ELSE '' END AS "Current Age",
-    to_char(LEAST (to_number(COALESCE(fmi.option_value, current_setting('vacuum_freeze_min_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') /2),'FM999G999G999G999') || 
+    lpad(to_char(LEAST (to_number(COALESCE(fmi.option_value, current_setting('vacuum_freeze_min_age')),'999999999999'),
+        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') /2),'FM999G999G999G999'), 16) || 
             CASE WHEN 
                 tfmi.option_value IS NOT NULL AND 
                 to_number(tfmi.option_value, '999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')/2
                 THEN ' (T ' || to_char(to_number(tfmi.option_value ,'999999999999'),'FM999G999G999G999') || ')' 
             ELSE '' END AS "Min Age", 
-    to_char(LEAST (to_number(COALESCE(ftb.option_value, current_setting('vacuum_freeze_table_age')),'999999999999'),
-        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95'),'FM999G999G999G999') || 
+    lpad(to_char(LEAST (to_number(COALESCE(ftb.option_value, current_setting('vacuum_freeze_table_age')),'999999999999'),
+        to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95'),'FM999G999G999G999'), 16) || 
             CASE WHEN 
                 tftb.option_value IS NOT NULL  AND 
                 to_number(tftb.option_value ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')*'0.95'
                 THEN ' (T ' || to_char(to_number(tftb.option_value ,'999999999999'),'FM999G999G999G999') || ')' 
             ELSE '' END AS "Table Age", 
-    to_char(to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')), '999999999999'),'FM999G999G999G999') ||
+    lpad(to_char(to_number(COALESCE(fma.option_value, current_setting('autovacuum_freeze_max_age')), '999999999999'),'FM999G999G999G999'), 16) ||
             CASE WHEN 
                 tfma.option_value IS NOT NULL AND
                 to_number(tfma.option_value ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')

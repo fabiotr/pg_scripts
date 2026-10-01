@@ -1,8 +1,8 @@
 SELECT 
     schemaname AS "Schema",
     relname AS "Table",  
-    lpad(to_char(n_live_tup,            'FM999G999G999G999'),15) AS "Rows",
-    lpad(to_char(n_tup_del / reset_days,'FM999G999G999G999'),15) 
+    lpad(to_char(n_live_tup,            'FM999G999G999G999'),16) AS "Rows",
+    lpad(to_char(n_tup_del / reset_days,'FM999G999G999G999'),16) 
         || lpad(' (' || round(100 * n_tup_del / 
         nullif(sum(n_tup_del) OVER (),0),1) || ' %)',9)          AS "DELETE Rows/Day"
 FROM

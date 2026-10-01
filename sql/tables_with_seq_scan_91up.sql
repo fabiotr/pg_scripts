@@ -1,9 +1,9 @@
 SELECT 
 	relname AS "Table Name",  
-    to_char(n_live_tup, 'FM999G999G999G999') AS "Rows",
+    lpad(to_char(n_live_tup, 'FM999G999G999G999'), 16) AS "Rows",
 	lpad(pg_size_pretty(pg_relation_size(relid)), 11) AS "Size",
-	to_char(seq_scan / reset_days,'FM999G999G999G990D0') AS "Seq scans/Day",
-	to_char(idx_scan / reset_days,'FM999G999G999G990D0') AS "Idx scans/Day",
+	lpad(to_char(seq_scan / reset_days,'FM999G999G999G990D0'), 18) AS "Seq scans/Day",
+	lpad(to_char(idx_scan / reset_days,'FM999G999G999G990D0'), 18) AS "Idx scans/Day",
 	trunc(seq_scan::numeric/(greatest(seq_scan + idx_scan,1))*100,1) AS "% Seq scan"
 FROM
     pg_stat_user_tables,
