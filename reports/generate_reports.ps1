@@ -119,6 +119,11 @@
     Default per-report wall-clock timeout, in seconds. Env:
     REPORT_TOTAL_TIMEOUT. Default: 600.
 
+.PARAMETER ConnectTimeout
+    libpq connect_timeout for every connection, in seconds. Env:
+    REPORT_CONNECT_TIMEOUT. Default: 60. (No -C alias: PowerShell
+    parameter names are case-insensitive, and -c is -ConfigFile.)
+
 .PARAMETER Localhost
     Ignore all services and connect to the local PostgreSQL instead (see
     .DESCRIPTION). The machine's hostname replaces the service name in the
@@ -156,6 +161,7 @@ param(
     [Alias('f')][string]$Format,
     [string]$StmtTimeout,
     [int]$TotalTimeout = 0,
+    [int]$ConnectTimeout = -1,
     [switch]$Localhost
 )
 
@@ -211,6 +217,14 @@ if (-not $StmtTimeout) {
 }
 if ($TotalTimeout -le 0) {
     $TotalTimeout = if ($env:REPORT_TOTAL_TIMEOUT) { [int]$env:REPORT_TOTAL_TIMEOUT } else { 600 }
+}
+# -1 = not given (0 is a valid value).
+if ($ConnectTimeout -lt 0) {
+    $ConnectTimeout = if ($env:REPORT_CONNECT_TIMEOUT) { [int]$env:REPORT_CONNECT_TIMEOUT } else { 60 }
+}
+if ($ConnectTimeout -lt 0) {
+    Write-Host "Invalid connect timeout (expected a whole number >= 0)."
+    exit 2
 }
 
 function Resolve-AbsolutePath {
@@ -547,9 +561,9 @@ foreach ($svc in $Services) {
         $f = Join-Path $Out "${Date}_${svcLabel}_${kind}.${Ext}"
 
         if ($Localhost) {
-            $conn = 'connect_timeout=60'
+            $conn = "connect_timeout=$ConnectTimeout"
         } else {
-            $conn = "service=$svc connect_timeout=60"
+            $conn = "service=$svc connect_timeout=$ConnectTimeout"
         }
 
         if ($kind -eq 'database') {

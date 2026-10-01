@@ -96,6 +96,8 @@
 #   -t, --stmt-timeout DUR  Default statement_timeout. Default: 300s.
 #   -T, --total-timeout SEC Default per-report wall clock timeout (secs).
 #                           Default: 600.
+#   -C, --connect-timeout SEC  libpq connect_timeout for every connection.
+#                           Default: 60.
 #   --localhost             Ignore all services and connect to the local
 #                           PostgreSQL instead (see above). The machine's
 #                           hostname replaces the service name in the
@@ -104,7 +106,8 @@
 #
 # Env var equivalents: REPORT_SCRIPTS_DIR, REPORT_NORMALIZE_SCRIPT,
 # REPORT_OUT_DIR, REPORT_KINDS, REPORT_CONFIG_FILE, REPORT_DEFAULT_DBNAME,
-# REPORT_FORMAT, REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT, REPORT_SERVICES
+# REPORT_FORMAT, REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT,
+# REPORT_CONNECT_TIMEOUT, REPORT_SERVICES
 # (space/comma separated, used when no service is given on the command line).
 #
 # Output: <out-dir>/YYYY-MM-DD/YYYY-MM-DD_<label>_<kind>.md (.txt with
@@ -124,6 +127,7 @@ DEFAULT_DBNAME="${REPORT_DEFAULT_DBNAME:-}"
 FORMAT="${REPORT_FORMAT:-md}"
 STMT_TIMEOUT="${REPORT_STMT_TIMEOUT:-300s}"
 TOTAL_TIMEOUT="${REPORT_TOTAL_TIMEOUT:-600}"
+CONNECT_TIMEOUT="${REPORT_CONNECT_TIMEOUT:-60}"
 LOCALHOST=0
 
 usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
@@ -139,6 +143,7 @@ while [[ $# -gt 0 ]]; do
     -f|--format) FORMAT=$2; shift 2 ;;
     -t|--stmt-timeout) STMT_TIMEOUT=$2; shift 2 ;;
     -T|--total-timeout) TOTAL_TIMEOUT=$2; shift 2 ;;
+    -C|--connect-timeout) CONNECT_TIMEOUT=$2; shift 2 ;;
     --localhost) LOCALHOST=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; break ;;
@@ -153,6 +158,9 @@ case "$FORMAT" in
   raw)     EXT=txt; NORMALIZE_ARGS=() ;;
   *) echo "Invalid --format '$FORMAT' (expected md, md-code or raw)." >&2; exit 2 ;;
 esac
+for v in CONNECT_TIMEOUT; do
+  [[ "${!v}" =~ ^[0-9]+$ ]] || { echo "Invalid $v '${!v}' (expected a whole number of seconds/attempts)." >&2; exit 2; }
+done
 
 declare -A LABEL=()
 declare -A DBNAME=()
@@ -352,9 +360,9 @@ for svc in "${SERVICES[@]}"; do
 
     f="$OUT/${DATE}_${label}_${kind}.${EXT}"
     if [[ "$LOCALHOST" -eq 1 ]]; then
-      conn="connect_timeout=60"
+      conn="connect_timeout=$CONNECT_TIMEOUT"
     else
-      conn="service=$svc connect_timeout=60"
+      conn="service=$svc connect_timeout=$CONNECT_TIMEOUT"
     fi
     if [[ "$kind" == database ]]; then
       dbname="${DBNAME[$svc]:-}"
