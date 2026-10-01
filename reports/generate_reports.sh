@@ -108,7 +108,7 @@
 #                           retry prints a RETRY line. 0 disables it.
 #                           Default: 2.
 #   --connect-retry-delay SEC  Seconds to wait between those connection
-#                           attempts. Default: 10.
+#                           attempts. Default: 2.
 #   --localhost             Ignore all services and connect to the local
 #                           PostgreSQL instead (see above). The machine's
 #                           hostname replaces the service name in the
@@ -141,7 +141,7 @@ STMT_TIMEOUT="${REPORT_STMT_TIMEOUT:-300s}"
 TOTAL_TIMEOUT="${REPORT_TOTAL_TIMEOUT:-600}"
 CONNECT_TIMEOUT="${REPORT_CONNECT_TIMEOUT:-60}"
 CONNECT_RETRIES="${REPORT_CONNECT_RETRIES:-2}"
-CONNECT_RETRY_DELAY="${REPORT_CONNECT_RETRY_DELAY:-10}"
+CONNECT_RETRY_DELAY="${REPORT_CONNECT_RETRY_DELAY:-2}"
 LOCALHOST=0
 
 usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
