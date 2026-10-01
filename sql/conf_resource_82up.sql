@@ -6,7 +6,7 @@ SELECT
 	WHEN 'temp_buffers'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
 	WHEN 'wal_buffers'          	 	THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE  lpad(pg_size_pretty(setting::bigint  * unit_val),11) END
 	WHEN 'work_mem'             	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
-	WHEN 'temp_file_limit'              THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'temp_file_limit'              THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE lpad(pg_size_pretty(setting::bigint * unit_val),11) END
 	WHEN 'maintenance_work_mem' 	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
 	WHEN 'autovacuum_work_mem'  	 	THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE lpad(pg_size_pretty(setting::bigint * unit_val),11) END
 	WHEN 'vacuum_buffer_usage_limit'    THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
