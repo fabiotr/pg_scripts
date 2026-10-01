@@ -8,7 +8,7 @@ Everything is written in English (code, comments, column aliases, commit message
 - `sql/` — all SQL scripts (flat, no subfolders). Run via psql; they rely on psql meta-commands.
 - `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf.example` (copy to the git-ignored `report.conf`).
 - `linux_bash/` — bash scripts. `windows_power_shell/` — PowerShell ports **mirroring the same file names** (`.sh` → `.ps1`).
-- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.py` validates the dispatcher rules below; `tools/check_sql_style.py` validates the SQL style rules (keyword and identifier case, ASCII identifiers, ambiguous strings).
+- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.py` validates the dispatcher rules below; `tools/check_sql_style.py` validates the SQL style rules (keyword and identifier case, ASCII identifiers, ambiguous strings). Both are documented in `tools/README.md`; keep it in step when a rule changes.
 - `psqlrc` — recommended `~/.psqlrc` (does `\cd $HOME/pg_scripts/sql`).
 - `README.md` — the script catalog. `TODO.md` — roadmap (done items are ~~struck through~~ with a "(see `file.sql`)" note).
 

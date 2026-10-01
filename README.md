@@ -397,23 +397,19 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 
 ## 🧰 Maintenance Tools
 
-`tools/` holds the checks that keep the repository consistent. They are for contributors, not for running against a database, and they run in CI on every pull request.
+[`tools/`](tools/README.md) holds the checks that keep the repository consistent. They are for contributors: none of them connects to a database, and CI runs them on every pull request. They need only Python 3.9+, standard library only.
 
-| Name                         | Description                                                                                                                                                                                       |
-| :---                         | :---                                                                                                                                                                                              |
-| `check_dispatchers.py`       | Checks the version dispatchers in `sql/`: `\ir` instead of `\i`, include targets that exist, `\if :svp_pg_VV` branches that include `<name>_VVup.sql` and go from newest to oldest version, no unreachable `_VVup.sql` / `_VV-.sql` file, and the `Not supported on version` message. Uses `check_sql_style.py`'s tokenizer, so `\` lines in comments, strings and `$$` bodies are ignored. Needs Python 3, standard library only. |
-| `check_sql_style.py`         | Checks the SQL style: reserved keywords in uppercase, unquoted identifiers in lowercase, ASCII-only identifiers and dollar-quote tags, and no backslash in a plain `'...'` string (use `E'...'`). Function bodies and `DO` blocks are checked too. `--fix` fixes the case and rewrites those strings as `E'...'`. Needs Python 3, standard library only. |
-| `test_check_dispatchers.py`  | Tests for `check_dispatchers.py`, one throwaway repository per rule.                                                                                                                              |
-| `test_check_sql_style.py`    | Tests for `check_sql_style.py`.                                                                                                                                                                   |
+| Name                         | Description                                                                                                       |
+| :---                         | :---                                                                                                              |
+| `check_dispatchers.py`       | Checks the version dispatchers (`\if :svp_pg_VV` → `\ir <name>_VVup.sql`): include targets, versions, branch order, unreachable files. |
+| `check_sql_style.py`         | Checks the SQL style (keyword and identifier case, ASCII identifiers, backslashes in strings); `--fix` fixes most of it. |
+| `test_check_*.py`            | Tests for both checks.                                                                                            |
 
 ```bash
-./tools/check_dispatchers.py        # must print "All dispatchers OK"
-./tools/check_sql_style.py          # must print "All SQL style checks OK"
-./tools/check_sql_style.py --fix    # fixes what it can
-python3 -m unittest discover -s tools -p 'test_*.py'   # tests for both checks
+./tools/check_dispatchers.py && ./tools/check_sql_style.py
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for when to run them.
+See [tools/README.md](tools/README.md) for every rule, the options, the tests and the pre-commit hook, and [CONTRIBUTING.md](CONTRIBUTING.md) for when to run them.
 
 ---
 
