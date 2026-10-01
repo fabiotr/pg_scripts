@@ -12,8 +12,8 @@ SELECT
     lpad(pg_size_pretty(pg_relation_size(t.relid)), 11) AS "Size",
     to_char(t.last_vacuum,     'YYYY-MM-DD HH24:MI:SS') AS "V Last",
     to_char(t.last_autovacuum, 'YYYY-MM-DD HH24:MI:SS') AS "AV Last",
-    to_char(t.vacuum_count     / sa.days_since_reset, 'FM999G990D00') AS "V Count/Day",
-    to_char(t.autovacuum_count / sa.days_since_reset, 'FM999G990D00') AS "AV Count/Day",
+    lpad(to_char(t.vacuum_count     / sa.days_since_reset, 'FM999G990D00'), 11) AS "V Count/Day",
+    lpad(to_char(t.autovacuum_count / sa.days_since_reset, 'FM999G990D00'), 11) AS "AV Count/Day",
     to_char((t.total_vacuum_time / sa.days_since_reset) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "V Time/Day",
     to_char((t.total_autovacuum_time / sa.days_since_reset) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "AV Time/Day",
     CASE t.vacuum_count WHEN 0 THEN NULL

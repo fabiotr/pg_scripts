@@ -3,7 +3,7 @@ SELECT
 	c.relname                   AS "Table",
 	pg_get_userbyid(c.relowner) AS "Owner",
 	--t.spcname                   AS "Tablespace",
-	to_char(c.reltuples,'FM999G999G999G990')  AS "Rows",
+	lpad(to_char(c.reltuples,'FM999G999G999G990'), 16)  AS "Rows",
 	lpad(pg_size_pretty(pg_relation_size(c.oid)), 11) AS "Size"
 FROM 
 	pg_class c

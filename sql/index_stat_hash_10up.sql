@@ -9,7 +9,7 @@ SELECT
     pg_get_userbyid(c.relowner) AS "Owner",
     --pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
     lpad(pg_size_pretty(pg_relation_size(c.oid)),11) AS "Index Size",
-    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20) AS "Rows",
     version,
     bucket_pages,
     overflow_pages,
