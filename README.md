@@ -60,7 +60,7 @@ You can run the scripts directly from your shell or inside a `psql` session.
 
 **From the terminal:**
 ```bash
-psql -h localhost -U postgres -d my_database -f sql/tables_size.sql
+psql -X -h localhost -U postgres -d my_database -f sql/tables_size.sql
 ```
 
 **From the psql prompt:**
