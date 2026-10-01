@@ -12,7 +12,7 @@ CASE relkind
 	WHEN 'p' THEN 'partitioned table'
 	WHEN 'I' THEN 'partitioned index'
 END AS "Type"
-, lpad(pg_size_pretty(pg_relation_size( relnamespace::regnamespace || '.' || relname)), 11)
+, lpad(pg_size_pretty(pg_relation_size( relnamespace::regnamespace || '.' || relname)), 11) AS pg_size_pretty
 FROM pg_class 
 WHERE relkind = 'r' 
 AND relhasoids=TRUE 
