@@ -612,13 +612,6 @@ foreach ($svc in $Services) {
         } else {
             $conn = "service=$svc connect_timeout=$ConnectTimeout"
         }
-        $connErr = Wait-ForConnection -Conn $conn -Label "$svc $kind"
-        if ($null -ne $connErr) {
-            Write-Host "FAIL  $svc $kind (could not connect after $($ConnectRetries + 1) attempt(s): $connErr)"
-            $fail = $true
-            continue
-        }
-
         if ($kind -eq 'database') {
             # svcDbname, not "dbname" — same case-insensitivity reason as
             # $svcLabel above ($Dbname is the hashtable).
@@ -626,6 +619,11 @@ foreach ($svc in $Services) {
             if (-not $svcDbname) { $svcDbname = $DefaultDbname }
             if (-not $svcDbname) {
                 if (-not $AutoDbnameCache.ContainsKey($svc)) {
+                    # Auto-detection connects with the conninfo above (no
+                    # dbname): give a flaky link its retries before that. A
+                    # failure here is left to the fallback below and the
+                    # check on the final conninfo.
+                    [void](Wait-ForConnection -Conn $conn -Label "$svc $kind")
                     $AutoDbnameCache[$svc] = Resolve-AutoDbname -ConnBase $conn
                 }
                 $svcDbname = $AutoDbnameCache[$svc]
@@ -634,6 +632,14 @@ foreach ($svc in $Services) {
                 }
             }
             if ($svcDbname) { $conn = "$conn dbname=$svcDbname" }
+        }
+
+        # Same conninfo as the report itself (database included).
+        $connErr = Wait-ForConnection -Conn $conn -Label "$svc $kind"
+        if ($null -ne $connErr) {
+            Write-Host "FAIL  $svc $kind (could not connect after $($ConnectRetries + 1) attempt(s): $connErr)"
+            $fail = $true
+            continue
         }
 
         $reportSql = "report_$kind.sql"

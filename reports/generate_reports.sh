@@ -399,22 +399,27 @@ for svc in "${SERVICES[@]}"; do
     else
       conn="service=$svc connect_timeout=$CONNECT_TIMEOUT"
     fi
-    if ! wait_for_connection "$conn" "$svc $kind" "$f.err"; then
-      echo "FAIL  $svc $kind (could not connect after $((CONNECT_RETRIES + 1)) attempt(s): $(head -1 "$f.err" 2>/dev/null))"
-      fail=1
-      continue
-    fi
     if [[ "$kind" == database ]]; then
       dbname="${DBNAME[$svc]:-}"
       [[ -z "$dbname" ]] && dbname="$DEFAULT_DBNAME"
       if [[ -z "$dbname" ]]; then
         if [[ -z "${AUTO_DBNAME_CACHE[$svc]+set}" ]]; then
+          # Auto-detection connects with the conninfo above (no dbname):
+          # give a flaky link its retries before that. A failure here is
+          # left to the fallback below and the check on the final conninfo.
+          wait_for_connection "$conn" "$svc $kind" "$f.err" || true
           AUTO_DBNAME_CACHE[$svc]=$(resolve_auto_dbname "$conn")
         fi
         dbname="${AUTO_DBNAME_CACHE[$svc]}"
         [[ -z "$dbname" ]] && echo "WARN  could not auto-detect a database for $svc — falling back to this connection's own default database" >&2
       fi
       [[ -n "$dbname" ]] && conn="$conn dbname=$dbname"
+    fi
+    # Same conninfo as the report itself (database included).
+    if ! wait_for_connection "$conn" "$svc $kind" "$f.err"; then
+      echo "FAIL  $svc $kind (could not connect after $((CONNECT_RETRIES + 1)) attempt(s): $(head -1 "$f.err" 2>/dev/null))"
+      fail=1
+      continue
     fi
 
     if [[ ! -f "report_${kind}.sql" ]]; then
