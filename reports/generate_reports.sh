@@ -370,6 +370,7 @@ normalize() {
 # leaves the last error in the given file and returns 1.
 wait_for_connection() {
   local conn=$1 label=$2 errfile=$3 attempt rc
+  (( CONNECT_RETRIES == 0 )) && return 0
   for (( attempt = 1; attempt <= CONNECT_RETRIES + 1; attempt++ )); do
     psql "$conn" -X -q -At -c 'SELECT 1' >/dev/null 2>"$errfile"
     rc=$?
