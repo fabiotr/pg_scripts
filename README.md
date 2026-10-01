@@ -13,6 +13,7 @@
 - [🚀 Quick Start](#-quick-start)
 - [📂 SQL Script Catalog](#-sql-script-catalog)
 - [🐚 Shell Scripts](#-shell-scripts)
+- [🧰 Maintenance Tools](#-maintenance-tools)
 - [⚠️ Safety & Best Practices](#️-safety--best-practices)
 - [🤝 Contributing](#-contributing)
 
@@ -391,6 +392,28 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 > All four `postgres_log_download_from_*` scripts skip re-downloading a log file that already exists locally with the same name and size (the GCP version compares entry counts instead, since Cloud Logging has no per-file size).
 
 > **Requirements per cloud provider:** each `postgres_log_download_from_*` script requires that provider's own CLI installed and authenticated beforehand — `aws` (RDS), `az` (Azure), `gcloud` (GCP), or `oci` (OCI) — plus, for Azure and OCI, that log export/capture is explicitly enabled on the instance first (see the comments at the top of each script for the exact commands).
+
+---
+
+## 🧰 Maintenance Tools
+
+`tools/` holds the checks that keep the repository consistent. They are for contributors, not for running against a database, and they run in CI on every pull request.
+
+| Name                         | Description                                                                                                                                                                                       |
+| :---                         | :---                                                                                                                                                                                              |
+| `check_dispatchers.sh`       | Checks the version dispatchers in `sql/`: `\ir` instead of `\i`, include targets that exist, `\if :svp_pg_VV` branches that include `<name>_VVup.sql` and go from newest to oldest version, no unreachable `_VVup.sql` / `_VV-.sql` file, and the `Not supported on version` message. Needs bash and awk. |
+| `check_sql_style.py`         | Checks the SQL style: reserved keywords in uppercase, unquoted identifiers in lowercase, ASCII-only identifiers and dollar-quote tags, and no backslash in a plain `'...'` string (use `E'...'`). Function bodies and `DO` blocks are checked too. `--fix` fixes the case and rewrites those strings as `E'...'`. Needs Python 3, standard library only. |
+| `test_check_dispatchers.py`  | Tests for `check_dispatchers.sh`, one throwaway repository per rule.                                                                                                                              |
+| `test_check_sql_style.py`    | Tests for `check_sql_style.py`.                                                                                                                                                                   |
+
+```bash
+./tools/check_dispatchers.sh        # must print "All dispatchers OK"
+./tools/check_sql_style.py          # must print "All SQL style checks OK"
+./tools/check_sql_style.py --fix    # fixes what it can
+python3 -m unittest discover -s tools -p 'test_*.py'   # tests for both checks
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for when to run them.
 
 ---
 
