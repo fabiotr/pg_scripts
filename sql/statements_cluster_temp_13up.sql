@@ -1,6 +1,6 @@
 SELECT 
     -- string_agg(datname,',') db,
-    row_number() over(ORDER by sum(temp_blks_read + temp_blks_written) DESC) "N",
+    row_number() over(ORDER BY sum(temp_blks_read + temp_blks_written) DESC) "N",
     queryid, 
     sum(calls) AS calls, 
     lpad(pg_size_pretty((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer), 11) total_temp,
@@ -9,11 +9,11 @@ SELECT
         THEN (sum(blk_read_time) + sum(blk_write_time)) * INTERVAL '1 millisecond'
         ELSE NULL END tot_temp_time,
     trunc(sum(total_exec_time)/1000) total_exec_time_s,
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') AS "Query" 
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') AS "Query" 
 FROM 
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
-GROUP BY array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' '), queryid 
+GROUP BY array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' '), queryid 
 HAVING sum(calls) > 0 AND sum(temp_blks_read) + sum(temp_blks_written) > 0
 ORDER BY sum(temp_blks_read + temp_blks_written) DESC
 LIMIT 20;

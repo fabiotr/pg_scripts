@@ -10,4 +10,4 @@ FROM
     JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE indisvalid
 GROUP BY i.indrelid, c.relname, n.nspname, i.indkey, ic.relam, i.indclass, i.indoption, i.indexprs, i.indpred
-HAVING COUNT(*) > 1;
+HAVING count(*) > 1;

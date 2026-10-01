@@ -1,7 +1,7 @@
 -- When Maxwritten is high, you need to increase the bgwriter_lru_maxpages parameter
 SELECT
-    lpad(pg_size_pretty(round((buffers_alloc * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)))),11) AS "Allocated / Day",
-    lpad(pg_size_pretty(round((buffers_clean * current_setting('block_size')::INTEGER) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)))),11) AS "Clean     / Day",
+    lpad(pg_size_pretty(round((buffers_alloc * current_setting('block_size')::INTEGER) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)))),11) AS "Allocated / Day",
+    lpad(pg_size_pretty(round((buffers_clean * current_setting('block_size')::INTEGER) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)))),11) AS "Clean     / Day",
     lpad(coalesce(round(100.0 * maxwritten_clean / (nullif(buffers_clean,0) / current_setting('bgwriter_lru_maxpages')::numeric),1),0) || ' %',7)                AS "Max written",
     CASE 
         WHEN 100.0 * maxwritten_clean / (nullif(buffers_clean,0) / current_setting('bgwriter_lru_maxpages')::numeric) < 10              THEN ' ✅ OK'

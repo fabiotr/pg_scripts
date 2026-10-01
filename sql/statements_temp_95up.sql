@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by temp_blks_read + temp_blks_written DESC) "N", 
+    row_number() over(ORDER BY temp_blks_read + temp_blks_written DESC) "N", 
     queryid,
     datname db,  userid::regrole AS "User",
     calls, 
@@ -10,7 +10,7 @@ SELECT
         THEN (blk_read_time + blk_write_time) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time",
     trunc(total_time/1000) total_time_s,
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') || 
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
     pg_stat_statements s 

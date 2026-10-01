@@ -13,4 +13,4 @@ SELECT
     date_trunc('second',sync_time  / reset_days * INTERVAL '1 MIlLISECOND')                         AS "Sync  time  / Day",
     '--------' AS "-----------------------------",
     date_trunc('second', CURRENT_TIMESTAMP - stats_reset)                                           AS "Age"
-FROM (SELECT *, (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_checkpointer) AS c;
+FROM (SELECT *, (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_checkpointer) AS c;

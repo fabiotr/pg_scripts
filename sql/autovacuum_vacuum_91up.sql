@@ -1,7 +1,7 @@
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999'),11) AS "Upd+Del/Day",
+    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999'),11) AS "Upd+Del/Day",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),11) AS "Live",
     lpad(pg_size_pretty(pg_table_size(t.relid)),11)      AS "Size",
     lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),11) AS "Dead",
