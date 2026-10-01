@@ -130,7 +130,8 @@
     "SELECT 1" connection is tried up to 1 + N times,
     -ConnectRetryDelay seconds apart; a report that already
     started is never re-run, and SQL errors or timeouts are not retried.
-    Each retry prints a RETRY line. 0 disables it. Env:
+    Each retry prints a RETRY line. 0 disables it (no test connection at
+    all). Env:
     REPORT_CONNECT_RETRIES. Default: 2.
 
 .PARAMETER ConnectRetryDelay
@@ -533,13 +534,17 @@ LIMIT 1;
 function Wait-ForConnection {
     param([string]$Conn, [string]$Label)
 
-    # connect_timeout 0 means "wait forever" in libpq; give the wall clock
-    # some slack over it otherwise.
-    $wallSec = if ($ConnectTimeout -gt 0) { $ConnectTimeout + 10 } else { 3600 }
+    # No retries: leave the connection to the report itself, as before.
+    if ($ConnectRetries -eq 0) { return $null }
+    # libpq's connect_timeout applies to each host of a multi-host service,
+    # so there's no fixed total to mirror here; like the Bash twin, let psql
+    # finish on its own. This limit only guards against a psql that never
+    # returns, and hitting it counts as a failed connection, never success.
+    $wallSec = 3600
     for ($attempt = 1; $attempt -le $ConnectRetries + 1; $attempt++) {
         $r = Invoke-Psql -Arguments @($Conn, '-X', '-q', '-t', '-A', '-c', 'SELECT 1') -TimeoutSec $wallSec
-        if ($r.ExitCode -ne 2) { return $null }
-        $err = @($r.StdErr -split "`r?`n" | Where-Object { $_ })[0]
+        if (-not $r.TimedOut -and $r.ExitCode -ne 2) { return $null }
+        $err = if ($r.TimedOut) { "connection check did not finish in ${wallSec}s" } else { @($r.StdErr -split "`r?`n" | Where-Object { $_ })[0] }
         if ($attempt -gt $ConnectRetries) { return $err }
         Write-Host "RETRY $Label (attempt $($attempt + 1)/$($ConnectRetries + 1) in ${ConnectRetryDelay}s: $err)"
         Start-Sleep -Seconds $ConnectRetryDelay
