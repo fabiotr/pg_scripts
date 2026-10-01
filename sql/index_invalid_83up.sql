@@ -2,7 +2,7 @@ SELECT n.nspname AS schemaname,
     c.relname AS tablename,
     i.relname AS indexname,
     t.spcname AS tablespace,
-    x.indisvalid AS "Is invalid?",
+    x.indisvalid AS "Is valid?",
     x.indisready AS "Is ready?",
     x.indcheckxmin AS "Is wraparound?",
     pg_get_indexdef(i.oid) AS indexdef
