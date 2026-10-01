@@ -21,7 +21,7 @@ FROM
         ct.relname AS "Table name",
 	c.relname AS "Index name",
         pg_get_userbyid(c.relowner) AS "Owner",
-        lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "rows",
+        lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20) AS "rows",
         (pgstatindex(c.relname)).*
     FROM 
              pg_index i

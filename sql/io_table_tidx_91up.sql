@@ -7,7 +7,7 @@ SELECT
     round(100 * tidx_blks_hit  / sum(tidx_blks_hit)  OVER(),1) AS "Hit/Tot %",
     round(100 * tidx_blks_read / sum(tidx_blks_read) OVER(),1) AS "Read/Tot %",
     --to_char(CASE tidx_blks_hit  WHEN 0 THEN 0 ELSE 100 * (tidx_blks_hit  + tidx_blks_read)  / (SUM (tidx_blks_hit  + tidx_blks_read)  OVER ()) END,'FM990D99') || ' %' AS "Tidx  weight",
-    lpad(to_char(CASE tidx_blks_hit  WHEN 0 THEN 0 ELSE 100 * tidx_blks_hit::NUMERIC  / (tidx_blks_hit  + tidx_blks_read)  END,'FM990D0'),5) AS "Hit %"
+    lpad(to_char(CASE tidx_blks_hit  WHEN 0 THEN 0 ELSE 100 * tidx_blks_hit::NUMERIC  / (tidx_blks_hit  + tidx_blks_read)  END,'FM990D0'),6) AS "Hit %"
 FROM 
     pg_statio_all_tables
     JOIN (SELECT datname, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()

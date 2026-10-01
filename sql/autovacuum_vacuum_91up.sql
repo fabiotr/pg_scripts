@@ -1,10 +1,10 @@
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999'),11) AS "Upd+Del/Day",
-    lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),11) AS "Live",
+    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
+    lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),16) AS "Live",
     lpad(pg_size_pretty(pg_table_size(t.relid)),11)      AS "Size",
-    lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),11) AS "Dead",
+    lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),16) AS "Dead",
     lpad(CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END, 11) AS "Dead Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END AS "D%",
     trunc(to_number(coalesce(c.scale,s.setting),'99.999') * 100,3) AS "S%",

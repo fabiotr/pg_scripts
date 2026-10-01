@@ -1,12 +1,12 @@
 SET escape_string_warning TO off;
 SELECT
     row_number() over(ORDER BY rows  DESC) "N",
-    to_char(rows*100/sum(rows) OVER (),'FM99D99') || '%' AS "Rows_%",
+    lpad(to_char(rows*100/sum(rows) OVER (),'FM99D99'), 6) || '%' AS "Rows_%",
     datname AS "DB", 
     rolname AS "User",
-    to_char(calls,'FM999G999G999') AS "Calls",
-    to_char((rows),'FM999G999G999G999') AS "Rows",
-    to_char(rows/calls,'FM999G999G999') AS "Rows/Call",
+    lpad(to_char(calls,'FM999G999G999'), 12) AS "Calls",
+    lpad(to_char((rows),'FM999G999G999G999'), 16) AS "Rows",
+    lpad(to_char(rows/calls,'FM999G999G999'), 12) AS "Rows/Call",
     to_char((total_time / calls) * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,
     to_char((total_time)         * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||

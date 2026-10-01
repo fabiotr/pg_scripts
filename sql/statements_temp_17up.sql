@@ -3,7 +3,7 @@ SELECT
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
-    to_char((calls::numeric/since_days::numeric),'FM9G999G990D0') AS "Calls/Day",
+    lpad(to_char((calls::numeric/since_days::numeric),'FM9G999G990D0'), 12) AS "Calls/Day",
     --to_char((rows/reset_days),'FM999G999G999') AS "Rows/Day",
     --to_char((rows::numeric/calls::numeric),'FM999G990D9') AS "Rows/Call",
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
