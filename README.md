@@ -401,13 +401,13 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 
 | Name                         | Description                                                                                                                                                                                       |
 | :---                         | :---                                                                                                                                                                                              |
-| `check_dispatchers.sh`       | Checks the version dispatchers in `sql/`: `\ir` instead of `\i`, include targets that exist, `\if :svp_pg_VV` branches that include `<name>_VVup.sql` and go from newest to oldest version, no unreachable `_VVup.sql` / `_VV-.sql` file, and the `Not supported on version` message. Needs bash and awk. |
+| `check_dispatchers.py`       | Checks the version dispatchers in `sql/`: `\ir` instead of `\i`, include targets that exist, `\if :svp_pg_VV` branches that include `<name>_VVup.sql` and go from newest to oldest version, no unreachable `_VVup.sql` / `_VV-.sql` file, and the `Not supported on version` message. Uses `check_sql_style.py`'s tokenizer, so `\` lines in comments, strings and `$$` bodies are ignored. Needs Python 3, standard library only. |
 | `check_sql_style.py`         | Checks the SQL style: reserved keywords in uppercase, unquoted identifiers in lowercase, ASCII-only identifiers and dollar-quote tags, and no backslash in a plain `'...'` string (use `E'...'`). Function bodies and `DO` blocks are checked too. `--fix` fixes the case and rewrites those strings as `E'...'`. Needs Python 3, standard library only. |
-| `test_check_dispatchers.py`  | Tests for `check_dispatchers.sh`, one throwaway repository per rule.                                                                                                                              |
+| `test_check_dispatchers.py`  | Tests for `check_dispatchers.py`, one throwaway repository per rule.                                                                                                                              |
 | `test_check_sql_style.py`    | Tests for `check_sql_style.py`.                                                                                                                                                                   |
 
 ```bash
-./tools/check_dispatchers.sh        # must print "All dispatchers OK"
+./tools/check_dispatchers.py        # must print "All dispatchers OK"
 ./tools/check_sql_style.py          # must print "All SQL style checks OK"
 ./tools/check_sql_style.py --fix    # fixes what it can
 python3 -m unittest discover -s tools -p 'test_*.py'   # tests for both checks
