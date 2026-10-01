@@ -90,7 +90,7 @@ The scripts are organized by functional area and scope. Click on a category to e
 | :---     | :---                  | :---:         | :---                                                                                                                      |
 | Cluster  | `report_cluster.sql`  | PG >= 10      | **Full Cluster Audit**: Generates a comprehensive Markdown report including config, connections, replication, and more.   |
 | Database | `report_database.sql` | PG >= 10      | **Full Database Audit**: Generates a detailed report of the current database including sizes, bloating, and index health. |
-| Both     | `generate_reports.sh` / `generate_reports.ps1` | PG >= 10 | **Multi-service runner**: config-driven wrapper (`pg_service.conf`/`-c` config file/CLI args) that runs `report_cluster.sql` and `report_database.sql` across any number of services, normalizing each output through `normalize_md.py` into one Markdown file per service per report type. |
+| Both     | `generate_reports.sh` / `generate_reports.ps1` | PG >= 10 | **Multi-service runner**: config-driven wrapper (`pg_service.conf`/`-c` config file/CLI args) that runs `report_cluster.sql` and `report_database.sql` across any number of services, writing one file per service per report type. The output format is `-f/--format` (`.sh`) / `-Format` (`.ps1`): `md` (default: Markdown tables, via `normalize_md.py`), `md-code` (Markdown via `normalize_md.py`, each psql table kept as a code block, lighter for Notion) or `raw` (`.txt`, no `normalize_md.py` / Python needed; psql output without Markdown conversion, only psql status lines such as "Timing is on." are dropped). |
 
 </details>
 

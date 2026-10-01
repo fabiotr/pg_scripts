@@ -23,6 +23,7 @@
       reports\report_cluster.sql    <- found next to this script, always
       reports\report_database.sql   <- found next to this script, always
       reports\normalize_md.py       <- found via -NormalizeScript, see below
+                                        (not needed with -Format raw)
       sql\*.sql                     <- fragment library \ir'd by
                                         report_*.sql, found via -ScriptsDir
 
@@ -64,7 +65,8 @@
     report.conf.example) if it exists, otherwise nothing is
     loaded/overridden.
 
-    Output: <OutDir>\YYYY-MM-DD\YYYY-MM-DD_<label>_<kind>.md
+    Output: <OutDir>\YYYY-MM-DD\YYYY-MM-DD_<label>_<kind>.md (.txt with
+    -Format raw)
 
 .PARAMETER Service
     pg_service.conf service name(s), positional (e.g. `prd_eu prd_us`). If
@@ -99,6 +101,17 @@
     a config-file dbname (see the priority order in .DESCRIPTION). Env:
     REPORT_DEFAULT_DBNAME. No default — omit it to auto-detect instead.
 
+.PARAMETER Format
+    Output format. Env: REPORT_FORMAT. Default: md.
+      md      - Markdown, psql tables converted to Markdown tables (.md).
+      md-code - Markdown, but psql tables kept as-is (aligned columns)
+                inside fenced code blocks (.md). Much lighter to render in
+                Notion for big reports with many tables.
+      raw     - psql output as printed, no Markdown conversion (.txt).
+                Only psql's own \timing/\pset status lines ("Timing is
+                on." ...) are dropped, as in the other formats; line
+                endings are the platform's.
+
 .PARAMETER StmtTimeout
     Default statement_timeout. Env: REPORT_STMT_TIMEOUT. Default: 300s.
 
@@ -114,7 +127,7 @@
 .NOTES
     Requires pwsh (PowerShell 7+) — uses ProcessStartInfo.ArgumentList,
     not available in Windows PowerShell 5.1. Also requires psql and a
-    python3 (or python) interpreter in PATH.
+    python3 (or python) interpreter in PATH (except with -Format raw).
 
     Windows note: by default, Windows blocks running unsigned .ps1 scripts.
     Run this with:
@@ -140,6 +153,7 @@ param(
     [Alias('k')][string[]]$Kinds,
     [Alias('c')][string]$ConfigFile,
     [Alias('n')][string]$DefaultDbname,
+    [Alias('f')][string]$Format,
     [string]$StmtTimeout,
     [int]$TotalTimeout = 0,
     [switch]$Localhost
@@ -180,6 +194,18 @@ if ($ConfigFile) {
 if (-not $DefaultDbname) {
     $DefaultDbname = $env:REPORT_DEFAULT_DBNAME
 }
+if (-not $Format) {
+    $Format = if ($env:REPORT_FORMAT) { $env:REPORT_FORMAT } else { 'md' }
+}
+switch ($Format) {
+    'md'      { $Ext = 'md';  $NormalizeArgs = @('--tables', 'md') }
+    'md-code' { $Ext = 'md';  $NormalizeArgs = @('--tables', 'code') }
+    'raw'     { $Ext = 'txt'; $NormalizeArgs = @() }
+    default {
+        Write-Host "Invalid -Format '$Format' (expected md, md-code or raw)."
+        exit 2
+    }
+}
 if (-not $StmtTimeout) {
     $StmtTimeout = if ($env:REPORT_STMT_TIMEOUT) { $env:REPORT_STMT_TIMEOUT } else { '300s' }
 }
@@ -202,7 +228,7 @@ $PythonCmd = $null
 foreach ($candidate in @('python3', 'python')) {
     if (Get-Command $candidate -ErrorAction SilentlyContinue) { $PythonCmd = $candidate; break }
 }
-if (-not $PythonCmd) {
+if (-not $PythonCmd -and $Format -ne 'raw') {
     Write-Host 'Neither python3 nor python found in PATH. normalize_md.py needs a Python 3 interpreter.'
     exit 2
 }
@@ -301,7 +327,7 @@ if ((($KindList -contains 'cluster') -and -not (Test-Path (Join-Path $SelfDir 'r
 if (Test-Path -PathType Container $NormalizeScript) {
     $NormalizeScript = Join-Path $NormalizeScript 'normalize_md.py'
 }
-if (-not (Test-Path -PathType Leaf $NormalizeScript)) {
+if ($Format -ne 'raw' -and -not (Test-Path -PathType Leaf $NormalizeScript)) {
     Write-Host "normalize_md.py not found at '$NormalizeScript'. Point -NormalizeScript (or REPORT_NORMALIZE_SCRIPT) at it."
     exit 2
 }
@@ -518,7 +544,7 @@ foreach ($svc in $Services) {
         if ($OvrTotal.ContainsKey("${svc}:*")) { $total = [int]$OvrTotal["${svc}:*"] }
         if ($OvrTotal.ContainsKey("${svc}:${kind}")) { $total = [int]$OvrTotal["${svc}:${kind}"] }
 
-        $f = Join-Path $Out "${Date}_${svcLabel}_${kind}.md"
+        $f = Join-Path $Out "${Date}_${svcLabel}_${kind}.${Ext}"
 
         if ($Localhost) {
             $conn = 'connect_timeout=60'
@@ -555,12 +581,20 @@ foreach ($svc in $Services) {
         # Report includes do \set QUIET off, so psql echoes \timing/\pset
         # feedback to stdout — filtered out here, same lines the Bash
         # version's grep -v drops.
-        $rawLines = if ($result.StdOut) { $result.StdOut -split "`r?`n" } else { @() }
+        # Drop the final line terminator before splitting: otherwise -split
+        # yields a trailing empty element, which Out-File / the normalizer
+        # would write out as an extra blank line at the end of every report.
+        $rawLines = if ($result.StdOut) { ($result.StdOut -replace "`r?`n\z", '') -split "`r?`n" } else { @() }
         $filtered = $rawLines | Where-Object {
             $_ -notmatch '^(Timing is|Expanded display is|Null display is|Border style is|Pager usage is|Output format is|Tuples only is|Footer is|Title is)'
         }
-        $filtered | & $PythonCmd $NormalizeScript | Out-File -FilePath $f -Encoding utf8NoBOM
-        $normalizeExit = $LASTEXITCODE
+        if ($Format -eq 'raw') {
+            $filtered | Out-File -FilePath $f -Encoding utf8NoBOM
+            $normalizeExit = 0
+        } else {
+            $filtered | & $PythonCmd $NormalizeScript @NormalizeArgs | Out-File -FilePath $f -Encoding utf8NoBOM
+            $normalizeExit = $LASTEXITCODE
+        }
 
         $success = (-not $result.TimedOut) -and ($result.ExitCode -eq 0) -and ($normalizeExit -eq 0)
         # @(...) forces an array even when only one non-empty line survives the
