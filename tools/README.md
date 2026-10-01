@@ -26,9 +26,11 @@ Problems are printed as `file:line: message`. Both checks exit with 0 when every
 
 ## `check_dispatchers.py`
 
-A script that depends on the server version is a dispatcher: `<name>.sql` picks one implementation with the `svp_pg_VV` variables set by `sql/variables.sql` (see [CLAUDE.md](../CLAUDE.md)):
+A script that depends on the server version is a dispatcher: `<name>.sql` loads `variables.sql`, which sets the `svp_pg_VV` variables, and picks one implementation with them (see [CLAUDE.md](../CLAUDE.md)):
 
 ```sql
+\ir variables.sql
+
 \if :svp_pg_16
     \ir <name>_16up.sql
 \elif :svp_pg_10
