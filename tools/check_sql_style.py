@@ -329,8 +329,9 @@ def language_clause(span):
         # aren't clauses, whatever comes before them
         if (kind == WORD and text.lower() == "language" and not qualified
                 and nkind in (WORD, LITERAL) and name.lower() not in FUNCTION_OPTIONS):
-            name = DOLLAR_LANGUAGE_RE.sub(r"\2", name)
-            found = LITERAL_PREFIX_RE.sub("", name).strip("'\"").lower()
+            # a dollar-quoted name is taken as is: $$'plpgsql'$$ isn't plpgsql
+            m = DOLLAR_LANGUAGE_RE.match(name)
+            found = (m.group(2) if m else LITERAL_PREFIX_RE.sub("", name).strip("'\"")).lower()
     return found
 
 
