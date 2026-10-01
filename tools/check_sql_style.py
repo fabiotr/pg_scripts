@@ -172,6 +172,8 @@ tg_tag""".split()
 CODE_LANGUAGES = {"sql", "plpgsql"}  # bodies in other languages stay literals
 # Prefix of a quoted language name: LANGUAGE E'plpgsql', U&'sql'
 LITERAL_PREFIX_RE = re.compile(r"^(?:[EeNn]|[Uu]&)(?=['\"])")
+# Tags of a dollar-quoted language name: LANGUAGE $l$plpgsql$l$
+DOLLAR_LANGUAGE_RE = re.compile(r"^(\$[^$]*\$)(.*)\1$", re.S)
 # Words that start a function option (or the body): never a language name
 FUNCTION_OPTIONS = {"as", "set", "support", "cost", "rows", "security", "strict",
                     "immutable", "stable", "volatile", "parallel", "leakproof",
@@ -327,6 +329,7 @@ def language_clause(span):
         # aren't clauses, whatever comes before them
         if (kind == WORD and text.lower() == "language" and not qualified
                 and nkind in (WORD, LITERAL) and name.lower() not in FUNCTION_OPTIONS):
+            name = DOLLAR_LANGUAGE_RE.sub(r"\2", name)
             found = LITERAL_PREFIX_RE.sub("", name).strip("'\"").lower()
     return found
 

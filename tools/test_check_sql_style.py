@@ -432,7 +432,8 @@ class Review(unittest.TestCase):
             self.fail("scanning 20000 dollar literals in one statement took more than 5s")
 
     def test_prefixed_language_names(self):
-        for lang in ("E'plpgsql'", "U&'plpgsql'", "'plpgsql'", "plpgsql"):
+        for lang in ("E'plpgsql'", "U&'plpgsql'", "'plpgsql'", "plpgsql",
+                     "$$plpgsql$$", "$l$plpgsql$l$"):
             sql = f"CREATE FUNCTION f() RETURNS int LANGUAGE {lang} AS $$ begin return 1; end $$;"
             with self.subTest(lang=lang):
                 self.assertEqual(found(sql), ["begin", "end"])
