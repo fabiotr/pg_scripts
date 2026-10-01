@@ -7,5 +7,5 @@ SELECT
     to_char(100 * buffers_clean::NUMERIC      / nullif((buffers_checkpoint + buffers_clean + buffers_backend),0),'FM990D9') || ' %' AS "Written clean",
     '-------' AS "------------------",
     pg_size_pretty((buffers_checkpoint + buffers_clean + buffers_backend) * current_setting('block_size')::INTEGER / 
-        (EXTRACT (EPOCH FROM CURRENT_TIMESTAMP - stats_reset))::BIGINT) || ' / s' AS "Size"
+        (EXTRACT (epoch FROM CURRENT_TIMESTAMP - stats_reset))::BIGINT) || ' / s' AS "Size"
 FROM pg_stat_bgwriter;

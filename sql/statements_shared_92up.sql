@@ -1,5 +1,5 @@
 SELECT
-row_number() over(ORDER by shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
+row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
     to_char((shared_blks_read + shared_blks_written) * 100 / sum(shared_blks_read) OVER (),'FM99D99') || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -18,7 +18,7 @@ row_number() over(ORDER by shared_blks_read + shared_blks_written DESC) || CASE 
     to_char(blk_read_time                       * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Read",
     to_char(blk_write_time                      * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Write",
     to_char((total_exec_time + total_plan_time) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s
