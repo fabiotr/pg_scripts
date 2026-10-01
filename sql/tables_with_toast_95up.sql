@@ -12,9 +12,9 @@ SELECT
         WHEN 'u' THEN 'unlogged'
     END AS persistence,
     pg_get_userbyid(c.relowner) AS "Owner",
-  pg_size_pretty(pg_total_relation_size(c.oid)) AS "Total Size",
-  pg_size_pretty(pg_table_size(c.oid)) AS "Table Size",
-  pg_size_pretty(pg_table_size(t.oid)) AS "Toast Size",
+  lpad(pg_size_pretty(pg_total_relation_size(c.oid)), 11) AS "Total Size",
+  lpad(pg_size_pretty(pg_table_size(c.oid)), 11) AS "Table Size",
+  lpad(pg_size_pretty(pg_table_size(t.oid)), 11) AS "Toast Size",
   trunc( 100 * pg_table_size(t.oid) / pg_table_size(c.oid)) AS "Toast %"
 FROM pg_class c
     JOIN pg_class t ON t.oid = c.reltoastrelid

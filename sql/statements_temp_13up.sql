@@ -4,8 +4,8 @@ SELECT
     --datname db, 
     userid::regrole,  calls, 
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
-    pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) total_temp,
-    pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls) avg_temp,
+    lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer), 11) total_temp,
+    lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls), 11) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN (blk_read_time + blk_write_time) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time",

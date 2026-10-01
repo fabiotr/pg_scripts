@@ -9,8 +9,8 @@ SELECT
     c.reltuples AS "Total tuples",
     trunc(heap_tuples_scanned::numeric * 100 / reltuples::numeric,1) AS "% Rows scanned",
     trunc(heap_tuples_written::numeric * 100 / reltuples::numeric,1) AS "% Rows written",
-    pg_size_pretty(heap_blks_total   * current_setting('block_size')::int) AS "Total Bytes",
-    pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int) AS "Scanned Bytes",
+    lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11) AS "Total Bytes",
+    lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11) AS "Scanned Bytes",
     (SELECT count(1) FROM pg_index AS i WHERE i.indexrelid = relid)        AS "Total indexes",
     index_rebuild_count                                                    AS "Rebuilt indexes"
 FROM  

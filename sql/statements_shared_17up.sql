@@ -8,12 +8,12 @@ SELECT
     --to_char(rows::numeric  / since_days,          'FM999G999G999')   AS "Rows/Day",
     --to_char(rows::numeric  / calls::numeric,      'FM999G990D9')     AS "Rows/Call",
     --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / calls),     0)) AS "Hit/Call",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / calls),     0)) AS "Reads/Call",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / calls),     0)) AS "Writes/Call",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / since_days),0)) AS "Hit/Day",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / since_days),0)) AS "Reads/Day",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / since_days),0)) AS "Writes/Day",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_dirtied)::numeric / since_days),0)) AS "Dirtied/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / calls),     0)), 11) AS "Reads/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / calls),     0)), 11) AS "Writes/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / since_days),0)), 11) AS "Hit/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / since_days),0)), 11) AS "Reads/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / since_days),0)), 11) AS "Writes/Day",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_dirtied)::numeric / since_days),0)), 11) AS "Dirtied/Day",
     trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read)::numeric,0),1)  AS "Hit %" ,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char((shared_blk_read_time              / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')

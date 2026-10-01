@@ -6,9 +6,9 @@ SELECT
     to_char(calls::numeric,'FM999G999G990D9') AS "Calls",
     --to_char((rows),'FM999G999G999') AS "Rows/Day",
     --to_char(rows::numeric/calls::numeric,'FM999G990D9') AS "Rows/Call",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_read)::numeric),   0)) AS "Read",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_written)::numeric),0)) AS "Written",
-    pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_dirtied)::numeric),0)) AS "Dirtied",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_read)::numeric),   0)), 11) AS "Read",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_written)::numeric),0)), 11) AS "Written",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_dirtied)::numeric),0)), 11) AS "Dirtied",
     trunc(shared_blks_hit::numeric * 100 / nullif((shared_blks_hit + shared_blks_read)::numeric,0),1) AS "Hit %" ,
     to_char((total_exec_time + total_plan_time) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||

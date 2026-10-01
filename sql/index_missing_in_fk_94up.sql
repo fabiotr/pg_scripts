@@ -1,6 +1,6 @@
 SELECT c.conrelid::regclass AS "table",
        string_agg(a.attname, ',' ORDER BY x.n) AS columns,
-       pg_size_pretty(pg_relation_size(c.conrelid)) AS size,
+       lpad(pg_size_pretty(pg_relation_size(c.conrelid)), 11) AS size,
        --c.conname AS constraint,
        c.confrelid::regclass AS referenced_table
 FROM 

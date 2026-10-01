@@ -3,8 +3,8 @@ SELECT
     now() - a.xact_start AS duration,
     coalesce(wait_event_type ||'.'|| wait_event, 'f') AS waiting,
     phase,
-    pg_size_pretty(backup_total)    AS "Size Total",
-    pg_size_pretty(backup_streamed) AS "Size Backuped",
+    lpad(pg_size_pretty(backup_total), 11)    AS "Size Total",
+    lpad(pg_size_pretty(backup_streamed), 11) AS "Size Backuped",
     tablespaces_total               AS "Tablespaces Total",
     tablespaces_streamed            AS "Tablespaces Backuped"
 FROM  

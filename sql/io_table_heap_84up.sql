@@ -1,9 +1,9 @@
 SELECT 
 	schemaname   AS "Schema", 
 	relname      AS "Table",
-	pg_size_pretty(pg_relation_size(relid))       AS "Heap  Size",
-	pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_hit)::bigint)  AS "Hit",
-	pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_read)::bigint) AS "Read",
+	lpad(pg_size_pretty(pg_relation_size(relid)), 11)       AS "Heap  Size",
+	lpad(pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_hit)::bigint), 11)  AS "Hit",
+	lpad(pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_read)::bigint), 11) AS "Read",
 	CASE heap_blks_hit WHEN 0 THEN NULL ELSE trunc(heap_blks_hit::numeric*100 / (heap_blks_hit + heap_blks_read),1) END AS "Hit %" ,
 	trunc(100 * heap_blks_hit  / sum(heap_blks_hit)  OVER(),1) AS "Hit/Tot %", 
 	trunc(100 * heap_blks_read / sum(heap_blks_read) OVER(),1) AS "Read/Tot %"

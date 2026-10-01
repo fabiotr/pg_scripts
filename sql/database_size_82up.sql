@@ -2,7 +2,7 @@ SELECT
     d.datname AS "Database",
     r.rolname AS "Owner",
     pg_encoding_to_char(d.encoding) AS "Encoding",
-    pg_size_pretty(pg_database_size(d.datname)) AS "Size"
+    lpad(pg_size_pretty(pg_database_size(d.datname)), 11) AS "Size"
 FROM 
   pg_database d
   JOIN pg_roles r ON r.oid = d.datdba

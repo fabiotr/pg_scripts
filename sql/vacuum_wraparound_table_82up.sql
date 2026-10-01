@@ -26,7 +26,7 @@ SELECT
                 to_number(tfma.option_value ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')
                 THEN ' (T ' || to_char(to_number(tfma.option_value ,'999999999999'),'FM999G999G999G999') || ')' 
             ELSE '' END AS "Max Age", 
-    pg_size_pretty(pg_table_size(c.oid)) AS "Size"
+    lpad(pg_size_pretty(pg_table_size(c.oid)), 11) AS "Size"
 FROM 
     pg_class c 
     JOIN pg_namespace n ON c.relnamespace = n.oid

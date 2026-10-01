@@ -36,8 +36,8 @@ SELECT schemaname, tablename, indexname, idx_scan, all_scans, writes, idx_is_btr
     round(( CASE WHEN all_scans = 0 THEN 0.0::NUMERIC
         ELSE idx_scan::NUMERIC/all_scans * 100 END),2) AS index_scan_pct,
     round((CASE WHEN writes = 0 THEN idx_scan::NUMERIC ELSE idx_scan::NUMERIC/writes END),2) AS scans_per_write,
-    pg_size_pretty(index_bytes) AS index_size,
-    pg_size_pretty(table_size)  AS table_size
+    lpad(pg_size_pretty(index_bytes), 11) AS index_size,
+    lpad(pg_size_pretty(table_size), 11)  AS table_size
     FROM 
         indexes
         JOIN table_scans USING (relid)
