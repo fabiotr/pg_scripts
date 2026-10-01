@@ -51,6 +51,13 @@ def split_row(line: str):
     return [c.strip() for c in s.split('|')]
 
 
+def md_escape_pipes(text: str) -> str:
+    """Escape a Markdown table cell's '|'. Backslashes are doubled first:
+    GFM reads '\\\\' as an escaped backslash, so a value's own '\\|' would
+    otherwise leave its pipe unescaped and split the cell."""
+    return text.replace('\\', '\\\\').replace('|', '\\|')
+
+
 def display_width(ch: str) -> int:
     """Terminal columns psql uses for ch: 2 for wide (CJK, most emoji),
     0 for combining marks and format characters, 1 otherwise."""
@@ -76,7 +83,7 @@ def split_by_separator(line: str, sep: str):
             cur.append(ch)
         col += display_width(ch)
     cells.append(''.join(cur))
-    return [c.strip().replace('\\', '\\\\').replace('|', '\\|') for c in cells]
+    return [md_escape_pipes(c.strip()) for c in cells]
 
 
 def to_md_row(cells) -> str:
@@ -183,7 +190,7 @@ def normalize(text: str, tables: str = 'md') -> str:
                     # "key | value": split at the first '|' only, the value
                     # may itself contain pipes (e.g. SQL's ||)
                     key, value = row.split('|', 1)
-                    out.append(to_md_row([key.strip(), value.strip().replace('|', '\\|')]))
+                    out.append(to_md_row([key.strip(), md_escape_pipes(value.strip())]))
                 else:
                     out.append(row)
                 i += 1
@@ -202,7 +209,7 @@ def normalize(text: str, tables: str = 'md') -> str:
                 continue
             if one_column:
                 # the value is a single cell: escape any '|' inside it
-                cells_of = lambda l: [l.strip().replace('|', '\\|')]
+                cells_of = lambda l: [md_escape_pipes(l.strip())]
             else:
                 sep, ncols = lines[i + 1], lines[i + 1].count('+') + 1
 
