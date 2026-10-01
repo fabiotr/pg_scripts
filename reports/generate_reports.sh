@@ -98,6 +98,15 @@
 #                           Default: 600.
 #   -C, --connect-timeout SEC  libpq connect_timeout for every connection.
 #                           Default: 60.
+#   -r, --connect-retries N Extra attempts when a report can't connect at all
+#                           (psql exit code 2), for links that drop a
+#                           connection now and then. Before each report a
+#                           "SELECT 1" connection is tried up to 1 + N times,
+#                           REPORT_CONNECT_RETRY_DELAY (10) seconds apart; a
+#                           report that already started is never re-run, and
+#                           SQL errors or timeouts are not retried. Each
+#                           retry prints a RETRY line. 0 disables it.
+#                           Default: 2.
 #   --localhost             Ignore all services and connect to the local
 #                           PostgreSQL instead (see above). The machine's
 #                           hostname replaces the service name in the
@@ -107,8 +116,10 @@
 # Env var equivalents: REPORT_SCRIPTS_DIR, REPORT_NORMALIZE_SCRIPT,
 # REPORT_OUT_DIR, REPORT_KINDS, REPORT_CONFIG_FILE, REPORT_DEFAULT_DBNAME,
 # REPORT_FORMAT, REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT,
-# REPORT_CONNECT_TIMEOUT, REPORT_SERVICES
+# REPORT_CONNECT_TIMEOUT, REPORT_CONNECT_RETRIES, REPORT_SERVICES
 # (space/comma separated, used when no service is given on the command line).
+# REPORT_CONNECT_RETRY_DELAY (seconds between connection attempts, default
+# 10) has no flag.
 #
 # Output: <out-dir>/YYYY-MM-DD/YYYY-MM-DD_<label>_<kind>.md (.txt with
 # --format raw)
@@ -128,6 +139,8 @@ FORMAT="${REPORT_FORMAT:-md}"
 STMT_TIMEOUT="${REPORT_STMT_TIMEOUT:-300s}"
 TOTAL_TIMEOUT="${REPORT_TOTAL_TIMEOUT:-600}"
 CONNECT_TIMEOUT="${REPORT_CONNECT_TIMEOUT:-60}"
+CONNECT_RETRIES="${REPORT_CONNECT_RETRIES:-2}"
+CONNECT_RETRY_DELAY="${REPORT_CONNECT_RETRY_DELAY:-10}"
 LOCALHOST=0
 
 usage() { awk 'NR > 1 && !/^#/ { exit } NR > 1' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
@@ -144,6 +157,7 @@ while [[ $# -gt 0 ]]; do
     -t|--stmt-timeout) STMT_TIMEOUT=$2; shift 2 ;;
     -T|--total-timeout) TOTAL_TIMEOUT=$2; shift 2 ;;
     -C|--connect-timeout) CONNECT_TIMEOUT=$2; shift 2 ;;
+    -r|--connect-retries) CONNECT_RETRIES=$2; shift 2 ;;
     --localhost) LOCALHOST=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; break ;;
@@ -158,7 +172,7 @@ case "$FORMAT" in
   raw)     EXT=txt; NORMALIZE_ARGS=() ;;
   *) echo "Invalid --format '$FORMAT' (expected md, md-code or raw)." >&2; exit 2 ;;
 esac
-for v in CONNECT_TIMEOUT; do
+for v in CONNECT_TIMEOUT CONNECT_RETRIES CONNECT_RETRY_DELAY; do
   [[ "${!v}" =~ ^[0-9]+$ ]] || { echo "Invalid $v '${!v}' (expected a whole number of seconds/attempts)." >&2; exit 2; }
 done
 
@@ -345,6 +359,23 @@ normalize() {
   fi
 }
 
+# Opens one throwaway connection ("SELECT 1"), retrying up to
+# CONNECT_RETRIES more times when psql can't connect (exit code 2) — e.g.
+# a link that drops a connection now and then. Any other outcome is left
+# for the report itself. Prints a RETRY line per retry; on final failure,
+# leaves the last error in the given file and returns 1.
+wait_for_connection() {
+  local conn=$1 label=$2 errfile=$3 attempt rc
+  for (( attempt = 1; attempt <= CONNECT_RETRIES + 1; attempt++ )); do
+    psql "$conn" -X -q -At -c 'SELECT 1' >/dev/null 2>"$errfile"
+    rc=$?
+    (( rc != 2 )) && { rm -f "$errfile"; return 0; }
+    (( attempt > CONNECT_RETRIES )) && return 1
+    echo "RETRY $label (attempt $((attempt + 1))/$((CONNECT_RETRIES + 1)) in ${CONNECT_RETRY_DELAY}s: $(head -1 "$errfile"))"
+    sleep "$CONNECT_RETRY_DELAY"
+  done
+}
+
 fail=0
 for svc in "${SERVICES[@]}"; do
   label=${LABEL[$svc]:-$svc}
@@ -363,6 +394,11 @@ for svc in "${SERVICES[@]}"; do
       conn="connect_timeout=$CONNECT_TIMEOUT"
     else
       conn="service=$svc connect_timeout=$CONNECT_TIMEOUT"
+    fi
+    if ! wait_for_connection "$conn" "$svc $kind" "$f.err"; then
+      echo "FAIL  $svc $kind (could not connect after $((CONNECT_RETRIES + 1)) attempt(s): $(head -1 "$f.err" 2>/dev/null))"
+      fail=1
+      continue
     fi
     if [[ "$kind" == database ]]; then
       dbname="${DBNAME[$svc]:-}"
