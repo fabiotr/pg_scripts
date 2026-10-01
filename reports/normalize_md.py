@@ -99,7 +99,12 @@ def to_code_block(lines):
 
 def normalize(text: str, tables: str = 'md') -> str:
     code = tables == 'code'
-    lines = text.splitlines()
+    # Split on LF only (dropping a CR from CRLF input): str.splitlines() also
+    # breaks on U+2028/U+2029, \x85, \x0c..., which psql prints as part of a
+    # cell, so a table would be cut in the middle of a row.
+    if text.endswith('\n'):
+        text = text[:-1]
+    lines = [l[:-1] if l.endswith('\r') else l for l in text.split('\n')] if text else []
     out = []
     i = 0
     n = len(lines)
