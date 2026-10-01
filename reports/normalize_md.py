@@ -114,10 +114,13 @@ def normalize(text: str, tables: str = 'md') -> str:
             and SEP_LINE.match(lines[j + 1])
         ):
             return False
-        if '|' in lines[j]:
-            return True
+        # The separator tells the column count: multi-column ones always
+        # have a '+' between columns, a one-column one never does (and its
+        # header may itself contain '|', e.g. an alias like "a|b").
+        if '+' in lines[j + 1]:
+            return '|' in lines[j]
         # One column: " name " over a separator of the same display width
-        # (psql pads by terminal columns: CJK/emoji count as 2), no '+'.
+        # (psql pads by terminal columns: CJK/emoji count as 2).
         # psql pads the header on both sides, so it ends with a space; data
         # rows aren't padded on the right, so two consecutive rows of equal
         # length (" ab" then " --") can't pass for a header + separator.
@@ -127,7 +130,6 @@ def normalize(text: str, tables: str = 'md') -> str:
             lines[j].startswith(' ')
             and lines[j].endswith(' ')
             and lines[j].strip() != NULL_DISPLAY
-            and '+' not in lines[j + 1]
             and sum(map(display_width, lines[j])) == len(lines[j + 1])
         )
 
@@ -199,7 +201,7 @@ def normalize(text: str, tables: str = 'md') -> str:
 
         # ── Aligned table: header + separator line + data lines
         if starts_table(i):
-            one_column = '|' not in line
+            one_column = '+' not in lines[i + 1]
             if code:
                 start = i
                 i += 2
