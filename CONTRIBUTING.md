@@ -23,9 +23,9 @@ We are always looking for new scripts! To ensure consistency, please follow thes
    - Avoid hardcoded schema names unless necessary.
 
 4. **Run the checks** before opening a PR (CI runs them too):
-   - `./tools/check_dispatchers.sh` must print `All dispatchers OK`.
+   - `./tools/check_dispatchers.py` must print `All dispatchers OK`.
    - `./tools/check_sql_style.py` must print `All SQL style checks OK`. `./tools/check_sql_style.py --fix` fixes the case of the keywords and identifiers it reports (non-ASCII identifiers have to be renamed by hand), but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before one of its quotes): rewrite that string by hand with `''` or `E'...'`.
-   - If you change `tools/check_dispatchers.sh` or `tools/check_sql_style.py`, run their tests (`tools/test_check_dispatchers.py`, `tools/test_check_sql_style.py`): `python3 -m unittest discover -s tools -p 'test_*.py'`.
+   - If you change `tools/check_dispatchers.py` or `tools/check_sql_style.py`, run their tests (`tools/test_check_dispatchers.py`, `tools/test_check_sql_style.py`): `python3 -m unittest discover -s tools -p 'test_*.py'`.
 
 ### Improving Existing Scripts
 If you find a bug or a way to make a query more efficient (e.g., reducing I/O overhead), please submit a Pull Request!

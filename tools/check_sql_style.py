@@ -60,7 +60,7 @@ To run it before every commit:
   printf '#!/bin/sh\\n./tools/check_sql_style.py\\n' > .git/hooks/pre-commit
   chmod +x .git/hooks/pre-commit
 (in fabiotr/pg_scripts, chain it with the dispatcher check:
- ./tools/check_dispatchers.sh && ./tools/check_sql_style.py)
+ ./tools/check_dispatchers.py && ./tools/check_sql_style.py)
 
 The tokenizer treats non-ASCII characters as identifier letters, as
 PostgreSQL's lexer does, so selecté or $café$...$café$ are single tokens
