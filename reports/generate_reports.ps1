@@ -174,9 +174,9 @@ param(
     [Alias('f')][string]$Format,
     [string]$StmtTimeout,
     [int]$TotalTimeout = 0,
-    [int]$ConnectTimeout = -1,
-    [Alias('r')][int]$ConnectRetries = -1,
-    [int]$ConnectRetryDelay = -1,
+    [int]$ConnectTimeout,
+    [Alias('r')][int]$ConnectRetries,
+    [int]$ConnectRetryDelay,
     [switch]$Localhost
 )
 
@@ -233,14 +233,16 @@ if (-not $StmtTimeout) {
 if ($TotalTimeout -le 0) {
     $TotalTimeout = if ($env:REPORT_TOTAL_TIMEOUT) { [int]$env:REPORT_TOTAL_TIMEOUT } else { 600 }
 }
-# -1 = not given (0 is a valid value for both).
-if ($ConnectTimeout -lt 0) {
+# Parameter given > env var > default. Checked with $PSBoundParameters,
+# not a sentinel value, so a negative value from the command line is
+# rejected below instead of being taken as "not given".
+if (-not $PSBoundParameters.ContainsKey('ConnectTimeout')) {
     $ConnectTimeout = if ($env:REPORT_CONNECT_TIMEOUT) { [int]$env:REPORT_CONNECT_TIMEOUT } else { 60 }
 }
-if ($ConnectRetries -lt 0) {
+if (-not $PSBoundParameters.ContainsKey('ConnectRetries')) {
     $ConnectRetries = if ($env:REPORT_CONNECT_RETRIES) { [int]$env:REPORT_CONNECT_RETRIES } else { 2 }
 }
-if ($ConnectRetryDelay -lt 0) {
+if (-not $PSBoundParameters.ContainsKey('ConnectRetryDelay')) {
     $ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 2 }
 }
 if ($ConnectTimeout -lt 0 -or $ConnectRetries -lt 0 -or $ConnectRetryDelay -lt 0) {
