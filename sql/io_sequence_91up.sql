@@ -8,6 +8,6 @@ SELECT
 	CASE blks_read WHEN 0 THEN NULL ELSE round(100 * blks_read / sum(blks_read) OVER(),1) END AS "Read/Tot"
 FROM 
 	pg_statio_all_sequences 
-	JOIN (SELECT datname, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
+	JOIN (SELECT datname, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
 ORDER BY blks_read DESC 
 LIMIT 10;

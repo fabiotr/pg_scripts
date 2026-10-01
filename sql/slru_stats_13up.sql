@@ -1,13 +1,13 @@
 SELECT 
 	name,  
 	trunc(100 * blks_hit::numeric / nullif(blks_hit + blks_read,0),1) AS "% Hit",
-	lpad(pg_size_pretty(trunc((blks_hit     * current_setting('block_size')::bigint) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Hit / Day",
-	lpad(pg_size_pretty(trunc((blks_read    * current_setting('block_size')::bigint) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Read / Day",
-	lpad(pg_size_pretty(trunc((blks_written * current_setting('block_size')::bigint) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Write / Day",
-	lpad(pg_size_pretty(trunc((blks_zeroed  * current_setting('block_size')::bigint) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Zeroed / Day",
-	lpad(pg_size_pretty(trunc((blks_exists  * current_setting('block_size')::bigint) / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Exists / Day",
-	trunc(flushes   / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric,1) AS "Flushes / Day",
-	trunc(truncates / (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric,1) AS "Truncates / Day",
+	lpad(pg_size_pretty(trunc((blks_hit     * current_setting('block_size')::bigint) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Hit / Day",
+	lpad(pg_size_pretty(trunc((blks_read    * current_setting('block_size')::bigint) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Read / Day",
+	lpad(pg_size_pretty(trunc((blks_written * current_setting('block_size')::bigint) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Write / Day",
+	lpad(pg_size_pretty(trunc((blks_zeroed  * current_setting('block_size')::bigint) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Zeroed / Day",
+	lpad(pg_size_pretty(trunc((blks_exists  * current_setting('block_size')::bigint) / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric)), 11) AS "Exists / Day",
+	trunc(flushes   / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric,1) AS "Flushes / Day",
+	trunc(truncates / (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24))::numeric,1) AS "Truncates / Day",
 	date_trunc('second', stats_reset) AS stats_reset
 FROM pg_stat_slru
 WHERE blks_read + blks_hit > 0

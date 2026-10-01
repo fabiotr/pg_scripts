@@ -12,7 +12,7 @@ SELECT
     string_agg(pw.relation::regclass::text,', ') AS "table(s)",
     CASE w.state WHEN 'active' THEN w.wait_event_type || ' | ' || w.wait_event 
         ELSE NULL END AS "type/event",
-    array_to_string(regexp_split_to_array(substr(w.query,1,200),'\s+'),' ') AS query,
+    array_to_string(regexp_split_to_array(substr(w.query,1,200),E'\\s+'),' ') AS query,
     '' AS ".",
     'LOCKER' AS ".",
     '======' AS ".",
@@ -23,7 +23,7 @@ SELECT
     to_char(l.backend_start,'DD HH24:MI:SS')  || ' | ' || to_char(clock_timestamp() - l.backend_start, 'HH24:MI:SS.MS') AS conn_start,
     CASE l.state WHEN 'active' THEN l.wait_event_type || ' | ' || l.wait_event 
         ELSE NULL END AS "type/event",
-    array_to_string(regexp_split_to_array(substr(l.query,1,200),'\s+'),' ') AS query
+    array_to_string(regexp_split_to_array(substr(l.query,1,200),E'\\s+'),' ') AS query
   FROM 
         (SELECT pid, unnest(pg_blocking_pids(pid)) AS lpid
             FROM pg_stat_activity

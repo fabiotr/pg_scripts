@@ -7,7 +7,7 @@ SELECT
 	trunc(seq_scan::numeric/(greatest(seq_scan + idx_scan,1))*100,1) AS "% Seq scan"
 FROM
     pg_stat_user_tables,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days 
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days 
     	FROM pg_stat_database 
     	WHERE datname = current_database()) AS r
 WHERE 

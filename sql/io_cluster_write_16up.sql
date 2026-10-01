@@ -64,7 +64,7 @@ SELECT
                                                 > 70                THEN '🟠 Warning  (too high)'
         END AS "Physical Write status"
 FROM
-    (SELECT *, (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_io) AS i,
+    (SELECT *, (EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24)) AS reset_days FROM pg_stat_io) AS i,
     (SELECT sum(writes) AS t_writes FROM pg_stat_io WHERE object = 'relation') AS t,
     (SELECT current_setting('block_size')::numeric AS blk_size) AS b
 WHERE

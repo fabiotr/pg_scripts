@@ -8,7 +8,7 @@ SELECT
     to_char(CURRENT_TIMESTAMP - backend_start ,'HH24:MI:SS') AS "Q Conn",
     to_char(CURRENT_TIMESTAMP - xact_start    ,'HH24:MI:SS') AS "Q Xact",
     to_char(CURRENT_TIMESTAMP - query_start   ,'HH24:MI:SS') AS "Q Start",
-    array_to_string(regexp_split_to_array(substr(current_query,1,50),'\s+'),' ') || CASE WHEN length(current_query) > 50 THEN '...' ELSE '' END AS query
+    array_to_string(regexp_split_to_array(substr(current_query,1,50),E'\\s+'),' ') || CASE WHEN length(current_query) > 50 THEN '...' ELSE '' END AS query
 FROM pg_stat_activity
 WHERE
         current_query != '<IDLE>' 
