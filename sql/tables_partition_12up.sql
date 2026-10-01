@@ -42,7 +42,7 @@ leaf_statio AS (
 ),
 stats_age AS (
     SELECT GREATEST(
-        EXTRACT(EPOCH FROM (now() - COALESCE(sd.stats_reset, pg_postmaster_start_time()))) / 86400.0,
+        EXTRACT(epoch FROM (now() - COALESCE(sd.stats_reset, pg_postmaster_start_time()))) / 86400.0,
         1.0 / 86400.0
     ) AS days_since_reset
     FROM pg_stat_database sd
@@ -72,15 +72,15 @@ agg AS (
         r.table_name,
         pk.partition_type,
         pk.partition_key,
-        COUNT(DISTINCT ls.relid)                                              AS part_count,
-        SUM(ls.data_bytes)                                                    AS data_bytes,
-        SUM(ls.toast_bytes)                                                   AS toast_bytes,
-        SUM(ls.table_bytes)                                                   AS table_bytes,
-        SUM(ls.total_bytes)                                                   AS total_bytes,
-        SUM(ls.indexes_bytes)                                                 AS idx_bytes,
-        ROUND(AVG(ls.index_count), 2)                                         AS avg_idx_count,
-        COALESCE(SUM(st.cache_blks), 0)                                       AS cache_blks,
-        COALESCE(SUM(st.disk_blks), 0)                                        AS disk_blks
+        count(DISTINCT ls.relid)                                              AS part_count,
+        sum(ls.data_bytes)                                                    AS data_bytes,
+        sum(ls.toast_bytes)                                                   AS toast_bytes,
+        sum(ls.table_bytes)                                                   AS table_bytes,
+        sum(ls.total_bytes)                                                   AS total_bytes,
+        sum(ls.indexes_bytes)                                                 AS idx_bytes,
+        round(avg(ls.index_count), 2)                                         AS avg_idx_count,
+        COALESCE(sum(st.cache_blks), 0)                                       AS cache_blks,
+        COALESCE(sum(st.disk_blks), 0)                                        AS disk_blks
     FROM roots r
     LEFT JOIN leaf_sizes  ls ON ls.root_relid = r.relid
     LEFT JOIN leaf_statio st ON st.relid      = ls.relid
@@ -102,11 +102,11 @@ SELECT
     pg_size_pretty( (table_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg size",
     pg_size_pretty( (idx_bytes   / NULLIF(part_count, 0))::bigint )           AS "Avg index size",
     pg_size_pretty( (total_bytes / NULLIF(part_count, 0))::bigint )           AS "Avg partition size",
-    pg_size_pretty( ROUND(cache_blks * current_setting('block_size')::bigint
+    pg_size_pretty( round(cache_blks * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Hit / Day",
-    pg_size_pretty( ROUND(disk_blks  * current_setting('block_size')::bigint
+    pg_size_pretty( round(disk_blks  * current_setting('block_size')::bigint
         / sa.days_since_reset)::bigint )                                      AS "Reads / Day",
-    ROUND(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
+    round(cache_blks::numeric / NULLIF(cache_blks + disk_blks, 0) * 100, 2)   AS "Hit %"
 FROM
     agg,
     stats_age sa

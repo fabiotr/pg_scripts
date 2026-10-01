@@ -1,13 +1,13 @@
 SET escape_string_warning TO off;
 SELECT
-    row_number() over(ORDER by total_time DESC) "N",
+    row_number() over(ORDER BY total_time DESC) "N",
     to_char(total_time*100/sum(total_time) OVER (),'FM99D99') || '%' AS "load_%",
     datname AS db,
     rolname AS "User",
     to_char(calls,'FM999G999G999G999') AS calls,
     to_char(total_time / calls * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,
     to_char(total_time         * INTERVAL '1 millisecond', 'HH24:MI:SS') AS total,
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s

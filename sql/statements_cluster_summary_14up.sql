@@ -1,5 +1,5 @@
 SELECT 
-    row_number() over(ORDER by sum(total_exec_time + total_plan_time) DESC) AS "N",
+    row_number() over(ORDER BY sum(total_exec_time + total_plan_time) DESC) AS "N",
     string_agg(DISTINCT datname,', ')                        AS "DB",
     string_agg(DISTINCT rolname,', ')                        AS "User",
     queryid                                                  AS "QueryID",
@@ -16,13 +16,13 @@ SELECT
     pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(temp_blks_read + temp_blks_written) 
         / reset_days),0))                                                                                       AS "Temp/Day",
     to_char((sum(blk_read_time + blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')       AS "IO T/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
     pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 GROUP BY reset_days, queryid, query
 ORDER BY sum(total_exec_time + total_plan_time) DESC
 LIMIT 20;

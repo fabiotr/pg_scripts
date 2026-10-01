@@ -9,7 +9,7 @@ SELECT
     to_char(state_change,'DD HH24:MI:SS')   || ' / ' || to_char(date_trunc('second', CURRENT_TIMESTAMP - state_change  ),'HH24:MI:SS') AS "Q State",
     coalesce(wait_event_type, ' ') || ' / ' || coalesce(wait_event, ' ') || ' / ' || array_to_string(pg_blocking_pids(pid),',')        AS "W Tp/Ev/PID",
     query_id,
-    array_to_string(regexp_split_to_array(substr(query,1,50000),'\s+'),' ') || CASE WHEN length(query) > 50000 THEN '...' ELSE '' END    AS "Query"
+    array_to_string(regexp_split_to_array(substr(query,1,50000),E'\\s+'),' ') || CASE WHEN length(query) > 50000 THEN '...' ELSE '' END    AS "Query"
 FROM pg_stat_activity
 WHERE
     state != 'idle' AND

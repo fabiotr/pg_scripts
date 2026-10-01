@@ -1,5 +1,5 @@
 SELECT
-row_number() over(ORDER by shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
+row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC) || CASE WHEN toplevel = FALSE THEN ' * ' ELSE '' END AS "N",
     to_char((shared_blks_read + shared_blks_written) * 100 / sum(shared_blks_read) OVER (),'FM99D99') || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
@@ -18,12 +18,12 @@ row_number() over(ORDER by shared_blks_read + shared_blks_written DESC) || CASE 
     to_char((blk_read_time                     / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Read/Day",
     to_char((blk_write_time                    / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Write/Day",
     to_char((total_exec_time + total_plan_time / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
     datname = current_database()

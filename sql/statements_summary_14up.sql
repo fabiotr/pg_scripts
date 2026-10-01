@@ -15,12 +15,12 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE AND (blk_read_time + blk_write_time > 0)
         THEN ((blk_read_time + blk_write_time)/reset_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",
-    array_to_string(regexp_split_to_array(substr(query,1,50),'\s+'),' ') ||
+    array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
     pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
 WHERE 
     datname = current_database() AND
     total_exec_time + total_plan_time > 0 AND

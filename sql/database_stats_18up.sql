@@ -30,5 +30,5 @@ SELECT
     '--------------------'                                                                                                       AS "Reset",
     lpad(to_char(stats_reset, 'YYYY-MM-DD HH24:MI:SS')::text,20)                                                                 AS "Date",
     lpad(date_trunc('second', CURRENT_TIMESTAMP - stats_reset)::text,20)                                                         AS "Age"
-FROM (SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24) AS reset_days, * FROM pg_stat_database) AS d
+FROM (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset) / (60*60*24) AS reset_days, * FROM pg_stat_database) AS d
 WHERE d.datname = current_database();
