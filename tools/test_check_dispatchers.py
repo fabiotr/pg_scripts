@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for check_dispatchers.sh: each rule is run against a throwaway repo.
+"""Tests for check_dispatchers.py: each rule is run against a throwaway repo.
 
 Run from the repository root:
     python3 -m unittest discover -s tools -p 'test_*.py' -v
@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 SCRIPT = Path(os.environ.get("CHECK_DISPATCHERS",
-                             Path(__file__).absolute().parent / "check_dispatchers.sh"))
+                             Path(__file__).absolute().parent / "check_dispatchers.py"))
 
 # A minimal dispatcher that follows every convention
 DISPATCHER = """\\if :svp_pg_16
@@ -83,6 +83,15 @@ class CheckDispatchers(unittest.TestCase):
         code, out = run(files)
         self.assertEqual(code, 0, out)
 
+    def test_file_included_only_from_reports_is_reachable(self):
+        files = with_files({"sql/t_14up.sql": "SELECT 1;\n", "reports/r.sql": "\\ir ../sql/t_14up.sql\n"})
+        code, out = run(files)
+        self.assertEqual(code, 0, out)
+
+    def test_missing_include_in_reports(self):
+        self.assertProblem(with_files({"reports/r.sql": "\\ir ../sql/nope.sql\n"}),
+                           "includes ../sql/nope.sql, which does not exist", "reports/r.sql:1:")
+
     def test_missing_include(self):
         self.assertProblem(with_files({"sql/t_10up.sql": None}),
                            "includes t_10up.sql, which does not exist", "sql/t.sql:4:")
@@ -97,6 +106,35 @@ class CheckDispatchers(unittest.TestCase):
         files = with_files({"sql/v.sql": "-- \\qecho - not supported on version 9.4\n"})
         code, out = run(files)
         self.assertEqual(code, 0, out)
+
+    def test_commands_inside_block_comments_are_ignored(self):
+        files = with_files({"sql/v.sql": "/*\n\\i missing.sql\n\\qecho - not supported on version\n*/\n"})
+        code, out = run(files)
+        self.assertEqual(code, 0, out)
+
+    def test_commands_inside_dollar_quoted_bodies_are_ignored(self):
+        files = with_files({"sql/v.sql": "DO $$\nBEGIN\n\\i missing.sql\nEND $$;\n"})
+        code, out = run(files)
+        self.assertEqual(code, 0, out)
+
+    def test_symlinked_hook_checks_the_git_top_level(self):
+        # run as .git/hooks/pre-commit -> ../../tools/check_dispatchers.py, no argument
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        for path, content in with_files({"sql/t_14up.sql": "SELECT 1;\n"}).items():
+            (root / path).parent.mkdir(parents=True, exist_ok=True)
+            (root / path).write_text(content)
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        (root / "tools").mkdir()
+        for name in ("check_dispatchers.py", "check_sql_style.py"):
+            shutil.copy(SCRIPT.parent / name, root / "tools" / name)
+        hook = root / ".git" / "hooks" / "pre-commit"
+        hook.parent.mkdir(parents=True, exist_ok=True)
+        hook.symlink_to("../../tools/check_dispatchers.py")
+        p = subprocess.run([str(hook)], cwd=root, capture_output=True, text=True,
+                           stdin=subprocess.DEVNULL, timeout=30)
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn("sql/t_14up.sql: is not included by any script (unreachable)", p.stdout)
 
     def test_version_mismatch(self):
         self.assertProblem(
