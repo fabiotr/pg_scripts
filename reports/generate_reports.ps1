@@ -128,10 +128,14 @@
     Extra attempts when a report can't connect at all (psql exit code 2),
     for links that drop a connection now and then. Before each report a
     "SELECT 1" connection is tried up to 1 + N times,
-    REPORT_CONNECT_RETRY_DELAY (10) seconds apart; a report that already
+    -ConnectRetryDelay seconds apart; a report that already
     started is never re-run, and SQL errors or timeouts are not retried.
     Each retry prints a RETRY line. 0 disables it. Env:
     REPORT_CONNECT_RETRIES. Default: 2.
+
+.PARAMETER ConnectRetryDelay
+    Seconds to wait between those connection attempts. Env:
+    REPORT_CONNECT_RETRY_DELAY. Default: 10.
 
 .PARAMETER Localhost
     Ignore all services and connect to the local PostgreSQL instead (see
@@ -172,6 +176,7 @@ param(
     [int]$TotalTimeout = 0,
     [int]$ConnectTimeout = -1,
     [Alias('r')][int]$ConnectRetries = -1,
+    [int]$ConnectRetryDelay = -1,
     [switch]$Localhost
 )
 
@@ -235,7 +240,9 @@ if ($ConnectTimeout -lt 0) {
 if ($ConnectRetries -lt 0) {
     $ConnectRetries = if ($env:REPORT_CONNECT_RETRIES) { [int]$env:REPORT_CONNECT_RETRIES } else { 2 }
 }
-$ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 10 }
+if ($ConnectRetryDelay -lt 0) {
+    $ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 10 }
+}
 if ($ConnectTimeout -lt 0 -or $ConnectRetries -lt 0 -or $ConnectRetryDelay -lt 0) {
     Write-Host "Invalid connect timeout/retries/retry delay (expected whole numbers >= 0)."
     exit 2
