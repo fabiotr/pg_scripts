@@ -176,6 +176,8 @@ case "$FORMAT" in
 esac
 for v in CONNECT_TIMEOUT CONNECT_RETRIES CONNECT_RETRY_DELAY; do
   [[ "${!v}" =~ ^[0-9]+$ ]] || { echo "Invalid $v '${!v}' (expected a whole number of seconds/attempts)." >&2; exit 2; }
+  # 10#: a leading zero ("08") would otherwise be read as octal later on.
+  printf -v "$v" '%d' "$((10#${!v}))"
 done
 
 declare -A LABEL=()
