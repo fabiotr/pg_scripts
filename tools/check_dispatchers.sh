@@ -46,7 +46,10 @@ fi
 # First input: the list of existing files (one "dir/file" per line), then the scripts themselves
 file_list="$(mktemp)"
 trap 'rm -f "$file_list"' EXIT
-{ ls sql/*.sql; ls reports/*.sql 2>/dev/null || true; } > "$file_list"
+# nullglob: a missing reports/*.sql expands to nothing, not to the literal pattern
+shopt -s nullglob
+scripts=(sql/*.sql reports/*.sql)
+printf '%s\n' "${scripts[@]}" > "$file_list"
 
 awk '
 # Converts a svp_pg_* / file name version suffix to a comparable number: 82 -> 8.2, 96 -> 9.6, 10 -> 10
@@ -138,4 +141,4 @@ END {
     }
     print "All dispatchers OK"
 }
-' "$file_list" sql/*.sql reports/*.sql
+' "$file_list" "${scripts[@]}"
