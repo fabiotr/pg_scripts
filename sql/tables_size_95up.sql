@@ -25,7 +25,7 @@ SELECT
         pg_total_relation_size(c.oid),1) || ' %)',9)       AS "Toast Size",
     --lpad(pg_size_pretty(pg_relation_size(c.oid, 'fsm')),7) AS "FSM Size",
     --lpad(pg_size_pretty(pg_relation_size(c.oid, 'vm')),7)  AS "VM Size",
-    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15)  AS "Rows",
+    lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20)  AS "Rows",
     lpad(pg_size_pretty(trunc(pg_table_size(c.oid) / 
         nullif(c.reltuples,0))::numeric), 11)                   AS "Avg Row Size"
 FROM pg_class c

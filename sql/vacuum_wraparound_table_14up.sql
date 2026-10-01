@@ -1,11 +1,11 @@
 SELECT 
     i.nspname AS "Schema",
     i.relname AS "Table",
-    to_char(i.current_age ,'FM999G999G999G999') || CASE WHEN current_age_toast IS NULL THEN '' ELSE ' (T ' || to_char(current_age_toast,'FM999G999G999G999') || ')' END AS "Current Age",
-    to_char(i.min_age     ,'FM999G999G999G999') || CASE WHEN min_age_toast     IS NULL THEN '' ELSE ' (T ' || to_char(min_age_toast    ,'FM999G999G999G999') || ')' END AS "Min Age",
-    to_char(i.table_age   ,'FM999G999G999G999') || CASE WHEN table_age_toast   IS NULL THEN '' ELSE ' (T ' || to_char(table_age_toast  ,'FM999G999G999G999') || ')' END AS "Table Age",
-    to_char(i.max_age     ,'FM999G999G999G999') || CASE WHEN max_age_toast     IS NULL THEN '' ELSE ' (T ' || to_char(max_age_toast    ,'FM999G999G999G999') || ')' END AS "Max Age",
-    to_char(i.failsafe_age,'FM999G999G999G999') AS "Failsafe Age",
+    lpad(to_char(i.current_age ,'FM999G999G999G999'), 16) || CASE WHEN current_age_toast IS NULL THEN '' ELSE ' (T ' || to_char(current_age_toast,'FM999G999G999G999') || ')' END AS "Current Age",
+    lpad(to_char(i.min_age     ,'FM999G999G999G999'), 16) || CASE WHEN min_age_toast     IS NULL THEN '' ELSE ' (T ' || to_char(min_age_toast    ,'FM999G999G999G999') || ')' END AS "Min Age",
+    lpad(to_char(i.table_age   ,'FM999G999G999G999'), 16) || CASE WHEN table_age_toast   IS NULL THEN '' ELSE ' (T ' || to_char(table_age_toast  ,'FM999G999G999G999') || ')' END AS "Table Age",
+    lpad(to_char(i.max_age     ,'FM999G999G999G999'), 16) || CASE WHEN max_age_toast     IS NULL THEN '' ELSE ' (T ' || to_char(max_age_toast    ,'FM999G999G999G999') || ')' END AS "Max Age",
+    lpad(to_char(i.failsafe_age,'FM999G999G999G999'), 16) AS "Failsafe Age",
     i.size AS "Size",
     CASE 
         WHEN i.current_age <= min_age      AND coalesce(current_age_toast,0) <= coalesce(min_age_toast,   min_age)   THEN '🔵 Nice'

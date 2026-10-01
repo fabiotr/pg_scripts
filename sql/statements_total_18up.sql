@@ -1,16 +1,16 @@
 SELECT
     to_char((sum(total_plan_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6') || ' - ' ||  
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond' / (sum(calls)/reset_days),'SS.FF6') AS "Avg (Plan - Exec) time ", 
-    to_char(sum(calls)::numeric / reset_days,'FM999G999G999G999')  || ' - ' ||
-    to_char(sum(rows)::numeric  / reset_days,'FM999G999G999G999')  AS "(Calls - Rows)/Day",
-    to_char(sum(rows)::numeric / sum(calls)::numeric, 'FM999G999D0') AS "Rows/Call",
-    CASE WHEN current_setting('pg_stat_statements.track') = 'all' 
-	THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END AS "Non Toplevel calls/Day", 
-    to_char((sum(parallel_workers_to_launch)/reset_days::numeric), 'FM999G999G999') || ' - ' ||
-    to_char((sum(parallel_workers_launched)/reset_days::numeric),  'FM999G999G999') AS "Workers (Planned - Launched)/Day",
-     to_char(sum(wal_records)  / reset_days, 'FM999G999G999') || ' - ' ||
+    lpad(to_char(sum(calls)::numeric / reset_days,'FM999G999G999G999'), 16)  || ' - ' ||
+    lpad(to_char(sum(rows)::numeric  / reset_days,'FM999G999G999G999'), 16)  AS "(Calls - Rows)/Day",
+    lpad(to_char(sum(rows)::numeric / sum(calls)::numeric, 'FM999G999D0'), 10) AS "Rows/Call",
+    lpad(CASE WHEN current_setting('pg_stat_statements.track') = 'all' 
+	THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END, 12) AS "Non Toplevel calls/Day", 
+    lpad(to_char((sum(parallel_workers_to_launch)/reset_days::numeric), 'FM999G999G999'), 12) || ' - ' ||
+    lpad(to_char((sum(parallel_workers_launched)/reset_days::numeric),  'FM999G999G999'), 12) AS "Workers (Planned - Launched)/Day",
+     lpad(to_char(sum(wal_records)  / reset_days, 'FM999G999G999'), 12) || ' - ' ||
     lpad(pg_size_pretty(trunc(sum(wal_bytes)/ reset_days)), 11)           AS "WAL (Records - Size)/Day",
-    to_char(sum(wal_records)  / sum(calls), 'FM999G990D9')  AS "Wal/Call",
+    lpad(to_char(sum(wal_records)  / sum(calls), 'FM999G990D9'), 10)  AS "Wal/Call",
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char((sum(shared_blk_read_time + shared_blk_write_time) / reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE 'Disabled' END || ' - ' || 

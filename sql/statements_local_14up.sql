@@ -1,9 +1,9 @@
 SELECT
     row_number() over(ORDER BY local_blks_read + local_blks_written + local_blks_dirtied DESC) "N",
-    to_char(local_blks_read + local_blks_written + local_blks_dirtied * 100 / sum(nullif(local_blks_read + local_blks_written + local_blks_dirtied,0)) OVER (),'FM99D99') || '%' AS "local_%",
+    lpad(to_char(local_blks_read + local_blks_written + local_blks_dirtied * 100 / sum(nullif(local_blks_read + local_blks_written + local_blks_dirtied,0)) OVER (),'FM99D99'), 6) || '%' AS "local_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
-    to_char(calls::numeric/reset_days::numeric,'FM999G999G990D9') AS "Calls/Day",
+    lpad(to_char(calls::numeric/reset_days::numeric,'FM999G999G990D9'), 14) AS "Calls/Day",
     --to_char((rows/reset_days),'FM999G999G999') AS "Rows/Day",
     --to_char(rows::numeric/calls::numeric,'FM999G990D9') AS "Rows/Call",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * local_blks_read)::numeric    / reset_days),0)), 11) AS "Read/Day",

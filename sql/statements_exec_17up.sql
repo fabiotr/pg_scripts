@@ -1,10 +1,10 @@
 SELECT
     row_number() OVER (ORDER BY total_exec_time DESC)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
-    to_char(total_exec_time*100/sum(total_exec_time) OVER (),'FM90D00') || '%' AS "load_%",
+    lpad(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'FM90D00'), 6) || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    to_char((calls::numeric/since_days::numeric),'FM999G999G990D9') AS "Calls/Day",
+    lpad(to_char((calls::numeric/since_days::numeric),'FM999G999G990D9'), 14) AS "Calls/Day",
     --to_char((rows::numeric/since_days::numeric),   'FM999G999G999') AS "Rows/Day",
     --to_char((rows::numeric/calls::numeric),          'FM999G990D9') AS "Rows/Call",
     to_char(min_exec_time                * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,

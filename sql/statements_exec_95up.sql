@@ -1,10 +1,10 @@
 SELECT
     row_number() over(ORDER BY total_time DESC) "N",
-    to_char(total_time*100/sum(total_time) OVER (),'FM99D99') || '%' AS "load_%",
+    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D99'), 6) || '%' AS "load_%",
     queryid,
     datname db,
     userid::regrole AS "User",
-    to_char(calls,'FM999G999G999G999') AS calls,
+    lpad(to_char(calls,'FM999G999G999G999'), 16) AS calls,
     to_char(min_time   * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS min,
     to_char(max_time   * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS max,
     to_char(mean_time  * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS avg,  

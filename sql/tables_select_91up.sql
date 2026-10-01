@@ -1,8 +1,8 @@
 SELECT
     s.schemaname AS "Schema",
     s.relname AS "Table",
-    lpad(to_char(c.reltuples, 'FM999G999G999G999'),15) AS "Rows",
-    lpad(to_char((coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) / reset_days,'FM999G999G999G999'),15)
+    lpad(to_char(c.reltuples, 'FM999G999G999G999'),16) AS "Rows",
+    lpad(to_char((coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) / reset_days,'FM999G999G999G999'),16)
         || lpad(' (' || round(100 * (coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) /
         nullif(sum(coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) OVER (),0),1) || ' %)',9) AS "SELECT Rows/Day"
 FROM
