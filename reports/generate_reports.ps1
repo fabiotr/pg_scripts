@@ -556,7 +556,10 @@ foreach ($svc in $Services) {
         # Report includes do \set QUIET off, so psql echoes \timing/\pset
         # feedback to stdout — filtered out here, same lines the Bash
         # version's grep -v drops.
-        $rawLines = if ($result.StdOut) { $result.StdOut -split "`r?`n" } else { @() }
+        # Drop the final line terminator before splitting: otherwise -split
+        # yields a trailing empty element, which Out-File / the normalizer
+        # would write out as an extra blank line at the end of every report.
+        $rawLines = if ($result.StdOut) { ($result.StdOut -replace "`r?`n\z", '') -split "`r?`n" } else { @() }
         $filtered = $rawLines | Where-Object {
             $_ -notmatch '^(Timing is|Expanded display is|Null display is|Border style is|Pager usage is|Output format is|Tuples only is|Footer is|Title is)'
         }
