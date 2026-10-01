@@ -135,7 +135,7 @@
 
 .PARAMETER ConnectRetryDelay
     Seconds to wait between those connection attempts. Env:
-    REPORT_CONNECT_RETRY_DELAY. Default: 10.
+    REPORT_CONNECT_RETRY_DELAY. Default: 2.
 
 .PARAMETER Localhost
     Ignore all services and connect to the local PostgreSQL instead (see
@@ -241,7 +241,7 @@ if ($ConnectRetries -lt 0) {
     $ConnectRetries = if ($env:REPORT_CONNECT_RETRIES) { [int]$env:REPORT_CONNECT_RETRIES } else { 2 }
 }
 if ($ConnectRetryDelay -lt 0) {
-    $ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 10 }
+    $ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 2 }
 }
 if ($ConnectTimeout -lt 0 -or $ConnectRetries -lt 0 -or $ConnectRetryDelay -lt 0) {
     Write-Host "Invalid connect timeout/retries/retry delay (expected whole numbers >= 0)."
