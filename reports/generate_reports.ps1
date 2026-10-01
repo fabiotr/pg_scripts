@@ -124,6 +124,15 @@
     REPORT_CONNECT_TIMEOUT. Default: 60. (No -C alias: PowerShell
     parameter names are case-insensitive, and -c is -ConfigFile.)
 
+.PARAMETER ConnectRetries
+    Extra attempts when a report can't connect at all (psql exit code 2),
+    for links that drop a connection now and then. Before each report a
+    "SELECT 1" connection is tried up to 1 + N times,
+    REPORT_CONNECT_RETRY_DELAY (10) seconds apart; a report that already
+    started is never re-run, and SQL errors or timeouts are not retried.
+    Each retry prints a RETRY line. 0 disables it. Env:
+    REPORT_CONNECT_RETRIES. Default: 2.
+
 .PARAMETER Localhost
     Ignore all services and connect to the local PostgreSQL instead (see
     .DESCRIPTION). The machine's hostname replaces the service name in the
@@ -162,6 +171,7 @@ param(
     [string]$StmtTimeout,
     [int]$TotalTimeout = 0,
     [int]$ConnectTimeout = -1,
+    [Alias('r')][int]$ConnectRetries = -1,
     [switch]$Localhost
 )
 
@@ -218,12 +228,16 @@ if (-not $StmtTimeout) {
 if ($TotalTimeout -le 0) {
     $TotalTimeout = if ($env:REPORT_TOTAL_TIMEOUT) { [int]$env:REPORT_TOTAL_TIMEOUT } else { 600 }
 }
-# -1 = not given (0 is a valid value).
+# -1 = not given (0 is a valid value for both).
 if ($ConnectTimeout -lt 0) {
     $ConnectTimeout = if ($env:REPORT_CONNECT_TIMEOUT) { [int]$env:REPORT_CONNECT_TIMEOUT } else { 60 }
 }
-if ($ConnectTimeout -lt 0) {
-    Write-Host "Invalid connect timeout (expected a whole number >= 0)."
+if ($ConnectRetries -lt 0) {
+    $ConnectRetries = if ($env:REPORT_CONNECT_RETRIES) { [int]$env:REPORT_CONNECT_RETRIES } else { 2 }
+}
+$ConnectRetryDelay = if ($env:REPORT_CONNECT_RETRY_DELAY) { [int]$env:REPORT_CONNECT_RETRY_DELAY } else { 10 }
+if ($ConnectTimeout -lt 0 -or $ConnectRetries -lt 0 -or $ConnectRetryDelay -lt 0) {
+    Write-Host "Invalid connect timeout/retries/retry delay (expected whole numbers >= 0)."
     exit 2
 }
 
@@ -500,6 +514,30 @@ LIMIT 1;
 }
 
 # ---------------------------------------------------------------------------
+# Opens one throwaway connection ("SELECT 1"), retrying up to
+# $ConnectRetries more times when psql can't connect (exit code 2) — e.g.
+# a link that drops a connection now and then. Any other outcome is left
+# for the report itself. Prints a RETRY line per retry. Returns $null on
+# success, or the last error's first line.
+# ---------------------------------------------------------------------------
+
+function Wait-ForConnection {
+    param([string]$Conn, [string]$Label)
+
+    # connect_timeout 0 means "wait forever" in libpq; give the wall clock
+    # some slack over it otherwise.
+    $wallSec = if ($ConnectTimeout -gt 0) { $ConnectTimeout + 10 } else { 3600 }
+    for ($attempt = 1; $attempt -le $ConnectRetries + 1; $attempt++) {
+        $r = Invoke-Psql -Arguments @($Conn, '-X', '-q', '-t', '-A', '-c', 'SELECT 1') -TimeoutSec $wallSec
+        if ($r.ExitCode -ne 2) { return $null }
+        $err = @($r.StdErr -split "`r?`n" | Where-Object { $_ })[0]
+        if ($attempt -gt $ConnectRetries) { return $err }
+        Write-Host "RETRY $Label (attempt $($attempt + 1)/$($ConnectRetries + 1) in ${ConnectRetryDelay}s: $err)"
+        Start-Sleep -Seconds $ConnectRetryDelay
+    }
+}
+
+# ---------------------------------------------------------------------------
 # Runs report_<kind>.sql through psql with a wall-clock timeout.
 # ---------------------------------------------------------------------------
 
@@ -564,6 +602,12 @@ foreach ($svc in $Services) {
             $conn = "connect_timeout=$ConnectTimeout"
         } else {
             $conn = "service=$svc connect_timeout=$ConnectTimeout"
+        }
+        $connErr = Wait-ForConnection -Conn $conn -Label "$svc $kind"
+        if ($null -ne $connErr) {
+            Write-Host "FAIL  $svc $kind (could not connect after $($ConnectRetries + 1) attempt(s): $connErr)"
+            $fail = $true
+            continue
         }
 
         if ($kind -eq 'database') {
