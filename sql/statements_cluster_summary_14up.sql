@@ -11,10 +11,10 @@ SELECT
     to_char((sum(total_plan_time) / reset_days)                   * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Plan T/Day",
     to_char((sum(total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')     AS "Total T/Day",
     trunc(sum(shared_blks_hit)::numeric * 100 / nullif(sum(shared_blks_hit + shared_blks_read)::numeric, 0), 1) AS "S Hit %",
-    pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(shared_blks_read)                   
-        / reset_days),0))                                                                                       AS "S Read/Day",
-    pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(temp_blks_read + temp_blks_written) 
-        / reset_days),0))                                                                                       AS "Temp/Day",
+    lpad(pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(shared_blks_read)                   
+        / reset_days),0)), 11)                                                                                       AS "S Read/Day",
+    lpad(pg_size_pretty(nullif(trunc(current_setting('block_size')::numeric * sum(temp_blks_read + temp_blks_written) 
+        / reset_days),0)), 11)                                                                                       AS "Temp/Day",
     to_char((sum(blk_read_time + blk_write_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')       AS "IO T/Day",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query

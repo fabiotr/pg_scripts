@@ -1,7 +1,7 @@
 SELECT
     n.nspname                              AS "Schema",
     c.relname                              AS "Table",
-    pg_size_pretty(pg_total_relation_size(c.oid)) AS "Table size",
+    lpad(pg_size_pretty(pg_total_relation_size(c.oid)), 11) AS "Table size",
     con.conname                            AS "Constraint",
     CASE con.contype
         WHEN 'c' THEN 'CHECK'

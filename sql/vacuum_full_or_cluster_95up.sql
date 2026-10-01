@@ -10,8 +10,8 @@ SELECT
         WHEN 'u' THEN 'unlogged'
         WHEN 't' THEN 'temporary'
     END AS persistence,
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7) AS "Size",
-    lpad(pg_size_pretty(approx_free_space),7)    AS "Free Size",
+    lpad(pg_size_pretty(pg_table_size(c.oid)),11) AS "Size",
+    lpad(pg_size_pretty(approx_free_space),11)    AS "Free Size",
     coalesce(fillfactor::integer,100)            AS "Fillfactor",
     round(approx_free_percent::numeric,2)        AS "% Free",
     round(approx_free_percent::numeric - (100 - coalesce(fillfactor::numeric,100)), 2) AS "% Free - Fillfactor"

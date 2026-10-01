@@ -1,6 +1,6 @@
 SELECT
     nspname AS "Name",
-    pg_size_pretty(size::bigint) AS "Size",
+    lpad(pg_size_pretty(size::bigint), 11) AS "Size",
     trunc(size / pg_database_size(current_database()) * 100,2) AS "Size %",
 	"Tables",
 	"Indexes",

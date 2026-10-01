@@ -1,8 +1,8 @@
 SELECT n.nspname AS schemaname,
     c.relname AS tablename,
     i.relname AS indexname,
-    pg_size_pretty(pg_relation_size(x.indrelid)) AS table_size,
-    pg_size_pretty(pg_relation_size(x.indexrelid)) AS index_size,
+    lpad(pg_size_pretty(pg_relation_size(x.indrelid)), 11) AS table_size,
+    lpad(pg_size_pretty(pg_relation_size(x.indexrelid)), 11) AS index_size,
     --t.spcname AS tablespace,
     pg_get_indexdef(i.oid) AS indexdef
 FROM pg_index x

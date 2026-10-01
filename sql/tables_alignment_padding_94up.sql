@@ -173,7 +173,7 @@ WITH recursive constants AS (
 )
 SELECT
   coalesce(nullif(schema_name, 'public') || '.', '') || table_name AS "Table",
-  pg_size_pretty(table_bytes) "Table Size",
+  lpad(pg_size_pretty(table_bytes), 11) "Table Size",
   CASE WHEN has_varlena THEN 'Includes VARLENA' ELSE NULL END AS "Comment",
   CASE
     WHEN padding_total_est > 0 THEN '~' || pg_size_pretty(padding_total_est) || ' (' || wasted_percent::text || '%)'

@@ -4,8 +4,8 @@ SELECT
     string_agg(DISTINCT rolname,', ') role,
     queryid, 
     trunc(sum(calls/reset_days),1) AS "Calls/Day", 
-    pg_size_pretty(trunc((sum(temp_blks_read+ temp_blks_written)/reset_days) * current_setting('block_size')::integer)) AS "Temp/Day",
-    pg_size_pretty(trunc((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer / sum(calls)::numeric)) avg_temp,
+    lpad(pg_size_pretty(trunc((sum(temp_blks_read+ temp_blks_written)/reset_days) * current_setting('block_size')::integer)), 11) AS "Temp/Day",
+    lpad(pg_size_pretty(trunc((sum(temp_blks_read) + sum(temp_blks_written)) * current_setting('block_size')::integer / sum(calls)::numeric)), 11) avg_temp,
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN to_char((sum(temp_blk_read_time + temp_blk_write_time)/reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE NULL END AS "Temp Time/Day",

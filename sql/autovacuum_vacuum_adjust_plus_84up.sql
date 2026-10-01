@@ -35,8 +35,8 @@ SELECT
     END AS "Command",
     coalesce(to_number(cs.option_value, '99.99999'),s.scale) || chr(10) ||
     coalesce(to_number(cts.option_value, '99.99999'),s.scale) AS current,
-    lpad(pg_size_pretty(pg_relation_size(c.oid,'main')),7) || chr(10) ||  
-    lpad(pg_size_pretty(pg_relation_size(ct.oid)),7)  AS size
+    lpad(pg_size_pretty(pg_relation_size(c.oid,'main')),11) || chr(10) ||  
+    lpad(pg_size_pretty(pg_relation_size(ct.oid)),11)  AS size
 FROM
     (
         SELECT

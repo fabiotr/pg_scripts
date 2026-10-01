@@ -9,7 +9,7 @@ WITH stats_age AS (
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    pg_size_pretty(pg_relation_size(t.relid)) AS "Size",
+    lpad(pg_size_pretty(pg_relation_size(t.relid)), 11) AS "Size",
     to_char(t.last_analyze,     'YYYY-MM-DD HH24:MI:SS') AS "A Last",
     to_char(t.last_autoanalyze, 'YYYY-MM-DD HH24:MI:SS') AS "AA Last",
     to_char(t.analyze_count     / sa.days_since_reset, 'FM999G990D00') AS "A Count/Day",

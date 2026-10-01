@@ -13,7 +13,7 @@ SELECT
         WHEN 'p' THEN 'partition table'
         END AS "Type",
     pg_get_userbyid(c.relowner) AS "Owner",
-    lpad(pg_size_pretty(pg_table_size(c.oid)),7) AS "Size",
+    lpad(pg_size_pretty(pg_table_size(c.oid)),11) AS "Size",
     lpad(to_char(c.reltuples,'FM999G999G999G999G999'),15) AS "Rows"
 FROM pg_class c
      LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace

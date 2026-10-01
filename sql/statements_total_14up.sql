@@ -5,7 +5,7 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char(((sum(blk_read_time + blk_write_time))/reset_days) * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE NULL END AS "Temp time/Day",
-        pg_size_pretty(((sum(temp_blks_read + temp_blks_written))/reset_days) * current_setting('block_size')::integer) AS "Total Temp/Day",
+        lpad(pg_size_pretty(((sum(temp_blks_read + temp_blks_written))/reset_days) * current_setting('block_size')::integer), 11) AS "Total Temp/Day",
         to_char(CURRENT_TIMESTAMP - stats_reset, 'DD-MM-YY hh24:mi') AS "Time since last Reset"
 FROM
     pg_stat_statements s

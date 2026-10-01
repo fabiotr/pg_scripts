@@ -4,8 +4,8 @@ SELECT
     rolname AS "User",
 calls, 
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
-    pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer) total_temp,
-    pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls) avg_temp,
+    lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer), 11) total_temp,
+    lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls), 11) avg_temp,
     trunc(total_time/1000) total_time_s,
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query

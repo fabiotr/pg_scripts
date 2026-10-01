@@ -22,7 +22,7 @@ index_counts AS (
 too_many_tablescans AS (
     SELECT 'many table scans'::TEXT AS reason, 
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) AS table_size,
+        table_scans, lpad(pg_size_pretty(table_bytes), 11) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 1000
@@ -34,7 +34,7 @@ too_many_tablescans AS (
 scans_no_index AS (
     SELECT 'scans, few indexes'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) AS table_size,
+        table_scans, lpad(pg_size_pretty(table_bytes), 11) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100
@@ -47,7 +47,7 @@ scans_no_index AS (
 big_tables_with_scans AS (
     SELECT 'big table scans'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) AS table_size,
+        table_scans, lpad(pg_size_pretty(table_bytes), 11) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100
@@ -59,7 +59,7 @@ big_tables_with_scans AS (
 scans_no_writes AS (
     SELECT 'scans, no writes'::TEXT AS reason,
         database, schema_name, table_name,
-        table_scans, pg_size_pretty(table_bytes) AS table_size,
+        table_scans, lpad(pg_size_pretty(table_bytes), 11) AS table_size,
         writes_per_scan, index_count, table_bytes
     FROM index_usage JOIN index_counts USING ( relid )
     WHERE table_scans > 100

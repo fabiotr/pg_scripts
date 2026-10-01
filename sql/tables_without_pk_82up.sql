@@ -15,7 +15,7 @@ SELECT
     WHEN 'm' THEN 'materialized view'
   END AS "Type",
   to_char(reltuples,'FM999G999G999G999') AS "Rows",
-  pg_size_pretty(pg_relation_size(c.oid)) AS "Size"
+  lpad(pg_size_pretty(pg_relation_size(c.oid)), 11) AS "Size"
 FROM
   pg_class AS c
   JOIN pg_namespace n ON c.relnamespace = n.oid

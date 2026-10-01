@@ -2,7 +2,7 @@ SELECT
     d.datname                                   AS "Database",
     r.rolname                                   AS "Owner",
     pg_encoding_to_char(d.encoding)             AS "Encoding",
-    pg_size_pretty(pg_database_size(d.datname)) AS "Size",
+    lpad(pg_size_pretty(pg_database_size(d.datname)), 11) AS "Size",
     array_to_string(drs.setconfig, chr(10))     AS "Options",
     array_to_string(array_agg(p.priv), chr(10)) AS "Privileges"
 FROM

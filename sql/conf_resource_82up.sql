@@ -1,20 +1,20 @@
 SELECT
     name AS "conf",
     CASE name
-	WHEN 'effective_cache_size' 	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'shared_buffers'       	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'temp_buffers'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'wal_buffers'          	 	THEN CASE setting WHEN '-1' THEN lpad(setting,8) ELSE  lpad(pg_size_pretty(setting::bigint  * unit_val),7) END
-	WHEN 'work_mem'             	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'temp_file_limit'              THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'maintenance_work_mem' 	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'autovacuum_work_mem'  	 	THEN CASE setting WHEN '-1' THEN lpad(setting,8) ELSE lpad(pg_size_pretty(setting::bigint * unit_val),7) END
-	WHEN 'vacuum_buffer_usage_limit'    THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'logical_decoding_work_mem' 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'max_wal_size'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'min_wal_size'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),7)
-	WHEN 'checkpoint_completion_target' THEN lpad(setting,7)
-	WHEN 'checkpoint_timeout'		    THEN lpad(setting || ' ' || unit,7)
+	WHEN 'effective_cache_size' 	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'shared_buffers'       	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'temp_buffers'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'wal_buffers'          	 	THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE  lpad(pg_size_pretty(setting::bigint  * unit_val),11) END
+	WHEN 'work_mem'             	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'temp_file_limit'              THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE lpad(pg_size_pretty(setting::bigint * unit_val),11) END
+	WHEN 'maintenance_work_mem' 	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'autovacuum_work_mem'  	 	THEN CASE setting WHEN '-1' THEN lpad(setting,11) ELSE lpad(pg_size_pretty(setting::bigint * unit_val),11) END
+	WHEN 'vacuum_buffer_usage_limit'    THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'logical_decoding_work_mem' 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'max_wal_size'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'min_wal_size'         	 	THEN lpad(pg_size_pretty(setting::bigint * unit_val),11)
+	WHEN 'checkpoint_completion_target' THEN lpad(setting,11)
+	WHEN 'checkpoint_timeout'		    THEN lpad(setting || ' ' || unit,11)
     END AS "Value",
     source
 FROM (

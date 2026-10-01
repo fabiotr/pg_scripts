@@ -2,8 +2,8 @@ SELECT
     n.nspname AS "Schema",
     c.relname AS "Table",
     i.relname AS "Index",
-    pg_size_pretty(pg_table_size(x.indrelid)) AS "Table Size",
-    pg_size_pretty(pg_relation_size(x.indexrelid)) AS "Index Size",
+    lpad(pg_size_pretty(pg_table_size(x.indrelid)), 11) AS "Table Size",
+    lpad(pg_size_pretty(pg_relation_size(x.indexrelid)), 11) AS "Index Size",
     trunc(100 * pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid),1) AS "Ind/Table %",
     --t.spcname AS tablespace,
     pg_get_indexdef(i.oid) AS indexdef

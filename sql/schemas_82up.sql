@@ -1,6 +1,6 @@
 SELECT 
     schema,
-    pg_size_pretty(size::bigint) AS "disk space",
+    lpad(pg_size_pretty(size::bigint), 11) AS "disk space",
     trunc(size / pg_database_size(current_database()) * 100,2) AS "%"
 FROM (
     SELECT 
