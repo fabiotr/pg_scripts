@@ -2,7 +2,7 @@ SELECT n.nspname AS schemaname,
     c.relname AS tablename,
     i.relname AS indexname,
     t.spcname AS tablespace,
-    x.indisvalid AS "Is invalid?",
+    x.indisvalid AS "Is valid?",
     pg_get_indexdef(i.oid) AS indexdef
 FROM pg_index x
      JOIN pg_class c ON c.oid = x.indrelid
