@@ -105,7 +105,8 @@
 #                           --connect-retry-delay seconds apart; a
 #                           report that already started is never re-run, and
 #                           SQL errors or timeouts are not retried. Each
-#                           retry prints a RETRY line. 0 disables it.
+#                           retry prints a RETRY line. 0 disables it
+#                           (no test connection at all).
 #                           Default: 2.
 #   --connect-retry-delay SEC  Seconds to wait between those connection
 #                           attempts. Default: 2.
@@ -370,6 +371,7 @@ normalize() {
 # leaves the last error in the given file and returns 1.
 wait_for_connection() {
   local conn=$1 label=$2 errfile=$3 attempt rc
+  # No retries: leave the connection to the report itself, as before.
   (( CONNECT_RETRIES == 0 )) && return 0
   for (( attempt = 1; attempt <= CONNECT_RETRIES + 1; attempt++ )); do
     psql "$conn" -X -q -At -c 'SELECT 1' >/dev/null 2>"$errfile"
