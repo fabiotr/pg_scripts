@@ -102,11 +102,13 @@
 #                           (psql exit code 2), for links that drop a
 #                           connection now and then. Before each report a
 #                           "SELECT 1" connection is tried up to 1 + N times,
-#                           REPORT_CONNECT_RETRY_DELAY (10) seconds apart; a
+#                           --connect-retry-delay seconds apart; a
 #                           report that already started is never re-run, and
 #                           SQL errors or timeouts are not retried. Each
 #                           retry prints a RETRY line. 0 disables it.
 #                           Default: 2.
+#   --connect-retry-delay SEC  Seconds to wait between those connection
+#                           attempts. Default: 10.
 #   --localhost             Ignore all services and connect to the local
 #                           PostgreSQL instead (see above). The machine's
 #                           hostname replaces the service name in the
@@ -116,10 +118,9 @@
 # Env var equivalents: REPORT_SCRIPTS_DIR, REPORT_NORMALIZE_SCRIPT,
 # REPORT_OUT_DIR, REPORT_KINDS, REPORT_CONFIG_FILE, REPORT_DEFAULT_DBNAME,
 # REPORT_FORMAT, REPORT_STMT_TIMEOUT, REPORT_TOTAL_TIMEOUT,
-# REPORT_CONNECT_TIMEOUT, REPORT_CONNECT_RETRIES, REPORT_SERVICES
-# (space/comma separated, used when no service is given on the command line).
-# REPORT_CONNECT_RETRY_DELAY (seconds between connection attempts, default
-# 10) has no flag.
+# REPORT_CONNECT_TIMEOUT, REPORT_CONNECT_RETRIES, REPORT_CONNECT_RETRY_DELAY,
+# REPORT_SERVICES (space/comma separated, used when no service is given on
+# the command line).
 #
 # Output: <out-dir>/YYYY-MM-DD/YYYY-MM-DD_<label>_<kind>.md (.txt with
 # --format raw)
@@ -158,6 +159,7 @@ while [[ $# -gt 0 ]]; do
     -T|--total-timeout) TOTAL_TIMEOUT=$2; shift 2 ;;
     -C|--connect-timeout) CONNECT_TIMEOUT=$2; shift 2 ;;
     -r|--connect-retries) CONNECT_RETRIES=$2; shift 2 ;;
+    --connect-retry-delay) CONNECT_RETRY_DELAY=$2; shift 2 ;;
     --localhost) LOCALHOST=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; break ;;
