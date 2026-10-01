@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Test tools/check_dispatchers.sh and tools/check_sql_style.py
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
       - name: Run tools/check_dispatchers.sh
         run: ./tools/check_dispatchers.sh
-      - name: Test tools/check_sql_style.py
-        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
       - name: Run tools/check_sql_style.py
         run: ./tools/check_sql_style.py

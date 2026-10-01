@@ -113,7 +113,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 ## Testing
 
 - `./tools/check_dispatchers.sh` (static checks: `\ir`, include targets, branch/file versions, branch order, unreachable files, message casing).
-- `./tools/check_sql_style.py` (keyword and identifier case, non-ASCII identifiers and dollar-quote tags, plain strings that depend on `standard_conforming_strings`; strings, comments and quoted identifiers are never checked). Its tests: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_sql_style.py` when changing the checker). Both checks and the tests run in CI on every PR.
+- `./tools/check_sql_style.py` (keyword and identifier case, non-ASCII identifiers and dollar-quote tags, plain strings that depend on `standard_conforming_strings`; strings, comments and quoted identifiers are never checked). Tests for both checks: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_dispatchers.py` or `tools/test_check_sql_style.py` when changing a check). Both checks and the tests run in CI on every PR.
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.
