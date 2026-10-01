@@ -130,7 +130,8 @@
     "SELECT 1" connection is tried up to 1 + N times,
     -ConnectRetryDelay seconds apart; a report that already
     started is never re-run, and SQL errors or timeouts are not retried.
-    Each retry prints a RETRY line. 0 disables it. Env:
+    Each retry prints a RETRY line. 0 disables it (no test connection at
+    all). Env:
     REPORT_CONNECT_RETRIES. Default: 2.
 
 .PARAMETER ConnectRetryDelay
@@ -533,6 +534,8 @@ LIMIT 1;
 function Wait-ForConnection {
     param([string]$Conn, [string]$Label)
 
+    # No retries: leave the connection to the report itself, as before.
+    if ($ConnectRetries -eq 0) { return $null }
     # connect_timeout 0 means "wait forever" in libpq; give the wall clock
     # some slack over it otherwise.
     $wallSec = if ($ConnectTimeout -gt 0) { $ConnectTimeout + 10 } else { 3600 }
