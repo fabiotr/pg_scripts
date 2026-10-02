@@ -5,7 +5,7 @@ SELECT
     to_char((sum(total_plan_time) / reset_days) * INTERVAL '1 millisecond',                      'HH24:MI:SS')       AS "Plan T/Day",
     to_char((sum(total_exec_time) / reset_days) * INTERVAL '1 millisecond',                      'HH24:MI:SS')       AS "Exec T/Day",
     to_char((sum(total_plan_time + total_exec_time) / reset_days) * INTERVAL '1 millisecond',    'HH24:MI:SS')       AS "Total T/Day",
-    trunc(sum(total_plan_time)::numeric * 100 / nullif(sum(total_plan_time + total_exec_time)::numeric,0),1) || ' %' AS "Plan %",
+    lpad(trunc(sum(total_plan_time)::numeric * 100 / nullif(sum(total_plan_time + total_exec_time)::numeric,0),1) || ' %', 7) AS "Plan %",
     lpad(to_char(sum(calls)::numeric / reset_days,'FM999G999G999'), 12)                                                          AS "Calls/Day",
     lpad(CASE WHEN current_setting('pg_stat_statements.track') = 'all'
         THEN to_char(count(1) FILTER (WHERE toplevel = FALSE) / reset_days,'FM999G999G999')  ELSE 'Disabled' END, 12)       AS "N TopLevel/Day",
@@ -13,7 +13,7 @@ SELECT
         THEN to_char((sum(blk_read_time + blk_write_time)     / reset_days)
             * INTERVAL '1 millisecond','HH24:MI:SS')
         ELSE 'Disabled' END                                                                                          AS "I/O T/Day",
-    trunc(sum(shared_blks_hit) * 100 / nullif(sum(shared_blks_hit + shared_blks_read),0),1) || ' %'                  AS "Shared Hit",
+    lpad(trunc(sum(shared_blks_hit) * 100 / nullif(sum(shared_blks_hit + shared_blks_read),0),1) || ' %', 7)                  AS "Shared Hit",
     lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_hit))::numeric,0)     / reset_days) * current_setting('block_size')::integer)), 11) AS "S Hit/Day",
     lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_read))::numeric,0)    / reset_days) * current_setting('block_size')::integer)), 11) AS "S Read/Day",
     lpad(pg_size_pretty(trunc((nullif((sum(shared_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)), 11) AS "S Write/Day",
