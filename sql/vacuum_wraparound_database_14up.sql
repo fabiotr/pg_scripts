@@ -5,7 +5,7 @@ SELECT
     format('%9s', round(age(datfrozenxid) * 100.0 / current_setting('vacuum_failsafe_age')::numeric, 1) || '%') AS "XID Failsafe",
     lpad(round(age(datfrozenxid) * 100.0 / 2147483648, 1) || '%', 6) AS "XID Total",
     format('%9s', round(mxid_age(datminmxid) * 100.0 / current_setting('autovacuum_multixact_freeze_max_age')::numeric, 1) || '%') AS "MXID Max",
-    format('%9s', round(mxid_age(datminmxid) * 100.0 / current_setting('vacuum_failsafe_age')::numeric, 1) || '%') AS "MXID Failsafe",
+    format('%9s', round(mxid_age(datminmxid) * 100.0 / current_setting('vacuum_multixact_failsafe_age')::numeric, 1) || '%') AS "MXID Failsafe",
     lpad(round(mxid_age(datminmxid) * 100.0 / 2147483648, 1) || '%', 6) AS "MXID Total",
     CASE
         WHEN age(datfrozenxid) > current_setting('vacuum_failsafe_age')::numeric THEN '🔴 CRITIC'
@@ -15,8 +15,8 @@ SELECT
     END AS "XID Status",
 
     CASE
-        WHEN mxid_age(datminmxid) > current_setting('vacuum_failsafe_age')::numeric THEN '🔴 CRITIC'
-        WHEN mxid_age(datminmxid) > current_setting('vacuum_failsafe_age')::numeric / 2 THEN '🟠 WARNING'
+        WHEN mxid_age(datminmxid) > current_setting('vacuum_multixact_failsafe_age')::numeric THEN '🔴 CRITIC'
+        WHEN mxid_age(datminmxid) > current_setting('vacuum_multixact_failsafe_age')::numeric / 2 THEN '🟠 WARNING'
         WHEN mxid_age(datminmxid) >  current_setting('autovacuum_multixact_freeze_max_age')::numeric THEN '🟡 ATENTION'
         ELSE '✅ OK'
     END AS "MXID status"
