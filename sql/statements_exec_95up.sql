@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY total_time DESC) "N",
-    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D99'), 6) || '%' AS "load_%",
+    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D09'), 6) || '%' AS "load_%",
     queryid,
     datname db,
     userid::regrole AS "User",

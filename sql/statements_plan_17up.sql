@@ -1,10 +1,10 @@
 SELECT
-    row_number() OVER (ORDER BY total_plan_time DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    lpad(row_number() OVER (ORDER BY total_plan_time DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
     lpad(to_char(total_plan_time*100/sum(total_plan_time) OVER (),'FM90D00'), 6) || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
-    --to_char((rows::numeric/calls::numeric),          'FM999G990D9') AS "Rows/Call",
+    --to_char((rows::numeric/calls::numeric),          'FM999G990D0') AS "Rows/Call",
     --to_char((rows::numeric/since_days::numeric),   'FM999G999G999') AS "Rows/Day",
     --to_char((plans::numeric/since_days::numeric),  'FM999G999G999') AS "Plans/Day",
     lpad(to_char((calls::numeric/since_days::numeric),'FM999G999G990D0'), 14) AS "Calls/Day",
@@ -15,7 +15,7 @@ SELECT
     to_char(stddev_plan_time             * INTERVAL '1 millisecond', 'HH24:MI:SS,US') AS "σ",
     to_char((total_plan_time/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Plan/Day",
     to_char((total_exec_time/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')    AS "Exec/Day",
-    lpad(to_char(total_plan_time * 100 / (total_plan_time + total_exec_time),'FM09D99'), 6) || '%' AS "Plan %",
+    lpad(to_char(total_plan_time * 100 / (total_plan_time + total_exec_time),'FM09D09'), 6) || '%' AS "Plan %",
     CASE WHEN stats_since = minmax_stats_since
         THEN NULL ELSE to_char(minmax_stats_since, 'YYYY-MM-DD HH24:MI') END AS "MinMax",
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50

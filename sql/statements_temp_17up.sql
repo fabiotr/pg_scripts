@@ -1,11 +1,11 @@
 SELECT
-    row_number() over(ORDER BY coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N", 
+    lpad(row_number() over(ORDER BY coalesce(temp_blks_read,0) + coalesce(temp_blks_written,0) DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N", 
     queryid,
     --datname AS "DB", 
     userid::regrole AS "User",  
     lpad(to_char((calls::numeric/since_days::numeric),'FM9G999G990D0'), 12) AS "Calls/Day",
     --to_char((rows/reset_days),'FM999G999G999') AS "Rows/Day",
-    --to_char((rows::numeric/calls::numeric),'FM999G990D9') AS "Rows/Call",
+    --to_char((rows::numeric/calls::numeric),'FM999G990D0') AS "Rows/Call",
     --pg_size_pretty(temp_blks_read * current_setting('block_size')::integer) tot_temp_r, --pg_size_pretty(temp_blks_written * current_setting('block_size')::integer)tot_temp_w,
     lpad(pg_size_pretty(((temp_blks_read + temp_blks_written)/since_days) * current_setting('block_size')::integer), 11) AS "Temp/Day",
     lpad(pg_size_pretty((temp_blks_read + temp_blks_written) * current_setting('block_size')::integer / calls), 11) avg_temp,

@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY total_time DESC) "#",
-    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D99'), 6) || '%' AS "load_%",
+    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D09'), 6) || '%' AS "load_%",
     datname db, --rolname,
     lpad(to_char(calls, 'FM999G999G999G999G999'), 20) AS calls,
     lpad(to_char(rows , 'FM999G999G999G999G999'), 20) AS rows,
