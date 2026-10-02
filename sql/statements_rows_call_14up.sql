@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY rows / calls DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    lpad(row_number() OVER (ORDER BY rows / calls DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,

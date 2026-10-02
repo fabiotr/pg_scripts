@@ -1,8 +1,8 @@
 SELECT
-    row_number() OVER (ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) DESC) || 
-        CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    lpad(row_number() OVER (ORDER BY (jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) DESC)::text, 2) || 
+        CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
     lpad(to_char((jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
-    sum(jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'FM99D99'), 6) || '%' AS "Jit %",
+    sum(jit_deform_time + jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'FM99D09'), 6) || '%' AS "Jit %",
     userid::regrole AS "User",
     queryid,
     lpad(to_char(calls::numeric                  / since_days::numeric, 'FM999G999G990D0'), 14) AS "Calls/Day",

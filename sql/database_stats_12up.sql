@@ -10,7 +10,7 @@ SELECT
     lpad(to_char(100 * tup_inserted::NUMERIC  / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows INSERT",
     lpad(to_char(100 * tup_updated::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows UPDATE",
     lpad(to_char(100 * tup_deleted::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows DELETE",
-    CASE deadlocks  WHEN 0 THEN NULL ELSE lpad(to_char(deadlocks::NUMERIC  / reset_days,'FM9G999G990D9'),12) END                 AS "Deadlocks  / Day",
+    CASE deadlocks  WHEN 0 THEN NULL ELSE lpad(to_char(deadlocks::NUMERIC  / reset_days,'FM9G999G990D0'),12) END                 AS "Deadlocks  / Day",
     CASE checksum_failures WHEN 0 THEN NULL ELSE lpad(to_char(checksum_failures::NUMERIC / reset_days, 'FM9G999G999D0'),12) END  AS "Checksum fail / Day",
     lpad(date_trunc('second',checksum_last_failure)::text,11)                                                                    AS "Last Checksum fail",
     CASE temp_files WHEN 0 THEN NULL ELSE lpad(to_char(temp_files::NUMERIC / reset_days,'FM9G999G990D0'),12) END                 AS "Temp file  / Day",

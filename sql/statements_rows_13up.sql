@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY rows DESC) "N",
-    lpad(to_char(rows*100/sum(rows) OVER (),'FM99D99'), 6) || '%' AS "Rows_%",
+    lpad(to_char(rows*100/sum(rows) OVER (),'FM99D09'), 6) || '%' AS "Rows_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
     lpad(to_char(calls,'FM999G999G999'), 12) AS "Calls",
