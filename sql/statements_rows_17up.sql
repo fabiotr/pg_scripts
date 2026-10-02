@@ -1,5 +1,5 @@
 SELECT
-    row_number() OVER (ORDER BY rows DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END AS "N",
+    lpad(row_number() OVER (ORDER BY rows DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
     lpad(to_char(rows*100/sum(rows) OVER (),'FM99D00'), 6) || '%' AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",

@@ -1,5 +1,5 @@
 SELECT
-    row_number() over(ORDER BY calls DESC) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '' END "N",
+    lpad(row_number() over(ORDER BY calls DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END "N",
     lpad(to_char(calls*100/sum(calls) OVER (),'FM90D00'), 6) || '%' AS "Calls_%",
     --datname AS "DB",
     userid::regrole AS "User",
