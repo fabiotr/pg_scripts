@@ -55,6 +55,7 @@ Rules:
 
 Sets every `svp_*` psql variable via `\gset svp_`. Use these instead of querying the version yourself:
 - `svp_pg_82` … `svp_pg_18`, `svp_under_pg_12`, `svp_server_version`
+- `svp_psql_16`: the psql **client** is 16+ (`:VERSION_NUM`). Use it, not a server version flag, for psql features such as `\pset xheader_width`.
 - environment: `svp_rol_super`, `svp_not_standby`, `svp_recovery`, `svp_master`, `svp_not_dbaas`, `svp_not_rds`, `svp_not_gcp`, `svp_not_aurora`
 - `svp_pgss`: schema of the pg_stat_statements view (quoted). Always write `:svp_pgss.pg_stat_statements` / `:svp_pgss.pg_stat_statements_info`, never the bare name: the extension can live outside `search_path`. A script that creates the extension must `\ir variables.sql` again afterwards.
 - features: `svp_ext` / `svp_not_ext` (pg_stat_statements), `svp_lib`, `svp_track_io`, `svp_plan`, `svp_jit`, `svp_logging_collector`, `svp_publication`, `svp_subscription`, `svp_logical_replication_slot`

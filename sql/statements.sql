@@ -58,7 +58,7 @@
   \qecho '### Statements total'
   \qecho
 
-  \if :svp_pg_92
+  \if :svp_psql_16
     \pset xheader_width 1
   \endif
 
@@ -72,7 +72,7 @@
   \endif
   \x off
 
-  \if :svp_pg_92
+  \if :svp_psql_16
     \pset xheader_width full
   \endif
 
@@ -290,7 +290,7 @@
   \qecho '### Top5 statements by total time with full SQL'
   \qecho
 
-  \if :svp_pg_92
+  \if :svp_psql_16
     \pset xheader_width 1
   \endif
 
@@ -315,7 +315,7 @@
 \endif
 
 \x off
-\if :svp_pg_92
+\if :svp_psql_16
   \pset xheader_width full
 \endif 
 
