@@ -5,7 +5,6 @@ WITH tmp AS (
 \if :svp_ls_tmpdir
   SELECT
     substring(f.name FROM '^pgsql_tmp([0-9]+)[.]')::int AS pid,
-    count(1)    AS files,
     sum(f.size) AS bytes
   FROM
     pg_tablespace t,
@@ -13,7 +12,7 @@ WITH tmp AS (
   WHERE f.name ~ '^pgsql_tmp[0-9]+[.]'
   GROUP BY 1
 \else
-  SELECT NULL::int AS pid, NULL::bigint AS files, NULL::numeric AS bytes
+  SELECT NULL::int AS pid, NULL::numeric AS bytes
 \endif
 )
 SELECT
@@ -25,8 +24,8 @@ SELECT
     command,
     phase,
     CASE WHEN :'svp_ls_tmpdir'::boolean
-      THEN coalesce(tmp.files, 0) || ' / ' || lpad(pg_size_pretty(coalesce(tmp.bytes, 0)), 11)
-      ELSE 'needs pg_monitor' END AS "Temp files (Qty/Size)",
+      THEN lpad(pg_size_pretty(coalesce(tmp.bytes, 0)), 11)
+      ELSE 'needs pg_monitor' END AS "Temp size",
     -- reltuples is 0 when the table was analyzed empty and -1 (PG 14+) when it was never analyzed
     nullif(c.reltuples, -1) AS "Total tuples",
     trunc(heap_tuples_scanned::numeric * 100 / nullif(greatest(c.reltuples, 0), 0)::numeric,1) AS "% Rows scanned",
