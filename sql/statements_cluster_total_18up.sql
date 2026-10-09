@@ -31,7 +31,7 @@ SELECT
     to_char(CURRENT_TIMESTAMP - stats_reset, 'DD HH24:MI')                                                           AS "Time since reset",
     to_char(stats_reset, 'YYYY-MM-DD HH24:MI')                                                                       AS "Stats Reset"
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM :svp_pgss.pg_stat_statements_info) AS r
 GROUP BY r.reset_days, r.stats_reset,r.dealloc;

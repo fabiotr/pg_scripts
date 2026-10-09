@@ -7,7 +7,7 @@ SELECT slot_name AS replication_slot, stats_reset FROM pg_stat_replication_slots
 SELECT subname AS subscription, stats_reset FROM pg_stat_subscription_stats ORDER BY subname;
 \if :svp_lib
   \if :svp_ext
-    SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM pg_stat_statements_info;
+    SELECT 'pg_stat_statements' AS shared_stat, stats_reset FROM :svp_pgss.pg_stat_statements_info;
   \endif
 \endif
 

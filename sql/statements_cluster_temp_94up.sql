@@ -10,7 +10,7 @@ SELECT
     trunc(sum(total_time)/1000) total_time_s,
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') 
 FROM 
-    pg_stat_statements s 
+    :svp_pgss.pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
 GROUP BY array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' '), queryid 
 ORDER BY sum(temp_blks_read + temp_blks_written) DESC

@@ -14,7 +14,7 @@ SELECT
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 AND 	
