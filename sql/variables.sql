@@ -95,6 +95,14 @@ SELECT
     ,coalesce(has_function_privilege(to_regprocedure('pgstathashindex(regclass)'),      'EXECUTE'), FALSE) AS pgstathashindex
     ,coalesce(has_function_privilege(to_regprocedure('pgstattuple_approx(regclass)'),   'EXECUTE'), FALSE) AS pgstattuple_approx
     ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_shmem_allocations'),       'SELECT'),  FALSE) AS shmem_allocations
+    ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_largeobject'),             'SELECT'),  FALSE) AS largeobject
+    -- these views read a function that PUBLIC can't execute either: both are needed
+    ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_config'), 'SELECT')
+          AND has_function_privilege(to_regprocedure('pg_catalog.pg_config()'), 'EXECUTE'), FALSE) AS config
+    ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_hba_file_rules'), 'SELECT')
+          AND has_function_privilege(to_regprocedure('pg_catalog.pg_hba_file_rules()'), 'EXECUTE'), FALSE) AS hba_file_rules
+    ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_replication_origin_status'), 'SELECT')
+          AND has_function_privilege(to_regprocedure('pg_catalog.pg_show_replication_origin_status()'), 'EXECUTE'), FALSE) AS replication_origin_status
   \gset svp_
 \else
   -- Before 9.4 the scripts only call pgstatindex(text) and pgstatginindex(regclass)
@@ -110,4 +118,22 @@ SELECT
   \set svp_pgstathashindex FALSE
   \set svp_pgstattuple_approx FALSE
   \set svp_shmem_allocations FALSE
+  \set svp_config FALSE
+  \set svp_hba_file_rules FALSE
+  \set svp_largeobject FALSE
+  \set svp_replication_origin_status FALSE
+\endif
+
+-- pg_ls_dir() and pg_read_file() check for superuser in their own code before 11,
+-- whatever EXECUTE says; from 11 on EXECUTE is what counts
+\if :svp_pg_11
+  SELECT
+     coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_dir(text)'),                     'EXECUTE'), FALSE) AS ls_dir
+    ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_read_file(text)'),                  'EXECUTE'), FALSE) AS read_file
+    ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_read_file(text, bigint, bigint)'),  'EXECUTE'), FALSE) AS read_file_range
+  \gset svp_
+\else
+  \set svp_ls_dir :svp_rol_super
+  \set svp_read_file :svp_rol_super
+  \set svp_read_file_range :svp_rol_super
 \endif
