@@ -97,11 +97,11 @@ SELECT
     ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_shmem_allocations'),       'SELECT'),  FALSE) AS shmem_allocations
   \gset svp_
 \else
-  -- Before 9.4 the scripts only call pgstatindex(text) and pgstatginindex(oid)
+  -- Before 9.4 the scripts only call pgstatindex(text) and pgstatginindex(regclass)
   SELECT
      EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatindex'    AND oidvectortypes(proargtypes) = 'text'
              AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatindex
-    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatginindex' AND oidvectortypes(proargtypes) = 'oid'
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatginindex' AND oidvectortypes(proargtypes) = 'regclass'
              AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatginindex
   \gset svp_
   \set svp_ls_tmpdir FALSE
