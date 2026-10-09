@@ -56,6 +56,7 @@ Rules:
 Sets every `svp_*` psql variable via `\gset svp_`. Use these instead of querying the version yourself:
 - `svp_pg_82` … `svp_pg_18`, `svp_under_pg_12`, `svp_server_version`
 - environment: `svp_rol_super`, `svp_not_standby`, `svp_recovery`, `svp_master`, `svp_not_dbaas`, `svp_not_rds`, `svp_not_gcp`, `svp_not_aurora`
+- `svp_pgss`: schema of the pg_stat_statements view (quoted). Always write `:svp_pgss.pg_stat_statements` / `:svp_pgss.pg_stat_statements_info`, never the bare name: the extension can live outside `search_path`. A script that creates the extension must `\ir variables.sql` again afterwards.
 - features: `svp_ext` / `svp_not_ext` (pg_stat_statements), `svp_lib`, `svp_track_io`, `svp_plan`, `svp_jit`, `svp_logging_collector`, `svp_publication`, `svp_subscription`, `svp_logical_replication_slot`
 - privileges: `svp_ls_tmpdir`, `svp_ls_waldir`, `svp_ls_logdir`, `svp_pgstatindex`, `svp_pgstatginindex`, `svp_pgstathashindex`, `svp_pgstattuple_approx`, `svp_shmem_allocations`, `svp_config`, `svp_hba_file_rules`, `svp_largeobject`, `svp_replication_origin_status`, `svp_ls_dir`, `svp_read_file`, `svp_read_file_range`: TRUE when the function/view exists and the user can use it. A script that needs one checks it in the dispatcher and prints `\qecho - Needs <role> (or EXECUTE on <function>())` instead of failing with permission denied. Add a flag here for any new function or view that PUBLIC can't use.
 

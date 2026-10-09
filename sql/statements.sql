@@ -13,6 +13,8 @@
         \if :svp_not_ext
           \if :svp_not_standby
             CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+            -- read the variables again: svp_pgss now has the extension's schema
+            \ir variables.sql
             \set svp_run_ok TRUE
           \else
             \qecho '# WARNING'

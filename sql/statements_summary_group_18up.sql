@@ -23,10 +23,10 @@ SELECT
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END                                                     AS query
 FROM 
-    pg_stat_statements s 
+    :svp_pgss.pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE
     datname = current_database() AND
     calls > 0
