@@ -18,7 +18,7 @@ SELECT
     lpad(pg_size_pretty(temp_blks_written * (pg_control_init()).database_block_size), 11) AS temp_written,
     array_to_string(regexp_split_to_array(substr(query,1,5000),E'\\s+'),' ') AS query
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
 --    JOIN pg_authid u ON u.oid = s.userid
 WHERE datname = current_database()

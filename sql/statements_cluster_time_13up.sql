@@ -9,7 +9,7 @@ SELECT
     to_char(sum(total_exec_time)      * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ')
 FROM 
-    pg_stat_statements s 
+    :svp_pgss.pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
 GROUP BY queryid, array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ')
 ORDER BY sum(total_exec_time) DESC

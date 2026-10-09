@@ -8,8 +8,8 @@ SELECT
         lpad(pg_size_pretty(((sum(temp_blks_read + temp_blks_written))/reset_days) * current_setting('block_size')::integer), 11) AS "Total Temp/Day",
         to_char(CURRENT_TIMESTAMP - stats_reset, 'DD-MM-YY hh24:mi') AS "Time since last Reset"
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
-    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE datname = current_database()
 GROUP BY r.reset_days, r.stats_reset,r.dealloc;

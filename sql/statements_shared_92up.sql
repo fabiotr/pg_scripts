@@ -21,7 +21,7 @@ lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::te
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND

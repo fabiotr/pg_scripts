@@ -11,7 +11,7 @@ SELECT
     trunc(sum(total_exec_time)/1000) total_exec_time_s,
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') AS "Query" 
 FROM 
-    pg_stat_statements s 
+    :svp_pgss.pg_stat_statements s 
     JOIN pg_database d ON d.oid = s.dbid 
 GROUP BY array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' '), queryid 
 HAVING sum(calls) > 0 AND sum(temp_blks_read) + sum(temp_blks_written) > 0
