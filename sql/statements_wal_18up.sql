@@ -13,7 +13,7 @@ SELECT
     lpad(to_char(wal_fpi::numeric/since_days,          'FM9G999G999'), 10)            AS "WAL FPI/Day", 
     lpad(to_char(wal_buffers_full::numeric/since_days, 'FM999G999'), 8)              AS "WAL full buffers/Day", 
     lpad(pg_size_pretty(nullif(wal_bytes::numeric/since_days,0)), 11)                 AS "WAL Size/Day",
-    to_char((total_exec_time + total_plan_time / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
+    to_char(((total_exec_time + total_plan_time) / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50 THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
