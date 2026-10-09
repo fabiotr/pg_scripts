@@ -1,21 +1,38 @@
 \ir variables.sql
 
 \if :svp_pg_90
-  -- The extension's own pg_stat_statements_reset(), schema qualified, so the check and
-  -- the call below use the same function wherever the extension is installed. 9.0 has
-  -- no extensions: plain name there.
+  -- The call to the extension's own pg_stat_statements_reset(), schema qualified and with
+  -- explicit arguments, so the check and the call use the same function wherever the
+  -- extension is installed and no other function with that name can make it ambiguous.
+  -- 0 means "all" for userid/dbid/queryid, and minmax_only (1.11+) is false. A signature
+  -- with other argument types isn't known here: then the check fails and nothing is reset.
+  -- 9.0 has no extensions: plain call there.
   \if :svp_pg_91
     SELECT
-      coalesce(max(quote_ident(n.nspname) || '.' || quote_ident(p.proname)), 'pg_stat_statements_reset') AS pgss_reset,
-      coalesce(max(p.oid::text), '0') AS pgss_reset_oid
-    FROM pg_proc p
-      JOIN pg_namespace n ON n.oid = p.pronamespace
-      JOIN pg_depend d    ON d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e'
-      JOIN pg_extension e ON e.oid = d.refobjid AND e.extname = 'pg_stat_statements'
-    WHERE p.proname = 'pg_stat_statements_reset'
+      coalesce(max(c.call), 'pg_stat_statements_reset()') AS pgss_reset_call,
+      coalesce(max(c.oid::text), '0') AS pgss_reset_oid
+    FROM (
+      SELECT
+        p.oid,
+        quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '(' || coalesce((
+          SELECT string_agg(CASE format_type(p.proargtypes[i], NULL)
+                              WHEN 'oid'     THEN '0::oid'
+                              WHEN 'bigint'  THEN '0::bigint'
+                              WHEN 'boolean' THEN 'false'
+                            END, ', ' ORDER BY i)
+          FROM generate_series(0, p.pronargs - 1) AS i), '') || ')' AS call,
+        (SELECT count(1) FROM generate_series(0, p.pronargs - 1) AS i
+         WHERE format_type(p.proargtypes[i], NULL) NOT IN ('oid', 'bigint', 'boolean')) AS unknown_args
+      FROM pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        JOIN pg_depend d    ON d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e'
+        JOIN pg_extension e ON e.oid = d.refobjid AND e.extname = 'pg_stat_statements'
+      WHERE p.proname = 'pg_stat_statements_reset'
+    ) AS c
+    WHERE c.unknown_args = 0
     \gset svp_
   \else
-    \set svp_pgss_reset pg_stat_statements_reset
+    \set svp_pgss_reset_call 'pg_stat_statements_reset()'
     \set svp_pgss_reset_oid 0
   \endif
 
