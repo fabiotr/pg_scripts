@@ -3,6 +3,7 @@ lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::te
     lpad(to_char((shared_blks_read + shared_blks_written) * 100 / nullif(sum(shared_blks_read + shared_blks_written) OVER (), 0),'FM99D09'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
     r.rolname AS "User",
+    queryid,
     lpad(to_char(calls::numeric, 'FM999G999G990D0'), 14) AS "Calls",
     --to_char(rows::numeric,    'FM999G999G999')   AS "Rows/Day",
     lpad(to_char(rows::numeric  / calls::numeric, 'FM999G990D0'), 10)     AS "Rows/Call",
