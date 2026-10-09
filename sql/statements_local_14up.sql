@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY local_blks_read + local_blks_written + local_blks_dirtied DESC) "N",
-    lpad(to_char(local_blks_read + local_blks_written + local_blks_dirtied * 100 / sum(nullif(local_blks_read + local_blks_written + local_blks_dirtied,0)) OVER (),'FM99D09'), 6) || '%' AS "local_%",
+    lpad(to_char((local_blks_read + local_blks_written + local_blks_dirtied) * 100 / nullif(sum(local_blks_read + local_blks_written + local_blks_dirtied) OVER (), 0),'FM99D09'), 6) || '%' AS "local_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
     lpad(to_char(calls::numeric/reset_days::numeric,'FM999G999G990D0'), 14) AS "Calls/Day",
