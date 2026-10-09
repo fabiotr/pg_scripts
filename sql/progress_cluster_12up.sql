@@ -32,7 +32,7 @@ SELECT
     trunc(heap_tuples_written::numeric * 100 / reltuples::numeric,1) AS "% Rows written",
     lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11) AS "Total Bytes",
     lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11) AS "Scanned Bytes",
-    (SELECT count(1) FROM pg_index AS i WHERE i.indexrelid = relid)        AS "Total indexes",
+    (SELECT count(1) FROM pg_index AS i WHERE i.indrelid = p.relid)        AS "Total indexes",
     index_rebuild_count                                                    AS "Rebuilt indexes"
 FROM  
     pg_stat_progress_cluster AS p
