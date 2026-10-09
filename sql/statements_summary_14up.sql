@@ -1,6 +1,6 @@
 SELECT
     lpad(CASE WHEN toplevel = FALSE THEN '* ' ELSE '' END || row_number() OVER (ORDER BY (total_exec_time + total_plan_time)/reset_days DESC),4)    AS "N",
-    lpad(to_char(((total_exec_time + total_plan_time)/reset_days) * 100 / sum((total_exec_time + total_plan_time)/reset_days) OVER (),'FM90D00'),6) AS "Load %",
+    lpad(to_char(((total_exec_time + total_plan_time)/reset_days) * 100 / nullif(sum((total_exec_time + total_plan_time)/reset_days) OVER (), 0),'FM90D00'),6) AS "Load %",
     userid::regrole AS "User",
     queryid AS "Query ID",
     lpad(to_char((calls::numeric/reset_days::numeric),'FM999G999G990D0'),14) AS "Calls/Day",

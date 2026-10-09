@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY total_time DESC) "N",
-    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D09'), 6) || '%' AS "load_%",
+    lpad(to_char(total_time*100/ nullif(sum(total_time) OVER (), 0),'FM99D09'), 6) || '%' AS "load_%",
     queryid,
     array_to_string(regexp_split_to_array(substr(query,1,5000),E'\\s+'),' ') AS query
 FROM

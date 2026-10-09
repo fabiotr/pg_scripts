@@ -1,6 +1,6 @@
 SELECT                                  
     lpad(row_number() OVER (ORDER BY wal_bytes DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char(wal_bytes * 100 / sum(wal_bytes) OVER (),'FM90D00'), 6) || '%' AS "WAL %",
+    lpad(to_char(wal_bytes * 100 / nullif(sum(wal_bytes) OVER (), 0),'FM90D00'), 6) || '%' AS "WAL %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,

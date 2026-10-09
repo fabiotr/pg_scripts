@@ -1,8 +1,7 @@
 SELECT
     lpad(row_number() OVER (ORDER BY jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC)::text, 2) || 
         CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / 
-    sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (),'FM99D09'), 6) || '%' AS "Jit %",
+    lpad(to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / nullif(sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (), 0),'FM99D09'), 6) || '%' AS "Jit %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
