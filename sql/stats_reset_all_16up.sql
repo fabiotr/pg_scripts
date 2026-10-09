@@ -31,7 +31,7 @@ SELECT
 
 \if :svp_lib
   \if :svp_ext
-    SELECT pg_stat_statements_reset() AS statements
+    SELECT :svp_pgss_reset() AS statements
     \gset svp_
   \endif
 \endif
