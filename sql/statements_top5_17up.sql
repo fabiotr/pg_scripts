@@ -1,6 +1,6 @@
 SELECT 
     row_number() over(ORDER BY total_exec_time + total_plan_time DESC) "N", 
-    lpad(to_char((total_exec_time + total_plan_time) * 100/sum(total_exec_time + total_plan_time) OVER (),'FM90D00'), 6) || '%' AS "load_%",
+    lpad(to_char((total_exec_time + total_plan_time) * 100/ nullif(sum(total_exec_time + total_plan_time) OVER (), 0),'FM90D00'), 6) || '%' AS "load_%",
     queryid id, 
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",

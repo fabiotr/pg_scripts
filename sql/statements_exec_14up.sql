@@ -1,6 +1,6 @@
 SELECT
     lpad(row_number() OVER (ORDER BY total_exec_time DESC)::text, 2)  || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char(total_exec_time*100/sum(total_exec_time) OVER (),'FM99D09'), 6) || '%' AS "load_%",
+    lpad(to_char(total_exec_time*100/ nullif(sum(total_exec_time) OVER (), 0),'FM99D09'), 6) || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,

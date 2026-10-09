@@ -1,7 +1,6 @@
 SELECT
     lpad(row_number() over(ORDER BY coalesce(local_blks_read,0) + coalesce(local_blks_written,0) DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / 
-        sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (),'FM99D09'), 6) || '%' AS "I/O %",
+    lpad(to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / nullif(sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (), 0),'FM99D09'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,

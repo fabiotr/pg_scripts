@@ -1,6 +1,6 @@
 SELECT
     lpad(row_number() OVER (ORDER BY total_plan_time DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char(total_plan_time*100/sum(total_plan_time) OVER (),'FM90D00'), 6) || '%' AS "load_%",
+    lpad(to_char(total_plan_time*100/ nullif(sum(total_plan_time) OVER (), 0),'FM90D00'), 6) || '%' AS "load_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
