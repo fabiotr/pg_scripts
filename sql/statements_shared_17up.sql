@@ -24,7 +24,7 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE
         THEN to_char(((shared_blk_read_time + shared_blk_write_time + local_blk_read_time + local_blk_write_time + temp_blk_read_time + temp_blk_write_time)/since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS')
         ELSE NULL END AS "I/O Time/Day",
-    to_char((total_exec_time + total_plan_time / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
+    to_char(((total_exec_time + total_plan_time) / since_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Total Time/Day",
     CASE WHEN stats_since - stats_reset < (CURRENT_TIMESTAMP - stats_reset) / 50 
 	THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') ||
