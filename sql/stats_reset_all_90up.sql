@@ -4,7 +4,7 @@ SELECT
 \gset svp_
 
 \if :svp_lib
-  SELECT pg_stat_statements_reset() AS statements
+  SELECT :svp_pgss_reset_call AS statements
   \gset svp_
 \endif 
 
