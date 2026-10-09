@@ -80,10 +80,17 @@ SELECT
   \set svp_subscription FALSE
 \endif
 
--- pg_ls_tmpdir() needs pg_monitor (or superuser) to run
-\if :svp_pg_12
-  SELECT has_function_privilege('pg_catalog.pg_ls_tmpdir(oid)', 'EXECUTE') AS ls_tmpdir
-  \gset svp_
-\else
-  \set svp_ls_tmpdir FALSE
-\endif
+-- Functions and views that need an extension or more than the default privileges
+-- (pg_monitor, pg_stat_scan_tables, pg_read_all_stats or superuser): TRUE when they
+-- exist and the user can use them. Looked up by name, so it works on every version.
+SELECT
+     EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pg_ls_tmpdir'       AND has_function_privilege(oid, 'EXECUTE')) AS ls_tmpdir
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pg_ls_waldir'       AND has_function_privilege(oid, 'EXECUTE')) AS ls_waldir
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pg_ls_logdir'       AND has_function_privilege(oid, 'EXECUTE')) AS ls_logdir
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatindex'        AND has_function_privilege(oid, 'EXECUTE')) AS pgstatindex
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatginindex'     AND has_function_privilege(oid, 'EXECUTE')) AS pgstatginindex
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstathashindex'    AND has_function_privilege(oid, 'EXECUTE')) AS pgstathashindex
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstattuple_approx' AND has_function_privilege(oid, 'EXECUTE')) AS pgstattuple_approx
+    ,EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE n.nspname = 'pg_catalog' AND c.relname = 'pg_shmem_allocations' AND has_table_privilege(c.oid, 'SELECT')) AS shmem_allocations
+\gset svp_
