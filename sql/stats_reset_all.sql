@@ -2,21 +2,24 @@
 
 \if :svp_pg_90
   -- Check every reset function this version calls before resetting anything, so
-  -- a missing privilege can't leave the stats half reset. A function this version
+  -- a missing privilege can't leave the stats half reset. A core function this version
   -- doesn't have (to_regprocedure() is NULL) or that the branches below skip counts as OK.
   \if :svp_pg_10
     SELECT
           coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_reset()'),           'EXECUTE'), TRUE)
       AND coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_reset_shared(text)'), 'EXECUTE'), TRUE)
-      AND (NOT :'svp_not_gcp'::boolean
+      -- 17+ resets the SLRU stats with pg_stat_reset_shared() and doesn't call pg_stat_reset_slru()
+      AND (:'svp_pg_17'::boolean OR NOT :'svp_not_gcp'::boolean
            OR coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_reset_slru(text)'), 'EXECUTE'), TRUE))
       AND (NOT :'svp_not_rds'::boolean OR NOT :'svp_not_gcp'::boolean
            OR coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_reset_replication_slot(text)'), 'EXECUTE'), TRUE))
       AND (NOT :'svp_not_rds'::boolean
            OR coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_reset_subscription_stats(oid)'), 'EXECUTE'), TRUE))
+      -- the extension can live in a schema outside search_path, where the unqualified
+      -- call won't find it: then it is FALSE
       AND (NOT :'svp_lib'::boolean OR NOT :'svp_ext'::boolean
            OR coalesce((SELECT bool_and(has_function_privilege(oid, 'EXECUTE')) FROM pg_proc
-                        WHERE proname = 'pg_stat_statements_reset' AND pg_function_is_visible(oid)), TRUE)) AS reset_ok
+                        WHERE proname = 'pg_stat_statements_reset' AND pg_function_is_visible(oid)), FALSE)) AS reset_ok
     \gset svp_
   \else
     -- before 10 the reset functions check for superuser in their own code
@@ -75,7 +78,7 @@
     RESET client_min_messages;
     \pset footer on
   \else
-    \qecho - Needs superuser (or EXECUTE on every pg_stat_reset*() function and pg_stat_statements_reset()): nothing was reset
+    \qecho - Needs superuser (or EXECUTE on every pg_stat_reset*() function and pg_stat_statements_reset(), which must be on the search_path): nothing was reset
   \endif
 \else
   \qecho - Not supported on version :svp_server_version
