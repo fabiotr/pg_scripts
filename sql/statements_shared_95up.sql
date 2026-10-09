@@ -2,7 +2,8 @@ SELECT
 lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::text, 2) AS "N",
     lpad(to_char((shared_blks_read + shared_blks_written) * 100 / nullif(sum(shared_blks_read + shared_blks_written) OVER (), 0),'FM99D09'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
-    r.rolname AS "User",
+    userid::regrole AS "User",
+    queryid,
     lpad(to_char(calls::numeric, 'FM999G999G990D0'), 14) AS "Calls",
     --to_char(rows::numeric,    'FM999G999G999')   AS "Rows/Day",
     lpad(to_char(rows::numeric  / calls::numeric, 'FM999G990D0'), 10)     AS "Rows/Call",
@@ -22,7 +23,6 @@ lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::te
 FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
-    JOIN pg_roles r ON r.oid = s.userid
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
     datname = current_database()
