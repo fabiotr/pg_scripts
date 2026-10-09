@@ -38,6 +38,16 @@ SELECT
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'cloudsqladmin')                                       AS not_gcp
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_database WHERE datname = 'rdsadmin')                                            AS not_rds
     ,(SELECT CASE WHEN count(1) = 0 THEN TRUE ELSE FALSE END FROM pg_settings WHERE name = 'aurora_compute_plan_id')                                 AS not_aurora
+    -- Schema of the pg_stat_statements view, which the scripts use as :svp_pgss.pg_stat_statements so
+    -- it works wherever the extension (or, before 9.1, the contrib SQL) was installed: the
+    -- extension's own view first, then the one on search_path. public when there is none.
+    ,coalesce((SELECT quote_ident(n.nspname)
+               FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE c.relname = 'pg_stat_statements' AND c.relkind = 'v'
+               ORDER BY EXISTS (SELECT 1 FROM pg_depend d
+                                WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid AND d.deptype = 'e') DESC,
+                        pg_table_is_visible(c.oid) DESC
+               LIMIT 1), 'public')                                                                                                       AS pgss
 \gset svp_
 
 --Some variables exists only above specific PG versions
