@@ -6,7 +6,6 @@
   -- extension is installed and no other function with that name can make it ambiguous.
   -- 0 means "all" for userid/dbid/queryid, and minmax_only (1.11+) is false. A signature
   -- with other argument types isn't known here: then the check fails and nothing is reset.
-  -- 9.0 has no extensions: plain call there.
   \if :svp_pg_91
     SELECT
       coalesce(max(c.call), 'pg_stat_statements_reset()') AS pgss_reset_call,
@@ -32,8 +31,15 @@
     WHERE c.unknown_args = 0
     \gset svp_
   \else
-    \set svp_pgss_reset_call 'pg_stat_statements_reset()'
-    \set svp_pgss_reset_oid 0
+    -- 9.0 has no extensions: the contrib SQL is installed in each database on its own,
+    -- so take the zero-argument function this database has through search_path, if any
+    SELECT
+      coalesce(max(quote_ident(n.nspname) || '.' || quote_ident(p.proname) || '()'), 'pg_stat_statements_reset()') AS pgss_reset_call,
+      coalesce(max(p.oid::text), '0') AS pgss_reset_oid
+    FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE p.proname = 'pg_stat_statements_reset' AND p.pronargs = 0 AND pg_function_is_visible(p.oid)
+    \gset svp_
   \endif
 
   -- Check every reset function this version calls before resetting anything, so
@@ -54,8 +60,18 @@
            OR (:'svp_pgss_reset_oid'::oid <> 0 AND has_function_privilege(:'svp_pgss_reset_oid'::oid, 'EXECUTE'))) AS reset_ok
     \gset svp_
   \else
-    -- before 10 the reset functions check for superuser in their own code
-    \set svp_reset_ok :svp_rol_super
+    -- before 10 the reset functions check for superuser in their own code; the versioned
+    -- files call pg_stat_statements_reset() when svp_lib (and svp_ext from 9.1), so it
+    -- must have been found
+    \if :svp_pg_91
+      SELECT :'svp_rol_super'::boolean
+         AND (NOT :'svp_lib'::boolean OR NOT :'svp_ext'::boolean OR :'svp_pgss_reset_oid'::oid <> 0) AS reset_ok
+      \gset svp_
+    \else
+      SELECT :'svp_rol_super'::boolean
+         AND (NOT :'svp_lib'::boolean OR :'svp_pgss_reset_oid'::oid <> 0) AS reset_ok
+      \gset svp_
+    \endif
   \endif
 
   \if :svp_reset_ok
