@@ -1,12 +1,17 @@
 \set QUIET ON
 \set COMP_KEYWORD_CASE upper
 \pset null '(null)'
-SELECT current_setting('server_version_num')::int >=  90200  AS pg_92
+SELECT current_setting('server_version_num')::int >=  90200  AS pg_92,
+       :VERSION_NUM >= 160000                                AS psql_16
 \gset svp_
-\if :svp_pg_92
+-- xheader_width is a psql 16+ option: it depends on the client, not the server
+\if :svp_psql_16
     \pset xheader_width 1
-    \getenv home HOME
-    \cd :home/pg_scripts/sql
+\endif
+\if :svp_pg_92
+    -- psql's \cd doesn't expand ~, and \getenv is psql 15+: the shell works with every client
+    \set svp_sql_dir `echo $HOME/pg_scripts/sql`
+    \cd :svp_sql_dir
 \endif
 
 --\set HISTFILE ~/.psql_history-:HOST
