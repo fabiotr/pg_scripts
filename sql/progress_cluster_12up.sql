@@ -27,12 +27,18 @@ SELECT
     CASE WHEN :'svp_ls_tmpdir'::boolean
       THEN coalesce(tmp.files, 0) || ' / ' || lpad(pg_size_pretty(coalesce(tmp.bytes, 0)), 11)
       ELSE 'needs pg_monitor' END AS "Temp files (Qty/Size)",
-    c.reltuples AS "Total tuples",
-    trunc(heap_tuples_scanned::numeric * 100 / reltuples::numeric,1) AS "% Rows scanned",
-    trunc(heap_tuples_written::numeric * 100 / reltuples::numeric,1) AS "% Rows written",
-    lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11) AS "Total Bytes",
-    lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11) AS "Scanned Bytes",
-    (SELECT count(1) FROM pg_index AS i WHERE i.indexrelid = relid)        AS "Total indexes",
+    -- reltuples is 0 when the table was analyzed empty and -1 (PG 14+) when it was never analyzed
+    nullif(c.reltuples, -1) AS "Total tuples",
+    trunc(heap_tuples_scanned::numeric * 100 / nullif(greatest(c.reltuples, 0), 0)::numeric,1) AS "% Rows scanned",
+    trunc(heap_tuples_written::numeric * 100 / nullif(greatest(c.reltuples, 0), 0)::numeric,1) AS "% Rows written",
+    -- heap_blks_* are only reported by a seq scan of the heap; cluster_index_relid is set only by an index scan
+    CASE WHEN cluster_index_relid = 0
+      THEN lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11)
+      ELSE lpad('n/a', 11) END AS "Total Bytes",
+    CASE WHEN cluster_index_relid = 0
+      THEN lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11)
+      ELSE lpad('n/a', 11) END AS "Scanned Bytes",
+    (SELECT count(1) FROM pg_index AS i WHERE i.indrelid = p.relid)        AS "Total indexes",
     index_rebuild_count                                                    AS "Rebuilt indexes"
 FROM  
     pg_stat_progress_cluster AS p
