@@ -25,8 +25,8 @@ SELECT
     lpad(pg_size_pretty(trunc((nullif((sum(local_blks_read + local_blks_written))::numeric,0) / reset_days) * current_setting('block_size')::integer)), 11) AS "Local/Day",
     lpad(pg_size_pretty(trunc((nullif((sum(temp_blks_read  + temp_blks_written))::numeric,0)  / reset_days) * current_setting('block_size')::integer)), 11) AS "Temp/Day"
 FROM
-    pg_stat_statements s
+    :svp_pgss.pg_stat_statements s
     JOIN pg_roles u ON u.oid = s.userid,
-    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM pg_stat_statements_info) AS r
+    (SELECT dealloc, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days, stats_reset FROM :svp_pgss.pg_stat_statements_info) AS r
 GROUP BY u.rolname, r.reset_days, r.stats_reset, r.dealloc
 ORDER BY sum(total_exec_time + total_plan_time)  DESC;

@@ -6,9 +6,9 @@ SELECT
         THEN NULL ELSE to_char(stats_since, 'YYYY-MM-DD HH24:MI') END AS "Stats",
     array_to_string(regexp_split_to_array(query,E'\\s+'),' ') AS query
 FROM 
-     (SELECT *, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM pg_stat_statements) AS s
+     (SELECT *, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_since)::numeric/(60*60*24) AS since_days FROM :svp_pgss.pg_stat_statements) AS s
     JOIN pg_database AS d ON d.oid = s.dbid,
-    (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_statements_info) AS r
+    (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE datname = current_database()
 ORDER BY total_exec_time + total_plan_time DESC
 LIMIT 5;
