@@ -31,8 +31,13 @@ SELECT
     nullif(c.reltuples, -1) AS "Total tuples",
     trunc(heap_tuples_scanned::numeric * 100 / nullif(greatest(c.reltuples, 0), 0)::numeric,1) AS "% Rows scanned",
     trunc(heap_tuples_written::numeric * 100 / nullif(greatest(c.reltuples, 0), 0)::numeric,1) AS "% Rows written",
-    lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11) AS "Total Bytes",
-    lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11) AS "Scanned Bytes",
+    -- heap_blks_* are only reported by a seq scan of the heap, not by an index scan
+    CASE WHEN heap_blks_total > 0
+      THEN lpad(pg_size_pretty(heap_blks_total   * current_setting('block_size')::int), 11)
+      ELSE lpad('n/a', 11) END AS "Total Bytes",
+    CASE WHEN heap_blks_total > 0
+      THEN lpad(pg_size_pretty(heap_blks_scanned * current_setting('block_size')::int), 11)
+      ELSE lpad('n/a', 11) END AS "Scanned Bytes",
     (SELECT count(1) FROM pg_index AS i WHERE i.indrelid = p.relid)        AS "Total indexes",
     index_rebuild_count                                                    AS "Rebuilt indexes"
 FROM  
