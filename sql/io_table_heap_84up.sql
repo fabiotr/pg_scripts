@@ -5,8 +5,8 @@ SELECT
 	lpad(pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_hit)::bigint), 11)  AS "Hit",
 	lpad(pg_size_pretty(trunc(current_setting('block_size')::bigint * heap_blks_read)::bigint), 11) AS "Read",
 	CASE heap_blks_hit WHEN 0 THEN NULL ELSE trunc(heap_blks_hit::numeric*100 / (heap_blks_hit + heap_blks_read),1) END AS "Hit %" ,
-	trunc(100 * heap_blks_hit  / sum(heap_blks_hit)  OVER(),1) AS "Hit/Tot %", 
-	trunc(100 * heap_blks_read / sum(heap_blks_read) OVER(),1) AS "Read/Tot %"
+	trunc(100 * heap_blks_hit  / nullif(sum(heap_blks_hit)  OVER(), 0),1) AS "Hit/Tot %", 
+	trunc(100 * heap_blks_read / nullif(sum(heap_blks_read) OVER(), 0),1) AS "Read/Tot %"
 FROM pg_statio_all_tables
 WHERE schemaname != 'pg_toast'
 ORDER BY heap_blks_read DESC 

@@ -1,7 +1,7 @@
 SET escape_string_warning TO off;
 SELECT
     row_number() over(ORDER BY total_time DESC) "N",
-    lpad(to_char(total_time*100/sum(total_time) OVER (),'FM99D09'), 6) || '%' AS "load_%",
+    lpad(to_char(total_time*100/ nullif(sum(total_time) OVER (), 0),'FM99D09'), 6) || '%' AS "load_%",
     datname AS db,
     rolname AS "User",
     lpad(to_char(calls,'FM999G999G999G999'), 16) AS calls,
