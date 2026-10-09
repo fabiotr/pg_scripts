@@ -12,7 +12,7 @@ SELECT
     lpad(to_char(jit_inlining_count::numeric     / reset_days::numeric, 'FM999G999G990D0'), 14) AS "Inlinings/Day",
     lpad(to_char(jit_optimization_count::numeric / reset_days::numeric, 'FM999G999G990D0'), 14) AS "Optimizations/Day",
     lpad(to_char(jit_emission_count::numeric     / reset_days::numeric, 'FM999G999G990D0'), 14) AS "Emissions/Day",
-    to_char((total_exec_time + total_plan_time / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Query Time/Day",
+    to_char(((total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Query Time/Day",
     to_char((jit_generation_time               / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Generation/Day",
     to_char((jit_inlining_time                 / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Inlining/Day",
     to_char((jit_optimization_time             / reset_days) * INTERVAL '1 millisecond', 'HH24:MI:SS') AS "Optimization/Day",
