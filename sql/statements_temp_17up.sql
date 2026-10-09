@@ -15,7 +15,7 @@ SELECT
     CASE WHEN current_setting('track_io_timing')::BOOLEAN = TRUE 
         THEN ((shared_blk_read_time + shared_blk_write_time + local_blk_read_time + local_blk_write_time + temp_blk_read_time + temp_blk_write_time)/since_days) * INTERVAL '1 millisecond'
         ELSE NULL END AS "I/O Time/Day",
-    trunc(total_exec_time + total_plan_time / (1000 * reset_days)) * INTERVAL '1 millisecond' AS "Total Time/Day",
+    trunc((total_exec_time + total_plan_time) / reset_days) * INTERVAL '1 millisecond' AS "Total Time/Day",
     array_to_string(regexp_split_to_array(substr(query,1,50),E'\\s+'),' ') || 
         CASE WHEN length(query) > 50 THEN '...' ELSE '' END AS query
 FROM 
