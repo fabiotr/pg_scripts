@@ -80,10 +80,34 @@ SELECT
   \set svp_subscription FALSE
 \endif
 
--- pg_ls_tmpdir() needs pg_monitor (or superuser) to run
-\if :svp_pg_12
-  SELECT has_function_privilege('pg_catalog.pg_ls_tmpdir(oid)', 'EXECUTE') AS ls_tmpdir
+-- Functions and views that need an extension or more than the default privileges
+-- (pg_monitor, pg_stat_scan_tables, pg_read_all_stats or superuser): TRUE when the
+-- one the scripts call exists and the user can use it.
+\if :svp_pg_94
+  -- to_regprocedure() / to_regclass() resolve the exact signature through search_path,
+  -- like the call in the script, and give NULL when it doesn't exist
+  SELECT
+     coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_tmpdir(oid)'),   'EXECUTE'), FALSE) AS ls_tmpdir
+    ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_waldir()'),      'EXECUTE'), FALSE) AS ls_waldir
+    ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_logdir()'),      'EXECUTE'), FALSE) AS ls_logdir
+    ,coalesce(has_function_privilege(to_regprocedure('pgstatindex(regclass)'),          'EXECUTE'), FALSE) AS pgstatindex
+    ,coalesce(has_function_privilege(to_regprocedure('pgstatginindex(regclass)'),       'EXECUTE'), FALSE) AS pgstatginindex
+    ,coalesce(has_function_privilege(to_regprocedure('pgstathashindex(regclass)'),      'EXECUTE'), FALSE) AS pgstathashindex
+    ,coalesce(has_function_privilege(to_regprocedure('pgstattuple_approx(regclass)'),   'EXECUTE'), FALSE) AS pgstattuple_approx
+    ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_shmem_allocations'),       'SELECT'),  FALSE) AS shmem_allocations
   \gset svp_
 \else
+  -- Before 9.4 the scripts only call pgstatindex(text) and pgstatginindex(regclass)
+  SELECT
+     EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatindex'    AND oidvectortypes(proargtypes) = 'text'
+             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatindex
+    ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatginindex' AND oidvectortypes(proargtypes) = 'regclass'
+             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatginindex
+  \gset svp_
   \set svp_ls_tmpdir FALSE
+  \set svp_ls_waldir FALSE
+  \set svp_ls_logdir FALSE
+  \set svp_pgstathashindex FALSE
+  \set svp_pgstattuple_approx FALSE
+  \set svp_shmem_allocations FALSE
 \endif
