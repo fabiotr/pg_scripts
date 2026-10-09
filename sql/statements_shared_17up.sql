@@ -1,7 +1,6 @@
 SELECT
     lpad(row_number() OVER (ORDER BY coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char((coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0)) * 100 / 
-        sum(coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0)) OVER (),'FM90D00'), 6) || '%' AS "I/O %",
+    lpad(to_char((coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0)) * 100 / nullif(sum(coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0)) OVER (), 0),'FM90D00'), 6) || '%' AS "I/O %",
     userid::regrole AS "User",
     queryid,
     lpad(to_char(calls::numeric / since_days::numeric, 'FM999G999G990D0'), 14) AS "Calls/Day",

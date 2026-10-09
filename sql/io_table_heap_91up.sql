@@ -6,8 +6,8 @@ SELECT
 	lpad(pg_size_pretty(round((current_setting('block_size')::bigint * heap_blks_hit)  / reset_days)::bigint),11) AS "Hit/Day",
 	lpad(pg_size_pretty(round((current_setting('block_size')::bigint * heap_blks_read) / reset_days)::bigint),11) AS "Read/Day",
 	CASE heap_blks_hit WHEN 0 THEN NULL ELSE trunc(heap_blks_hit::numeric*100 / (heap_blks_hit + heap_blks_read),1) END AS "Hit %" ,
-	round(100 * heap_blks_hit  / sum(heap_blks_hit)  OVER(),1) AS "Hit/Tot %", 
-	round(100 * heap_blks_read / sum(heap_blks_read) OVER(),1) AS "Read/Tot %"
+	round(100 * heap_blks_hit  / nullif(sum(heap_blks_hit)  OVER(), 0),1) AS "Hit/Tot %", 
+	round(100 * heap_blks_read / nullif(sum(heap_blks_read) OVER(), 0),1) AS "Read/Tot %"
 FROM 
 	pg_statio_all_tables
 	JOIN (SELECT datname, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()

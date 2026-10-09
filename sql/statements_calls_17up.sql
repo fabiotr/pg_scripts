@@ -1,6 +1,6 @@
 SELECT
     lpad(row_number() over(ORDER BY calls DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END "N",
-    lpad(to_char(calls*100/sum(calls) OVER (),'FM90D00'), 6) || '%' AS "Calls_%",
+    lpad(to_char(calls*100/ nullif(sum(calls) OVER (), 0),'FM90D00'), 6) || '%' AS "Calls_%",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
