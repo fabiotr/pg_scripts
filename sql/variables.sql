@@ -79,3 +79,11 @@ SELECT
   \set svp_publication FALSE
   \set svp_subscription FALSE
 \endif
+
+-- pg_ls_tmpdir() needs pg_monitor (or superuser) to run
+\if :svp_pg_12
+  SELECT has_function_privilege('pg_catalog.pg_ls_tmpdir(oid)', 'EXECUTE') AS ls_tmpdir
+  \gset svp_
+\else
+  \set svp_ls_tmpdir FALSE
+\endif
