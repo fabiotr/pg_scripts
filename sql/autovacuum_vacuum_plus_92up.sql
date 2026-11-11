@@ -14,21 +14,24 @@ SELECT
     lpad(CASE tt.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(trunc((pg_relation_size(tt.relid, 'main')::NUMERIC*tt.n_dead_tup::NUMERIC)/(tt.n_live_tup+tt.n_dead_tup)::NUMERIC)) END, 11) "Dead T Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END "D%", 
     CASE tt.n_live_tup WHEN 0 THEN 0 ELSE trunc(tt.n_dead_tup*100::NUMERIC/(tt.n_live_tup+tt.n_dead_tup)::NUMERIC,3) END "D T%", 
-    trunc(to_number(coalesce(sc.scale,s.setting), '99.99999') * 100 ,3) "S%",
-    trunc(to_number(coalesce(sct.scale,sc.scale,s.setting),'99.99999') * 100,3) "S T%",
+    trunc(to_number(coalesce(c.scale,s.setting), '99.99999') * 100 ,3) "S%",
+    trunc(to_number(coalesce(ct.scale,c.scale,s.setting),'99.99999') * 100,3) "S T%",
     to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS') 
         || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END "Last",
     t.autovacuum_count "Qt A",
     CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - d.stats_reset) / t.autovacuum_count,'DD HH24:MI:SS') END "Avg time",
-    CASE WHEN NOT e.enabled THEN 'X' END "disabled"
+    CASE WHEN NOT c.enabled THEN 'X' END "disabled"
 FROM 
     pg_stat_all_tables t
-    JOIN pg_class c ON t.relid = c.oid
-    LEFT JOIN pg_class ct ON c.reltoastrelid = ct.oid
+    -- reloptions read with scalar subqueries: LATERAL only exists from 9.3
+    JOIN (SELECT oid, relname, reltoastrelid,
+            (SELECT option_value FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS scale,
+            (SELECT FALSE FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') AS enabled
+        FROM pg_class) c ON t.relid = c.oid
+    LEFT JOIN (SELECT oid,
+            (SELECT option_value FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS scale
+        FROM pg_class) ct ON c.reltoastrelid = ct.oid
     LEFT JOIN pg_stat_all_tables tt ON tt.relid = ct.oid
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sc ON TRUE
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table(ct.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') sct ON TRUE
-    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table(c.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON TRUE
     JOIN pg_stat_database d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
@@ -36,7 +39,7 @@ WHERE
     t.n_live_tup > 0 AND
     t.n_tup_del + t.n_tup_upd > 1000 AND
     t.n_dead_tup >  1000 
-    OR e.enabled = FALSE
-ORDER BY e.enabled, CASE t.n_live_tup WHEN 0 THEN 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+    OR c.enabled = FALSE
+ORDER BY c.enabled, CASE t.n_live_tup WHEN 0 THEN 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
 LIMIT 40;
 
