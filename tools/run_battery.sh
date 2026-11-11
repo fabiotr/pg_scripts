@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Test battery for one PostgreSQL server: runs every entry script in sql/
+# (dispatchers and unversioned files, not the _VVup/_VV- implementations) and
+# both reports (reports/generate_reports.sh), and records for each one the exit
+# code, output lines and ERROR / FATAL / timeout counts. tools/check_battery.py
+# then compares the results with tools/known_failures.csv.
+#
+# Requirements: bash 4+, psql 10+ in PATH (the scripts need \if; any server
+# 8.2 -> 18), GNU timeout (`timeout` or Homebrew's `gtimeout`), a superuser
+# connection through the usual libpq variables (PGHOST, PGPORT, PGUSER,
+# PGSERVICE...). The reports go through a pg_service.conf entry (-S or
+# PGSERVICE); without one they are skipped.
+#
+# Important: for THROWAWAY test clusters only. The battery runs everything,
+# including kill_* (terminates sessions), stats_reset_all (resets statistics),
+# pgbouncer_fdw (creates a schema) and the \gexec scripts, which really act on
+# the server.
+#
+# Usage: tools/run_battery.sh [options]
+#   -o, --out DIR        output directory (default: battery_out/<version>)
+#   -d, --dbname DB      database to run the scripts on (default: the fixture's
+#                        database with --fixture, else PGDATABASE or postgres)
+#   -f, --fixture        build/load tools/fixture.sh first and keep its
+#                        background sessions running during the battery
+#   -s, --scripts LIST   only these entry scripts (names without .sql, space
+#                        separated)
+#   -S, --service NAME   pg_service.conf entry for the reports (default PGSERVICE)
+#   -R, --no-reports     skip the reports
+#   -t, --timeout SECS   per-script timeout (default 120)
+#   -h, --help
+# Output: DIR/results.csv (version,script,rc,lines,errors,fatal,timeout,
+#         not_supported,needs,md5), DIR/<script>.out, DIR/reports/ +
+#         reports.log, DIR/fixture.log
+# Example: PGSERVICE=pg16 tools/run_battery.sh --fixture -o /tmp/battery/16
+#          tools/check_battery.py /tmp/battery
+set -euo pipefail
+
+usage() { sed -n '2,/^set -euo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+OUT=""; DB=""; FIXTURE=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o|--out) OUT=$2; shift 2 ;;
+    -d|--dbname) DB=$2; shift 2 ;;
+    -f|--fixture) FIXTURE=1; shift ;;
+    -s|--scripts) ONLY=$2; shift 2 ;;
+    -S|--service) SERVICE=$2; shift 2 ;;
+    -R|--no-reports) NO_REPORTS=1; shift ;;
+    -t|--timeout) TMO=$2; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown option: $1 (see --help)" >&2; exit 2 ;;
+  esac
+done
+
+die() { echo "run_battery: $*" >&2; exit 2; }
+# ERROR/FATAL are counted by their English text: no translated messages,
+# neither from psql nor from the server
+export LC_ALL=C PGOPTIONS="${PGOPTIONS:+$PGOPTIONS }-c lc_messages=C"
+if command -v timeout >/dev/null && timeout --version >/dev/null 2>&1; then TIMEOUT=timeout
+elif command -v gtimeout >/dev/null; then TIMEOUT=gtimeout
+else die "needs GNU timeout (Linux coreutils, or 'brew install coreutils' for gtimeout)"; fi
+if command -v md5sum >/dev/null; then md5f() { md5sum < "$1" | cut -d' ' -f1; }; else md5f() { md5 -q "$1"; }; fi
+command -v psql >/dev/null || die "needs psql in PATH"
+[[ $(psql --version | sed -E 's/^[^0-9]*([0-9]+).*/\1/') -ge 10 ]] || die "needs psql 10+ in PATH (the scripts use \\if)"
+if [[ -n "$FIXTURE" ]]; then DB=${DB:-${FIXDB:-fixdb}}; export FIXDB=$DB; else DB=${DB:-${PGDATABASE:-postgres}}; fi
+svn=$(psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) || die "cannot connect (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
+if [[ $svn -ge 100000 ]]; then v=$(( svn / 10000 )); else v=$(( svn / 10000 * 10 + svn / 100 % 100 )); fi
+OUT=${OUT:-battery_out/$v}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
+
+if [[ -n "$ONLY" ]]; then SCRIPTS=$(for s in $ONLY; do echo "$s.sql"; done)
+else SCRIPTS=$(cd "$REPO/sql" && ls *.sql | grep -vE '_[0-9]{2}(up|-)\.sql$'); fi
+
+fix() { "$REPO/tools/fixture.sh" "$@" >> "$OUT/fixture.log" 2>&1; }
+CSV="$OUT/results.csv"
+echo "version,script,rc,lines,errors,fatal,timeout,not_supported,needs,md5" > "$CSV"
+if [[ -n "$FIXTURE" ]]; then
+  : > "$OUT/fixture.log"
+  trap 'fix stop || true' EXIT
+  if ! { fix && fix start; }; then
+    echo "$v,FIXTURE,1,0,1,0,0,0,0," >> "$CSV"
+    echo "pg$v: fixture failed (see $OUT/fixture.log)" >&2
+  fi
+fi
+
+cnt() { grep -c "$1" "$2" || true; }
+for s in $SCRIPTS; do
+  o="$OUT/${s%.sql}.out"; rc=0
+  (cd "$REPO/sql" && "$TIMEOUT" "$TMO" psql -X -d "$DB" -f "$s" </dev/null > "$o" 2>&1) || rc=$?
+  to=0; [[ $rc -eq 124 ]] && to=1
+  echo "$v,${s%.sql},$rc,$(wc -l < "$o" | tr -d ' '),$(cnt 'ERROR:' "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+done
+
+if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
+  if [[ -z "$SERVICE" ]]; then
+    echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2
+  else
+    # stats_reset_all emptied pg_stat_statements: load it again for the reports
+    [[ -n "$FIXTURE" ]] && { fix load || true; }
+    rrc=0
+    (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" -o "$OUT/reports" "$SERVICE") \
+      </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
+    md=$(cat "$OUT"/reports/*/*.md 2>/dev/null || true)
+    echo "$v,REPORTS,$rrc,$(printf '%s' "$md" | grep -c '' || true),$(printf '%s' "$md" | grep -c 'ERROR:' || true),$(cnt 'FATAL:' "$OUT/reports.log"),0,0,0,$(ls "$OUT"/reports/*/*.md 2>/dev/null | wc -l | tr -d ' ')" >> "$CSV"
+  fi
+fi
+bad=$(awk -F, 'NR > 1 && ($5 > 0 || $6 > 0 || $7 > 0 || ($2 == "REPORTS" && $3 != 0))' "$CSV" | wc -l | tr -d ' ')
+echo "pg$v: $(( $(wc -l < "$CSV") - 1 )) runs, $bad with ERROR/FATAL/timeout -> $CSV"
