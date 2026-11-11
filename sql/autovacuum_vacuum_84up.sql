@@ -7,23 +7,25 @@ SELECT
     lpad(pg_size_pretty(pg_relation_size(t.relid)), 11) AS "Size",
     lpad(CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END, 11) AS "Dead Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END AS "D%", 
-    trunc(to_number(coalesce(c.scale,s.setting),'99.999') * 100,3) AS "S%",
+    trunc(to_number(coalesce(t.scale,s.setting),'99.999') * 100,3) AS "S%",
     --CASE WHEN t.last_autovacuum IS NULL THEN 'never AUTO' ELSE to_char(t.last_autovacuum, 'YY-MM-DD HH24:MI:SS') END last_a, 
     --CASE WHEN t.last_vacuum IS NULL THEN 'never MANUAL' ELSE to_char(t.last_vacuum, 'YY-MM-DD HH24:MI:SS') END last_m,
     --to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS') 
     --    || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END AS "Last",
     --t.autovacuum_count AS "Qt A",
-    CASE WHEN NOT e.enabled THEN 'X' END AS "disabled"
+    CASE WHEN NOT t.enabled THEN 'X' END AS "disabled"
 FROM 
-    pg_stat_all_tables t
-    LEFT JOIN LATERAL (SELECT option_value AS scale FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_vacuum_scale_factor') c ON TRUE
-    LEFT JOIN LATERAL (SELECT FALSE AS enabled FROM pg_options_to_table((SELECT reloptions FROM pg_class WHERE oid = t.relid)) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') e ON TRUE
+    (SELECT
+        st.*,
+        (SELECT option_value FROM pg_options_to_table(rc.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS scale,
+        (SELECT FALSE FROM pg_options_to_table(rc.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') AS enabled
+    FROM pg_stat_all_tables st JOIN pg_class rc ON rc.oid = st.relid) t
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
     n_live_tup > 0 AND
     n_tup_del + n_tup_upd > 1000 AND
     n_dead_tup >  1000 
-    OR e.enabled = FALSE
-ORDER BY e.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE (pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+    OR t.enabled = FALSE
+ORDER BY t.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE (pg_relation_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
 LIMIT 20;
 

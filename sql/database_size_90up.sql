@@ -10,15 +10,11 @@ FROM
   JOIN pg_roles r ON r.oid = d.datdba
   LEFT JOIN pg_db_role_setting drs ON d.oid = drs.setdatabase
   LEFT JOIN (
-    SELECT d.oid, r.rolname || ' (' ||  array_to_string(array_agg(acl.privilege_type),', ') || ')' AS priv
+    SELECT a.oid, r.rolname || ' (' ||  array_to_string(array_agg((a.acl).privilege_type),', ') || ')' AS priv
     FROM
-        pg_database d,
-        pg_roles r,
-        LATERAL aclexplode(d.datacl) acl
-    WHERE
-        datacl IS NOT NULL AND
-        acl.grantee = r.oid
-    GROUP BY r.rolname,  d.oid) AS p ON p.oid = d.oid
+        (SELECT oid, aclexplode(datacl) AS acl FROM pg_database WHERE datacl IS NOT NULL) a
+        JOIN pg_roles r ON r.oid = (a.acl).grantee
+    GROUP BY r.rolname, a.oid) AS p ON p.oid = d.oid
 WHERE
   d.datname NOT IN ('rdsadmin', 'cloudsqladmin') AND
   NOT d.datistemplate
