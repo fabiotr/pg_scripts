@@ -21,7 +21,7 @@ FROM
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
     LATERAL (SELECT * FROM pgstatginindex(c.oid)) l
 WHERE 
-        (c.relkind = 'i' OR c.relkind = 'I' AND c.relispartition = TRUE)
+        c.relkind = 'i'  -- not 'I': a partitioned index has no storage to inspect
     AND am.amname = 'gin'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
