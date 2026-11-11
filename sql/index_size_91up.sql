@@ -28,6 +28,5 @@ WHERE
     AND am.amname = 'btree'
     AND n.nspname != 'information_schema'
     AND n.nspname !~ '^pg_toast'
-    AND pg_catalog.pg_table_is_visible(c.oid)
 ORDER BY c.relpages DESC
 LIMIT 20;
