@@ -1,7 +1,7 @@
 SET escape_string_warning TO off;
 SELECT
     row_number() over(ORDER BY total_time DESC) "N",
-    lpad(to_char(total_time*100/ nullif(sum(total_time) OVER (), 0),'FM99D09'), 6) || '%' AS "load_%",
+    lpad(to_char(total_time*100/ nullif(sum(total_time) OVER (), 0),'FM999D09'), 6) || '%' AS "load_%",
     queryid,
     datname AS db,
     rolname AS "User",
@@ -14,6 +14,6 @@ FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
     JOIN pg_roles r ON r.oid = s.userid
---WHERE datname = current_database()
+WHERE datname = current_database()
 ORDER BY total_time DESC
 LIMIT 20;

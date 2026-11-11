@@ -1,6 +1,6 @@
 SELECT
     lpad(row_number() OVER (ORDER BY rows DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char(rows*100/ nullif(sum(rows) OVER (), 0),'FM99D09'), 6) || '%' AS "Rows_%",
+    lpad(to_char(rows*100/ nullif(sum(rows) OVER (), 0),'FM999D09'), 6) || '%' AS "Rows_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
@@ -14,6 +14,6 @@ FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
-WHERE datname = current_database()
+WHERE calls > 0 AND datname = current_database()
 ORDER BY rows DESC
 LIMIT 10;

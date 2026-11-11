@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY rows DESC) "N",
-    lpad(to_char(rows*100/ nullif(sum(rows) OVER (), 0),'FM99D09'), 6) || '%' AS "Rows_%",
+    lpad(to_char(rows*100/ nullif(sum(rows) OVER (), 0),'FM999D09'), 6) || '%' AS "Rows_%",
     datname AS "DB", userid::regrole AS "User",
     queryid,
     lpad(to_char(calls,'FM999G999G999'), 12) AS "Calls",
@@ -15,6 +15,6 @@ SELECT
 FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
-WHERE datname = current_database()
+WHERE calls > 0 AND datname = current_database()
 ORDER BY rows DESC
 LIMIT 10;

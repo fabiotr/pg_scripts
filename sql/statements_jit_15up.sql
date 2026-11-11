@@ -1,7 +1,7 @@
 SELECT
     lpad(row_number() OVER (ORDER BY jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC)::text, 2) || 
         CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / nullif(sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (), 0),'FM99D09'), 6) || '%' AS "Jit %",
+    lpad(to_char((jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) * 100 / nullif(sum(jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time) OVER (), 0),'FM999D09'), 6) || '%' AS "Jit %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
@@ -24,6 +24,7 @@ FROM
     (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE
     jit_functions > 0 AND
+    calls > 0 AND
     datname = current_database()
 ORDER BY jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC
 LIMIT 10;

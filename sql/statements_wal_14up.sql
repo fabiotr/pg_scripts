@@ -1,6 +1,6 @@
 SELECT                                  
     lpad(row_number() OVER (ORDER BY wal_bytes DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char(wal_bytes * 100 / nullif(sum(wal_bytes) OVER (), 0),'FM99D09'), 6) || '%' AS "WAL %",
+    lpad(to_char(wal_bytes * 100 / nullif(sum(wal_bytes) OVER (), 0),'FM999D09'), 6) || '%' AS "WAL %",
     --datname AS "DB",
     userid::regrole AS "User",
     queryid,
@@ -21,6 +21,7 @@ FROM
     (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE
     wal_bytes > 0 AND 
+    calls > 0 AND
     datname = current_database()
 ORDER BY wal_bytes DESC
 LIMIT 10;
