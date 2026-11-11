@@ -14,6 +14,6 @@ FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
     JOIN pg_roles r ON r.oid = s.userid
---WHERE datname = current_database()
+WHERE datname = current_database()
 ORDER BY total_time DESC
 LIMIT 20;
