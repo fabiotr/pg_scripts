@@ -22,7 +22,7 @@ FROM
 	c.relname AS "Index name",
         pg_get_userbyid(c.relowner) AS "Owner",
         lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20) AS "rows",
-        (pgstatindex(c.relname)).*
+        (pgstatindex(quote_ident(n.nspname) || '.' || quote_ident(c.relname))).*
     FROM 
              pg_index i
         JOIN pg_class c ON c.oid = i.indexrelid
@@ -35,7 +35,7 @@ FROM
         AND am.amname = 'btree'
         AND n.nspname <> 'information_schema'
         AND n.nspname !~ '^pg_toast'
-        AND pg_catalog.pg_table_is_visible(c.oid)
+        AND NOT pg_is_other_temp_schema(c.relnamespace)
     ORDER BY c.relpages DESC
     LIMIT 20) ind
 WHERE 

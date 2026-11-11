@@ -31,6 +31,6 @@ WHERE
     AND am.amname = 'hash'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
-      --AND pg_catalog.pg_table_is_visible(c.oid)
+    AND NOT pg_is_other_temp_schema(c.relnamespace)
 ORDER BY pg_relation_size(c.oid) DESC
 LIMIT 20;
