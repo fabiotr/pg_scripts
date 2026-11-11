@@ -1,7 +1,3 @@
-\t on
-SELECT  'Time since last Reset: ' || to_char(CURRENT_TIMESTAMP - stats_reset, 'DD-MM-YY hh24:mi') AS "Time since last Reset:"  --, stats_reset
-FROM pg_stat_database WHERE datname = current_database();
-\t off
 WITH table_scans AS (
     SELECT relid,
         tables.idx_scan + tables.seq_scan AS all_scans,

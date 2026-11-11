@@ -4,8 +4,8 @@
   \ir connections_running_14up.sql
 \elif :svp_pg_13
   \ir connections_running_13up.sql
-\elif :svp_pg_12
-  \ir connections_running_12up.sql
+\elif :svp_pg_96
+  \ir connections_running_96up.sql
 \elif :svp_pg_92
   \ir connections_running_92up.sql
 \elif :svp_pg_91

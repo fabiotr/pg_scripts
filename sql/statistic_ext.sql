@@ -1,6 +1,8 @@
 \ir variables.sql
 
-\if :svp_pg_12
+\if :svp_pg_14
+  \ir statistic_ext_14up.sql
+\elif :svp_pg_12
   \ir statistic_ext_12up.sql
 \else
   \qecho - Not supported on version :svp_server_version
