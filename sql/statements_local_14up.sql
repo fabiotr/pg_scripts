@@ -18,7 +18,7 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE 
-    local_blks_read + local_blks_written + local_blks_dirtied > 0 	
-    --datname = current_database()
+    local_blks_read + local_blks_written + local_blks_dirtied > 0 AND 	
+    datname = current_database()
 ORDER BY local_blks_read + local_blks_written + local_blks_dirtied DESC
 LIMIT 20;
