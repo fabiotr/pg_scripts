@@ -7,6 +7,5 @@ SELECT
     CASE WHEN 'f' = ANY(es.stxkind) THEN 'defined' END AS "Dependencies",
     CASE WHEN 'm' = ANY(es.stxkind) THEN 'defined' END AS "MCV"
 FROM pg_statistic_ext es
-WHERE pg_statistics_obj_is_visible(es.oid)
 ORDER BY 1, 2;
 

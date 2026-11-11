@@ -20,7 +20,6 @@ WHERE
     n.oid = c.collnamespace AND 
     n.nspname <> 'pg_catalog' AND 
     n.nspname <> 'information_schema' AND 
-    c.collencoding IN (-1, pg_char_to_encoding(getdatabaseencoding())) AND 
-    pg_collation_is_visible(c.oid)
+    c.collencoding IN (-1, pg_char_to_encoding(getdatabaseencoding()))
 ORDER BY 1, 2;
 
