@@ -7,6 +7,5 @@ FROM pg_class c
      LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE 
 	c.relkind = 'm'  AND 
-	n.nspname !~ '^pg_toast' AND 
-	pg_table_is_visible(c.oid)
+	n.nspname !~ '^pg_toast'
 ORDER BY n.nspname, c.relname;

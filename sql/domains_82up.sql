@@ -16,7 +16,6 @@ FROM
 WHERE 
     t.typtype = 'd' AND 
     n.nspname <> 'pg_catalog' AND 
-    n.nspname <> 'information_schema' AND 
-    pg_type_is_visible(t.oid)
+    n.nspname <> 'information_schema'
 ORDER BY 1, 2;
 

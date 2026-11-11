@@ -9,6 +9,5 @@ FROM
     pg_operator o
     LEFT JOIN pg_namespace n ON n.oid = o.oprnamespace
 WHERE 
-    n.nspname NOT IN ('pg_catalog', 'information_schema') AND 
-    pg_operator_is_visible(o.oid)
+    n.nspname NOT IN ('pg_catalog', 'information_schema')
 ORDER BY 1, 2, 3, 4;

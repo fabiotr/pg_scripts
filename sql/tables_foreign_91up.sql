@@ -14,5 +14,4 @@ FROM
 	JOIN pg_class c ON c.oid = ft.ftrelid
 	JOIN pg_namespace n ON n.oid = c.relnamespace
 	JOIN pg_foreign_server s ON s.oid = ft.ftserver
-WHERE pg_table_is_visible(c.oid)
 ORDER BY s.srvname, n.nspname, c.relname;
