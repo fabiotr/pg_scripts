@@ -24,6 +24,7 @@ FROM
     (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE
     jit_functions > 0 AND
+    calls > 0 AND
     datname = current_database()
 ORDER BY jit_emission_time + jit_optimization_time + jit_inlining_time + jit_generation_time DESC
 LIMIT 10;

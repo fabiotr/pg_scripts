@@ -14,6 +14,6 @@ FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
-WHERE datname = current_database()
+WHERE calls > 0 AND datname = current_database()
 ORDER BY rows DESC
 LIMIT 10;

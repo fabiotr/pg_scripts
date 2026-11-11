@@ -15,6 +15,6 @@ SELECT
 FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid
-WHERE datname = current_database()
+WHERE calls > 0 AND datname = current_database()
 ORDER BY rows DESC
 LIMIT 10;
