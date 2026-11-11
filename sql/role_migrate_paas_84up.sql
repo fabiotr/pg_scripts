@@ -55,7 +55,7 @@ WHERE r.rolname NOT LIKE 'pg_%'
 SELECT 
 	'ALTER ROLE ' || 
 	quote_ident(rolname) || ' ' || 
-	'SET '         || replace (unnest(rolconfig), $$=$$, $$ TO '$$) || $$';$$
-FROM pg_roles 
-WHERE rolconfig IS NOT NULL;
+	'SET '         || split_part(cfg, '=', 1) || ' TO ' ||
+	quote_literal(substr(cfg, length(split_part(cfg, '=', 1)) + 2)) || ';'
+FROM (SELECT rolname, unnest(rolconfig) AS cfg FROM pg_roles WHERE rolconfig IS NOT NULL) AS r;
 
