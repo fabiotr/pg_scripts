@@ -18,13 +18,13 @@ FROM
     JOIN pg_class ct ON ct.oid = i.indrelid
     JOIN pg_am am ON c.relam = am.oid
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace,
-    LATERAL (SELECT * FROM pgstatindex(c.relname)) l
+    LATERAL (SELECT * FROM pgstatindex(quote_ident(n.nspname) || '.' || quote_ident(c.relname))) l
 WHERE 
         c.relkind IN ('i','I')
     AND am.amname = 'btree'
     AND n.nspname != 'information_schema'
     AND n.nspname !~ '^pg_toast'
-    AND pg_catalog.pg_table_is_visible(c.oid)
+    AND NOT pg_is_other_temp_schema(c.relnamespace)
     AND (avg_leaf_density <= 70 OR leaf_fragmentation >= 20)
 ORDER BY index_size DESC
 LIMIT 20;

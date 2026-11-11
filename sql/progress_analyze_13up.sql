@@ -3,7 +3,7 @@ SELECT
   now() - a.xact_start AS duration,
   coalesce(wait_event_type ||'.'|| wait_event, 'f') AS waiting,
   --p.datname AS database,
-  c.relnamespace::regnamespace || '.' || p.relid::regclass AS table,
+  c.relnamespace::regnamespace || '.' || quote_ident(c.relname) AS table,
   p.phase,
   lpad(pg_size_pretty(pg_total_relation_size(relid)), 11) AS total_size,
   lpad(pg_size_pretty(pg_table_size(relid)), 11) AS table_size,

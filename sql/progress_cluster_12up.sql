@@ -20,7 +20,7 @@ SELECT
     p.pid,
     now() - a.xact_start AS duration,
     coalesce(wait_event_type ||'.'|| wait_event, 'f') AS waiting,
-    c.relnamespace::regnamespace || '.' || c.relname AS table,
+    c.relnamespace::regnamespace || '.' || quote_ident(c.relname) AS table,
     command,
     phase,
     CASE WHEN :'svp_ls_tmpdir'::boolean

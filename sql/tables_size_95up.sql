@@ -36,6 +36,5 @@ WHERE
     AND c.relpersistence != 'temporary'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
-    AND pg_table_is_visible(c.oid)
 ORDER BY pg_total_relation_size(c.oid) DESC
 LIMIT 10;

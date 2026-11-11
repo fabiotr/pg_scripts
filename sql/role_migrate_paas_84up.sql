@@ -22,15 +22,12 @@ SELECT
 		CASE rolcreaterole  WHEN FALSE THEN '' ELSE ' CREATEROLE '    END ||
 		CASE rolcreatedb    WHEN FALSE THEN '' ELSE ' CREATEDB '      END ||
 		CASE rolcanlogin    WHEN FALSE THEN '' ELSE ' LOGIN '         END ||
-		CASE rolreplication WHEN FALSE THEN '' ELSE ' REPLICATION '   END || 
-		CASE rolbypassrls   WHEN FALSE THEN '' ELSE ' BYPASSRLS '     END ||
 		CASE rolconnlimit   WHEN -1    THEN '' ELSE ' CONNECTION LIMIT ' || rolconnlimit  END ||
 		--CASE WHEN rolpassword IS NULL THEN '' ELSE ' PASSWORD ' || rolpassword END ||
 		CASE WHEN rolvaliduntil IS NULL THEN '' ELSE ' VALID UNTIL '  || quote_literal(rolvaliduntil) END || 
 		';' AS command
 FROM 
 	pg_roles AS r 
-	LEFT JOIN pg_auth_members m ON m.roleid = r.oid
 WHERE 
 	rolname NOT IN ('postgres') AND
 	rolname NOT LIKE 'pg_%'
@@ -39,8 +36,8 @@ ORDER BY rolname;
 
 
 
--- Set roles membership
-SELECT 
+-- Set roles membership (DISTINCT: from PG 16 the same membership can have several grantors)
+SELECT DISTINCT
 	'GRANT ' || quote_ident(m.rolname) || 
 	' TO ' || quote_ident(r.rolname) || 
 	CASE admin_option WHEN FALSE THEN '' ELSE ' WITH ADMIN OPTION' END ||
@@ -52,10 +49,33 @@ WHERE r.rolname NOT LIKE 'pg_%'
 ;
 
 -- Set additional role parameters
+-- rolconfig holds "name=value". The list parameters below (GUC_LIST_QUOTE, the same list
+-- pg_dumpall uses) hold an identifier list: "quoted" entries may contain commas and "" for a
+-- quote, and SET ... FROM CURRENT can store unquoted entries that need quotes (odd-schema).
+-- Each entry is decoded and passed as its own literal, so ALTER ROLE quotes it as needed;
+-- quote_literal() of the whole value would make it a single element. Unquoted entries of
+-- search_path and temp_tablespaces are folded to lower case (ASCII only), as the server reads
+-- them. An empty list is stored as "" (or as nothing, by SET ... FROM CURRENT).
 SELECT 
 	'ALTER ROLE ' || 
 	quote_ident(rolname) || ' ' || 
-	'SET '         || replace (unnest(rolconfig), $$=$$, $$ TO '$$) || $$';$$
-FROM pg_roles 
-WHERE rolconfig IS NOT NULL;
+	'SET '         || name || ' TO ' ||
+	CASE
+		WHEN name NOT IN ('search_path', 'temp_tablespaces', 'local_preload_libraries',
+		                  'session_preload_libraries', 'shared_preload_libraries', 'unix_socket_directories')
+			THEN quote_literal(value)
+		WHEN value IN ('', '""') THEN $$''$$
+		ELSE array_to_string(ARRAY(
+			SELECT quote_literal(CASE
+				WHEN substr(e, 1, 1) = '"' THEN replace(substr(e, 2, length(e) - 2), '""', '"')
+				WHEN name IN ('search_path', 'temp_tablespaces')
+					THEN translate(e, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')
+				ELSE e END)
+			FROM (SELECT (regexp_matches(value, '[[:space:]]*("(?:[^"]|"")*"|[^,]*[^,[:space:]])[[:space:]]*(?:,|$)', 'g'))[1] AS e) AS m
+			), ', ')
+	END || ';' AS command
+FROM (
+	SELECT rolname, split_part(cfg, '=', 1) AS name, substr(cfg, length(split_part(cfg, '=', 1)) + 2) AS value
+	FROM (SELECT rolname, unnest(rolconfig) AS cfg FROM pg_roles WHERE rolconfig IS NOT NULL) AS c
+	) AS r;
 

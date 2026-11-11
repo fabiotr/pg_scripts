@@ -17,6 +17,6 @@ WHERE
     AND am.amname = 'btree'
     AND n.nspname != 'information_schema'
     AND n.nspname !~ '^pg_toast'
-    AND pg_catalog.pg_table_is_visible(c.oid)
+    AND NOT pg_is_other_temp_schema(c.relnamespace)
     AND (avg_leaf_density <= 70 OR leaf_fragmentation >= 20)
 ORDER BY index_size DESC;

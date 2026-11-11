@@ -23,6 +23,5 @@ WHERE c.relkind IN ('r','p', 'i', 'I', 'v','m','S','f','')
     AND n.nspname <> 'pg_catalog'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'
-    AND pg_catalog.pg_table_is_visible(c.oid)
 ORDER BY pg_table_size(c.oid) DESC
 LIMIT 20;

@@ -41,8 +41,13 @@ SELECT
         WHEN name = 'log_parser_stats'                  THEN $$ALTER SYSTEM RESET log_parser_stats;$$
         WHEN name = 'log_planner_stats'                 THEN $$ALTER SYSTEM RESET log_planner_stats;$$
         WHEN name = 'log_executor_stats'                THEN $$ALTER SYSTEM RESET log_executor_stats;$$
-        WHEN name = 'shared_preload_libraries'          THEN $$ALTER SYSTEM SET shared_preload_libraries = $$ || 
-	    CASE WHEN setting = $$$$ THEN $$pg_stat_statements;$$ ELSE setting || $$, pg_stat_statements;$$ END
+        WHEN name = 'shared_preload_libraries'          THEN $$ALTER SYSTEM SET shared_preload_libraries = $$ ||
+	    -- setting is a list of identifiers: "quoted" entries may hold commas and "" for a quote
+	    -- (ALTER SYSTEM writes paths this way). Decode each entry, then quote it as a literal.
+	    array_to_string(ARRAY(
+	        SELECT quote_literal(CASE WHEN substr(m.e[1], 1, 1) = '"' THEN replace(substr(m.e[1], 2, length(m.e[1]) - 2), '""', '"') ELSE m.e[1] END)
+	        FROM regexp_matches(setting, '[[:space:]]*("(?:[^"]|"")*"|[^,]*[^,[:space:]])[[:space:]]*(?:,|$)', 'g') WITH ORDINALITY AS m(e, n)
+	        ORDER BY m.n) || $$'pg_stat_statements'$$::text, ', ') || ';'
         WHEN name = 'pg_stat_statements.track'          THEN $$ALTER SYSTEM SET pg_stat_statements.track = 'all';$$
         WHEN name = 'pg_stat_statements.track_utility'  THEN $$ALTER SYSTEM SET pg_stat_statements.track_utility = ON;$$
         WHEN name = 'pg_stat_statements.track_planning' THEN $$ALTER SYSTEM SET pg_stat_statements.track_planning = ON;$$
