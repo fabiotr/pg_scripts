@@ -6,10 +6,10 @@ lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::te
     queryid,
     lpad(to_char(calls::numeric / reset_days::numeric, 'FM999G999G990D0'), 14) AS "Calls/Day",
     --to_char(rows::numeric  / reset_days,          'FM999G999G999')   AS "Rows/Day",
-    lpad(to_char(rows::numeric  / calls::numeric,      'FM999G990D0'), 10)     AS "Rows/Call",
-    --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / calls),     0)) AS "Hit/Call",
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / calls),     0)), 11) AS "Reads/Call",
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / calls),     0)), 11) AS "Writes/Call",
+    lpad(to_char(rows::numeric  / nullif(calls, 0)::numeric,      'FM999G990D0'), 10)     AS "Rows/Call",
+    --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / nullif(calls, 0)),     0)) AS "Hit/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / nullif(calls, 0)),     0)), 11) AS "Reads/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / nullif(calls, 0)),     0)), 11) AS "Writes/Call",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / reset_days),0)), 11) AS "Hit/Day",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / reset_days),0)), 11) AS "Reads/Day",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / reset_days),0)), 11) AS "Writes/Day",
@@ -26,7 +26,6 @@ FROM
     (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
-    calls > 0 AND
     datname = current_database()
 ORDER BY coalesce(shared_blks_read,0) + coalesce(shared_blks_written,0) DESC
 LIMIT 10;
