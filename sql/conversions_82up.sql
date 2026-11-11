@@ -10,6 +10,5 @@ FROM
     pg_conversion c
     JOIN pg_namespace n ON n.oid = c.connamespace
 WHERE
-    n.nspname NOT IN ('pg_catalog', 'information_schema') AND 
-    pg_conversion_is_visible(c.oid)
+    n.nspname NOT IN ('pg_catalog', 'information_schema')
 ORDER BY 1, 2;
