@@ -22,15 +22,12 @@ SELECT
 		CASE rolcreaterole  WHEN FALSE THEN '' ELSE ' CREATEROLE '    END ||
 		CASE rolcreatedb    WHEN FALSE THEN '' ELSE ' CREATEDB '      END ||
 		CASE rolcanlogin    WHEN FALSE THEN '' ELSE ' LOGIN '         END ||
-		CASE rolreplication WHEN FALSE THEN '' ELSE ' REPLICATION '   END || 
-		CASE rolbypassrls   WHEN FALSE THEN '' ELSE ' BYPASSRLS '     END ||
 		CASE rolconnlimit   WHEN -1    THEN '' ELSE ' CONNECTION LIMIT ' || rolconnlimit  END ||
 		--CASE WHEN rolpassword IS NULL THEN '' ELSE ' PASSWORD ' || rolpassword END ||
 		CASE WHEN rolvaliduntil IS NULL THEN '' ELSE ' VALID UNTIL '  || quote_literal(rolvaliduntil) END || 
 		';' AS command
 FROM 
 	pg_roles AS r 
-	LEFT JOIN pg_auth_members m ON m.roleid = r.oid
 WHERE 
 	rolname NOT IN ('postgres') AND
 	rolname NOT LIKE 'pg_%'
@@ -39,8 +36,8 @@ ORDER BY rolname;
 
 
 
--- Set roles membership
-SELECT 
+-- Set roles membership (DISTINCT: from PG 16 the same membership can have several grantors)
+SELECT DISTINCT
 	'GRANT ' || quote_ident(m.rolname) || 
 	' TO ' || quote_ident(r.rolname) || 
 	CASE admin_option WHEN FALSE THEN '' ELSE ' WITH ADMIN OPTION' END ||
