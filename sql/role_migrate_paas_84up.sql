@@ -52,10 +52,23 @@ WHERE r.rolname NOT LIKE 'pg_%'
 ;
 
 -- Set additional role parameters
+-- rolconfig holds "name=value". The list parameters below (GUC_LIST_QUOTE, the same
+-- list pg_dumpall uses) are stored as an identifier list ("$user", public), which is
+-- valid SQL as it is; quote_literal() would turn the whole list into one element.
+-- An empty list is stored as "".
 SELECT 
 	'ALTER ROLE ' || 
 	quote_ident(rolname) || ' ' || 
-	'SET '         || split_part(cfg, '=', 1) || ' TO ' ||
-	quote_literal(substr(cfg, length(split_part(cfg, '=', 1)) + 2)) || ';'
-FROM (SELECT rolname, unnest(rolconfig) AS cfg FROM pg_roles WHERE rolconfig IS NOT NULL) AS r;
+	'SET '         || name || ' TO ' ||
+	CASE
+		WHEN name NOT IN ('search_path', 'temp_tablespaces', 'local_preload_libraries',
+		                  'session_preload_libraries', 'shared_preload_libraries', 'unix_socket_directories')
+			THEN quote_literal(value)
+		WHEN value = '""' THEN $$''$$
+		ELSE value
+	END || ';' AS command
+FROM (
+	SELECT rolname, split_part(cfg, '=', 1) AS name, substr(cfg, length(split_part(cfg, '=', 1)) + 2) AS value
+	FROM (SELECT rolname, unnest(rolconfig) AS cfg FROM pg_roles WHERE rolconfig IS NOT NULL) AS c
+	) AS r;
 
