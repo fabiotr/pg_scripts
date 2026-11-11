@@ -4,7 +4,7 @@ SELECT
     lpad(pg_size_pretty(round((current_setting('block_size')::bigint * blks_hit)  / reset_days)::bigint),11)                     AS "Hit/Day",
     lpad(pg_size_pretty(round((current_setting('block_size')::bigint * blks_read) / reset_days)::bigint),11)                     AS "Read/Day",
     lpad(to_char(100 * blks_hit::NUMERIC      / (blks_hit + blks_read)       ,'FM900D00') || ' %',11)                            AS "Cache hit",
-    lpad(to_char(100 * xact_rollback::NUMERIC / (xact_rollback + xact_commit),'FM000D00') || ' %',11)                            AS "Rollback",
+    lpad(to_char(100 * xact_rollback::NUMERIC / nullif(xact_rollback + xact_commit, 0),'FM000D00') || ' %',11)                            AS "Rollback",
     lpad(to_char(100 * tup_fetched::NUMERIC   / tup_returned                                            ,'FM990D00') || ' %',11) AS "Rows fetch/return",
     lpad(to_char(100 * tup_fetched::NUMERIC   / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows SELECT",
     lpad(to_char(100 * tup_inserted::NUMERIC  / (tup_fetched + tup_inserted + tup_updated + tup_deleted),'FM990D00') || ' %',11) AS "Rows INSERT",
