@@ -25,6 +25,7 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
+    calls > 0 AND
     datname = current_database()
 ORDER BY shared_blks_read + shared_blks_written DESC
 LIMIT 10;

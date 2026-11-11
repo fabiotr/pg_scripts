@@ -28,6 +28,7 @@ FROM
     (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 AND
+    calls > 0 AND
     datname = current_database()
 ORDER BY coalesce(local_blks_read,0) + coalesce(local_blks_written,0) DESC
 LIMIT 10;
