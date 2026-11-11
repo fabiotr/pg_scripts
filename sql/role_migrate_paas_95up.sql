@@ -51,11 +51,14 @@ WHERE r.rolname NOT LIKE 'pg_%'
 ;
 
 -- Set additional role parameters, including the ones for one database (ALTER ROLE ... IN DATABASE).
--- pg_db_role_setting holds "name=value". The list parameters below (GUC_LIST_QUOTE, the same
--- list pg_dumpall uses) are stored as an identifier list ("$user", public), which is
--- valid SQL as it is; quote_literal() would turn the whole list into one element.
--- An empty list is stored as "" (or as nothing, by SET ... FROM CURRENT). Settings for a database and every role (ALTER DATABASE ... SET)
--- are not role settings and are left out.
+-- pg_db_role_setting holds "name=value". The list parameters below (GUC_LIST_QUOTE, the same list
+-- pg_dumpall uses) hold an identifier list: "quoted" entries may contain commas and "" for a
+-- quote, and SET ... FROM CURRENT can store unquoted entries that need quotes (odd-schema).
+-- Each entry is decoded and passed as its own literal, so ALTER ROLE quotes it as needed;
+-- quote_literal() of the whole value would make it a single element. Unquoted entries of
+-- search_path and temp_tablespaces are folded to lower case (ASCII only), as the server reads
+-- them. An empty list is stored as "" (or as nothing, by SET ... FROM CURRENT).
+-- Settings for a database and every role (ALTER DATABASE ... SET) are not role settings and are left out.
 SELECT 
 	'ALTER ROLE ' || 
 	quote_ident(rolname) || 
@@ -66,7 +69,14 @@ SELECT
 		                  'session_preload_libraries', 'shared_preload_libraries', 'unix_socket_directories')
 			THEN quote_literal(value)
 		WHEN value IN ('', '""') THEN $$''$$
-		ELSE value
+		ELSE array_to_string(ARRAY(
+			SELECT quote_literal(CASE
+				WHEN substr(e, 1, 1) = '"' THEN replace(substr(e, 2, length(e) - 2), '""', '"')
+				WHEN name IN ('search_path', 'temp_tablespaces')
+					THEN translate(e, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')
+				ELSE e END)
+			FROM (SELECT (regexp_matches(value, '[[:space:]]*("(?:[^"]|"")*"|[^,]*[^,[:space:]])[[:space:]]*(?:,|$)', 'g'))[1] AS e) AS m
+			), ', ')
 	END || ';' AS command
 FROM (
 	SELECT rolname, datname, split_part(cfg, '=', 1) AS name, substr(cfg, length(split_part(cfg, '=', 1)) + 2) AS value
