@@ -8,13 +8,9 @@ SELECT
     'REINDEX INDEX ' || quote_ident(n.nspname) || '.' || quote_ident(ci.relname) || '; --' ,
     c.collname
 FROM 
-    (SELECT 
-            indexrelid, 
-            indrelid, 
-            indcollation[i] coll 
-        FROM 
-            pg_index i,
-            generate_subscripts(indcollation, 1) g(i)) s
+    (SELECT indexrelid, indrelid, indcollation[i] AS coll
+        FROM (SELECT indexrelid, indrelid, indcollation, generate_subscripts(indcollation, 1) AS i
+              FROM pg_index) AS ix) s
     JOIN pg_collation c ON s.coll = c.oid
     JOIN pg_class ci ON ci.oid = s.indexrelid
     JOIN pg_namespace n ON n.oid = ci.relnamespace

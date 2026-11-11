@@ -2,8 +2,8 @@
 
 \if :svp_pg_14
   \ir vacuum_wraparound_database_14up.sql 
-\elif :svp_pg_93
-  \ir vacuum_wraparound_database_93up.sql
+\elif :svp_pg_95
+  \ir vacuum_wraparound_database_95up.sql
 \elif :svp_pg_82
   \ir vacuum_wraparound_database_82up.sql
 \else

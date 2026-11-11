@@ -33,30 +33,31 @@ SELECT
             || '); --'
         ELSE '-- ' || quote_ident(n.nspname) || '.' || quote_ident(c.relname) || ' TOAST'
     END AS "Command",
-    coalesce(to_number(cs.option_value, '99.99999'),s.scale) || chr(10) ||
-    coalesce(to_number(cts.option_value, '99.99999'),s.scale) AS current,
+    coalesce(to_number(c.cur_scale, '99.99999'),s.scale) || chr(10) ||
+    coalesce(to_number(ct.cur_scale, '99.99999'),s.scale) AS current,
     lpad(pg_size_pretty(pg_relation_size(c.oid,'main')),11) || chr(10) ||  
     lpad(pg_size_pretty(pg_relation_size(ct.oid)),11)  AS size
 FROM
     (
         SELECT
-            (100*1024*1024) / nullif(pg_relation_size(oid,'main'),0)::NUMERIC scale, -- 100*1024*1024 = 100MB goal
+            (100*1024*1024) / nullif(pg_relation_size(oid,'main'),0)::NUMERIC AS scale, -- 100*1024*1024 = 100MB goal
+            (SELECT option_value FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS cur_scale,
             relname, relnamespace, relkind, relpages, reltoastrelid, reloptions, oid
         FROM pg_class) c
     JOIN pg_namespace n ON c.relnamespace = n.oid
     LEFT JOIN (
         SELECT 
-            (100*1024*1024) / nullif(pg_relation_size(oid),0)::NUMERIC scale, -- 100*1024*1024 = 100MB goal
+            (100*1024*1024) / nullif(pg_relation_size(oid),0)::NUMERIC AS scale, -- 100*1024*1024 = 100MB goal
+            (SELECT option_value FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS cur_scale,
             relname, relnamespace, relkind, relpages, reloptions, oid
-        FROM pg_class) ct ON c.reltoastrelid = ct.oid
-    LEFT JOIN pg_options_to_table(c.reloptions)  AS cs ON cs.option_name = 'autovacuum_vacuum_scale_factor'
-    LEFT JOIN pg_options_to_table(ct.reloptions) AS cts ON cts.option_name = 'autovacuum_vacuum_scale_factor',
+        FROM pg_class) ct ON c.reltoastrelid = ct.oid,
+    -- current values come from c/ct.cur_scale: a function joined to c here would be an implicit LATERAL (9.3+)
     (SELECT to_number(current_setting('autovacuum_vacuum_scale_factor'),'99.99999') AS scale) AS s
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables
     c.relpages > 0               AND  -- Avoid division by zero
     (c.scale  < s.scale AND  -- Only adjust WHERE new value < default value
-        coalesce(to_number(cs.option_value, '99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
+        coalesce(to_number(c.cur_scale, '99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
                 CASE
                     WHEN c.scale < '0.0001' THEN round(c.scale,5)
                     WHEN c.scale < '0.001'  THEN round(c.scale,4)
@@ -66,7 +67,7 @@ WHERE
                 END) 
     OR 
      (ct.scale < s.scale AND  -- Only adjust WHERE new value < default value
-        coalesce(to_number(cts.option_value,'99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
+        coalesce(to_number(ct.cur_scale,'99.99999'),s.scale) !=  -- Only adjust WHERE new value != current value
             CASE
                 WHEN ct.scale < '0.0001' THEN round(ct.scale,5)
                 WHEN ct.scale < '0.001'  THEN round(ct.scale,4)

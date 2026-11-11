@@ -18,20 +18,17 @@ SELECT
         || '); --' AS "Command" 
 FROM 
     (SELECT
-            (100*1024*1024) / pg_table_size(oid)::NUMERIC scale, -- 100*1024*1024 = 100MB goal
+            (100*1024*1024) / nullif(pg_table_size(oid), 0)::NUMERIC AS scale, -- 100*1024*1024 = 100MB goal
+            (SELECT to_number(option_value,'99.99999') FROM pg_options_to_table(reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS cur_scale,
             relname, relnamespace, relkind, relpages, oid, reloptions
         FROM pg_class) c
-    JOIN pg_namespace n ON c.relnamespace = n.oid
-    LEFT JOIN LATERAL (
-        SELECT to_number(option_value,'99.99999') AS scale
-            FROM pg_options_to_table(c.reloptions)
-            WHERE option_name = 'autovacuum_vacuum_scale_factor') AS t ON TRUE,
+    JOIN pg_namespace n ON c.relnamespace = n.oid,
     (SELECT to_number(current_setting('autovacuum_vacuum_scale_factor'),'99.999') AS scale) AS s
 WHERE
     c.relkind IN ('r', 'm', 'p') AND  -- Only tables
     c.relpages > 0               AND  -- Avoid division by zero
     c.scale < s.scale            AND  -- Only adjust WHERE new value < default value
-    coalesce(t.scale,s.scale) !=      -- Only adjust WHERE new value != current value
+    coalesce(c.cur_scale,s.scale) !=      -- Only adjust WHERE new value != current value
         CASE 
             WHEN c.scale < '0.0001' THEN round(c.scale,5)
             WHEN c.scale < '0.001'  THEN round(c.scale,4)
