@@ -22,6 +22,7 @@ FROM
 WHERE 
         c.relkind IN ('i','I')
     AND am.amname = 'btree'
+    AND i.indisvalid  -- an INVALID index (failed CREATE INDEX CONCURRENTLY) may have no pages to inspect
     AND n.nspname != 'information_schema'
     AND n.nspname !~ '^pg_toast'
     AND NOT pg_is_other_temp_schema(c.relnamespace)
