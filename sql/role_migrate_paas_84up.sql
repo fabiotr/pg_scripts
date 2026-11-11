@@ -52,7 +52,7 @@ WHERE r.rolname NOT LIKE 'pg_%'
 -- rolconfig holds "name=value". The list parameters below (GUC_LIST_QUOTE, the same
 -- list pg_dumpall uses) are stored as an identifier list ("$user", public), which is
 -- valid SQL as it is; quote_literal() would turn the whole list into one element.
--- An empty list is stored as "".
+-- An empty list is stored as "" (or as nothing, by SET ... FROM CURRENT).
 SELECT 
 	'ALTER ROLE ' || 
 	quote_ident(rolname) || ' ' || 
@@ -61,7 +61,7 @@ SELECT
 		WHEN name NOT IN ('search_path', 'temp_tablespaces', 'local_preload_libraries',
 		                  'session_preload_libraries', 'shared_preload_libraries', 'unix_socket_directories')
 			THEN quote_literal(value)
-		WHEN value = '""' THEN $$''$$
+		WHEN value IN ('', '""') THEN $$''$$
 		ELSE value
 	END || ';' AS command
 FROM (
