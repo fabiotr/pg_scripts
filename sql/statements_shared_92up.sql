@@ -1,6 +1,6 @@
 SELECT
 lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::text, 2) AS "N",
-    lpad(to_char((shared_blks_read + shared_blks_written) * 100 / nullif(sum(shared_blks_read + shared_blks_written) OVER (), 0),'FM99D09'), 6) || '%' AS "I/O %",
+    lpad(to_char((shared_blks_read + shared_blks_written) * 100 / nullif(sum(shared_blks_read + shared_blks_written) OVER (), 0),'FM999D09'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
     r.rolname AS "User",
     lpad(to_char(calls::numeric, 'FM999G999G990D0'), 14) AS "Calls",
