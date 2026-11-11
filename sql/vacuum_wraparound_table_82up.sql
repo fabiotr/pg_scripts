@@ -13,13 +13,16 @@ SELECT
                 to_number(t.fmi, '999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')/2
                 THEN ' (T ' || to_char(to_number(t.fmi ,'999999999999'),'FM999G999G999G999') || ')' 
             ELSE '' END AS "Min Age", 
-    lpad(to_char(LEAST (to_number(COALESCE(c.ftb, current_setting('vacuum_freeze_table_age')),'999999999999'),
+    -- vacuum_freeze_table_age only exists from 8.4 (current_setting() would fail): N/A before
+    CASE WHEN (SELECT setting FROM pg_settings WHERE name = 'vacuum_freeze_table_age') IS NULL THEN lpad('N/A', 16) ELSE
+    lpad(to_char(LEAST (to_number(COALESCE(c.ftb, (SELECT setting FROM pg_settings WHERE name = 'vacuum_freeze_table_age')),'999999999999'),
         to_number(COALESCE(c.fma, current_setting('autovacuum_freeze_max_age')),'999999999999') * '0.95'),'FM999G999G999G999'), 16) || 
             CASE WHEN 
                 t.ftb IS NOT NULL  AND 
                 to_number(t.ftb ,'999999999999') < to_number(current_setting('autovacuum_freeze_max_age'),'999999999999')*'0.95'
                 THEN ' (T ' || to_char(to_number(t.ftb ,'999999999999'),'FM999G999G999G999') || ')' 
-            ELSE '' END AS "Table Age", 
+            ELSE '' END
+    END AS "Table Age", 
     lpad(to_char(to_number(COALESCE(c.fma, current_setting('autovacuum_freeze_max_age')), '999999999999'),'FM999G999G999G999'), 16) ||
             CASE WHEN 
                 t.fma IS NOT NULL AND
