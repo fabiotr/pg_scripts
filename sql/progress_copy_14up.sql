@@ -3,7 +3,7 @@ SELECT
   now() - a.xact_start AS duration,
   coalesce(wait_event_type ||'.'|| wait_event, 'f') AS waiting,
   --p.datname AS database,
-  c.relnamespace::regnamespace || '.' || c.relname AS table,
+  c.relnamespace::regnamespace || '.' || quote_ident(c.relname) AS table,
   command,
   type,
   lpad(pg_size_pretty(bytes_total), 11)                                                                    AS "Size total",

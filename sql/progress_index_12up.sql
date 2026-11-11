@@ -22,7 +22,7 @@ SELECT
   lockers_total || ' / ' ||  
     lockers_done || ' / ' || 
     current_locker_pid AS "Lockers (Total/Done/C. PID)",
-  c.relnamespace::regnamespace || '.' || c.relname AS table,
+  c.relnamespace::regnamespace || '.' || quote_ident(c.relname) AS table,
   ci.relname AS index,
   command,
   phase,
