@@ -1,6 +1,6 @@
 SELECT
     lpad(row_number() over(ORDER BY coalesce(local_blks_read,0) + coalesce(local_blks_written,0) DESC)::text, 2) || CASE WHEN toplevel = FALSE THEN ' *' ELSE '  ' END AS "N",
-    lpad(to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / nullif(sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (), 0),'FM99D09'), 6) || '%' AS "I/O %",
+    lpad(to_char((coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) * 100 / nullif(sum(coalesce(local_blks_read,0) + coalesce(local_blks_written,0)) OVER (), 0),'FM999D09'), 6) || '%' AS "I/O %",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
@@ -28,6 +28,7 @@ FROM
     (SELECT stats_reset, EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
 WHERE 
     local_blks_read + local_blks_written + local_blks_dirtied > 0 AND
+    calls > 0 AND
     datname = current_database()
 ORDER BY coalesce(local_blks_read,0) + coalesce(local_blks_written,0) DESC
 LIMIT 10;

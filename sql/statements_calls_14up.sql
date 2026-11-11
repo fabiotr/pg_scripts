@@ -1,6 +1,6 @@
 SELECT
     row_number() over(ORDER BY calls  DESC) "N",
-    lpad(to_char(calls*100/ nullif(sum(calls) OVER (), 0),'FM99D09'), 6) || '%' AS "Calls_%",
+    lpad(to_char(calls*100/ nullif(sum(calls) OVER (), 0),'FM999D09'), 6) || '%' AS "Calls_%",
     --datname AS "DB", 
     userid::regrole AS "User",
     queryid,
@@ -17,6 +17,6 @@ FROM
     :svp_pgss.pg_stat_statements s
     JOIN pg_database d ON d.oid = s.dbid,
     (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - stats_reset)::numeric/(60*60*24) AS reset_days FROM :svp_pgss.pg_stat_statements_info) AS r
-WHERE datname = current_database()
+WHERE calls > 0 AND datname = current_database()
 ORDER BY calls DESC
 LIMIT 10;
