@@ -6,10 +6,10 @@ lpad(row_number() over(ORDER BY shared_blks_read + shared_blks_written DESC)::te
     queryid,
     lpad(to_char(calls::numeric, 'FM999G999G990D0'), 14) AS "Calls",
     --to_char(rows::numeric,    'FM999G999G999')   AS "Rows/Day",
-    lpad(to_char(rows::numeric  / calls::numeric, 'FM999G990D0'), 10)     AS "Rows/Call",
-    --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / calls),     0)) AS "Hit/Call",
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / calls), 0)), 11) AS "Reads/Call",
-    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / calls), 0)), 11) AS "Writes/Call",
+    lpad(to_char(rows::numeric  / nullif(calls, 0)::numeric, 'FM999G990D0'), 10)     AS "Rows/Call",
+    --pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric     / nullif(calls, 0)),     0)) AS "Hit/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric    / nullif(calls, 0)), 0)), 11) AS "Reads/Call",
+    lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric / nullif(calls, 0)), 0)), 11) AS "Writes/Call",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_hit)::numeric),             0)), 11) AS "Hit",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_read)::numeric),            0)), 11) AS "Reads",
     lpad(pg_size_pretty(nullif(trunc((current_setting('block_size')::numeric * shared_blks_written)::numeric),         0)), 11) AS "Writes",
@@ -25,7 +25,6 @@ FROM
     JOIN pg_database d ON d.oid = s.dbid
 WHERE 
     shared_blks_read + shared_blks_written + shared_blks_dirtied > 0 AND
-    calls > 0 AND
     datname = current_database()
 ORDER BY shared_blks_read + shared_blks_written DESC
 LIMIT 10;
