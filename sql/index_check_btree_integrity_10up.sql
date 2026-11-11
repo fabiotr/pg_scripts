@@ -8,6 +8,7 @@ SELECT 'SELECT bt_index_check(' || c.oid || '); -- ' || to_char(row_number() OVE
         JOIN pg_namespace n ON c.relnamespace = n.oid
     WHERE 
             am.amname = 'btree'
+        AND c.relkind = 'i'  -- not 'I': a partitioned index has no storage to check
         AND c.relpersistence != 't'
         AND i.indisready 
         AND i.indisvalid
