@@ -19,7 +19,7 @@ FROM pg_class c
      LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
      LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE c.relkind IN ('r','p', 'i', 'I', 'v','m','S','f','')
-    AND c.relpersistence != 't'
+    AND n.nspname !~ '^pg_temp_'  -- relpersistence only exists from 9.1
     AND n.nspname <> 'pg_catalog'
     AND n.nspname <> 'information_schema'
     AND n.nspname !~ '^pg_toast'

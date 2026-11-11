@@ -2,8 +2,8 @@
 
 \if :svp_pg_91
   \ir tables_changes_91up.sql
-\elif :svp_pg_82
-  \ir tables_changes_82up.sql
+\elif :svp_pg_83
+  \ir tables_changes_83up.sql
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
