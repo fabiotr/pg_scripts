@@ -150,8 +150,10 @@ def check_file(rel, src, existing, included, problem):
                 chain[1][4] = True
         if text.strip() == CANONICAL and depth == 1 and chain.get(1) and chain[1][2]:
             chain[1][3] = True
-        # the \else may also include a file (every version runs): then it needs no message
-        if cmd in ("i", "ir") and depth == 1 and chain.get(1) and chain[1][2]:
+        # the \else may also include a file, anywhere below it (e.g. inside a
+        # privilege check, as check_readme.py reads it): older versions still
+        # run something, so it needs no message
+        if cmd in ("i", "ir") and depth >= 1 and chain.get(1) and chain[1][2]:
             chain[1][3] = True
         if LOWERCASE_MESSAGE in text:
             problem(rel, line, 'use "\\qecho - Not supported on version :svp_server_version" '

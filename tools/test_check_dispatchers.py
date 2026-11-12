@@ -205,7 +205,10 @@ class CheckDispatchers(unittest.TestCase):
                                "doesn't print exactly", "sql/t.sql:1:")
         good = ["    \\qecho '# WARNING'\n    \\qecho - Not supported on version :svp_server_version\n",
                 "    \\set svp_x FALSE\n",           # sets defaults, as variables.sql: not a fallback message
-                "    \\ir t_old.sql\n"]             # runs something on older versions
+                "    \\ir t_old.sql\n",             # runs something on older versions
+                # ... also inside a privilege check, with a "Needs" message otherwise
+                "    \\if :svp_rol_super\n        \\ir t_old.sql\n    \\else\n"
+                "        \\qecho - Needs superuser\n    \\endif\n"]
         for body in good:
             code, out = run(with_files({"sql/t.sql": chain.format(body), "sql/t_old.sql": "SELECT 1;\n",
                                         "sql/t_10up.sql": None}))
