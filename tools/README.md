@@ -6,6 +6,7 @@ Tools for contributors, not part of the script library. The static checks keep t
 | :---                         | :---                                                            |
 | `check_dispatchers.py`       | Checks the version dispatchers in `sql/` and the includes in `reports/`. |
 | `check_sql_style.py`         | Checks (and with `--fix`, fixes) the SQL style of `sql/` and `reports/`. |
+| `check_readme.py`            | Checks that the README catalog lists every entry script with its dispatcher's oldest version. |
 | `test_check_dispatchers.py`  | Tests for `check_dispatchers.py`.                               |
 | `test_check_sql_style.py`    | Tests for `check_sql_style.py`.                                 |
 | `fixture.sh`                 | Builds a test database with data and odd objects, plus background sessions. |
@@ -25,6 +26,7 @@ From the repository root:
 ```bash
 ./tools/check_dispatchers.py        # must print "All dispatchers OK"
 ./tools/check_sql_style.py          # must print "All SQL style checks OK"
+./tools/check_readme.py             # must print "README catalog OK"
 ./tools/check_sql_style.py --fix    # fixes what it can, see below
 python3 -m unittest discover -s tools -p 'test_*.py'   # tests for the checks
 ```
@@ -84,6 +86,18 @@ What the check never looks at: the case of unreserved keywords (`coalesce`, `tex
 
 The files default to `sql/*.sql` and `reports/*.sql` in pg_scripts, and to every `**/*.sql` in another repository. A copy of this script runs in storyblok/database-scripts. Changes are made here first and then copied there, so the two files stay byte-identical.
 
+## `check_readme.py`
+
+The catalog in the main README is the list users read; it drifts when a script is added or a dispatcher changes. The check reports:
+
+- An entry script of `sql/` (a dispatcher or an unversioned file) with no catalog row. `variables.sql` needs none.
+- A catalog row whose file is in neither `sql/` nor `reports/`.
+- A "PG >= X.Y" cell that differs from the dispatcher: the oldest version among its top-level `\if` / `\elif :svp_pg_VV` branches, unless its `\else` still includes a file (then every version). An empty cell and "PG >= 8.2" both mean 8.2; a "PG < X" cell (a removed feature, e.g. `tables_with_oid.sql`) isn't compared. Nested `\if`s (privileges, extensions) don't count.
+
+```bash
+./tools/check_readme.py [repo_dir]
+```
+
 ## Tests
 
 ```bash
@@ -91,6 +105,7 @@ python3 -m unittest discover -s tools -p 'test_*.py' -v
 ```
 
 - `test_check_dispatchers.py` runs each rule against a throwaway repository, plus a clean repository, a directory that isn't the repository, and the symlinked pre-commit hook. `CHECK_DISPATCHERS=/path/to/copy.py` points the tests at another copy of the script, for example a deliberately broken one, to confirm that some test fails.
+- `test_check_readme.py` covers a consistent catalog, a missing row, a row without its file, a version mismatch, the 8.2 equivalences, an `\else` that includes a file, nested `\if`s, "PG < X", two-digit versions and a directory that isn't the repository. `CHECK_README` points it at another copy of the script.
 - `test_check_sql_style.py` covers the tokenizer (strings, nested comments, dollar quotes, numbers, psql variables and `\` lines), each rule, `--fix`, and the linear-time cases (many or unterminated dollar quotes).
 - `test_check_battery.py` builds fake battery output: clean runs, known and new errors, a second error in a script with a known one, version ranges, timeouts, exit codes, report failures, stale entries, and a check that `known_failures.csv` itself parses. `CHECK_BATTERY` points it at another copy of the script.
 - `test_check_report_md.py` covers each kind of problem, GFM's optional end pipes, escaped pipes and backslashes, code blocks (left alone) and a file that can't be read. `CHECK_REPORT_MD` points it at another copy of the script.
