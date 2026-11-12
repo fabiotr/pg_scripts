@@ -10,7 +10,9 @@ For every sql/*.sql file (and reports/*.sql for includes only):
   - every versioned file (<name>_VVup.sql, <name>_VV-.sql) is included by
     some script, i.e. no unreachable implementation
   - the fallback message is exactly "\\qecho - Not supported on version
-    :svp_server_version" (capital N, no other wording)
+    :svp_server_version" (capital N, no other wording), and a chain of
+    top-level svp_pg_VV branches in sql/ has an \\else (else older versions
+    get nothing; a nested version check is a feature guard and needs none)
 
 psql commands are found with check_sql_style.py's tokenizer, so a \\ line
 inside a comment, a string or a $$ body is not taken as a command.
@@ -83,6 +85,7 @@ def check_file(rel, src, existing, included, problem):
     """Checks one script; rel is its path relative to the repository."""
     folder = rel.split("/")[0]
     depth, cond, last = 0, {}, {}
+    chain = {}  # depth -> [line of its \if, has an svp_pg_VV branch, has an \else]
     for line, text in commands(src):
         word = text[1:].split(None, 1)
         cmd, rest = (word[0], text) if word else ("", text)
@@ -90,9 +93,12 @@ def check_file(rel, src, existing, included, problem):
             depth += 1
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = last[depth] = m.group(1) if m else ""
+            chain[depth] = [line, bool(m), False]
         elif cmd == "elif" and len(word) > 1:
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = m.group(1) if m else ""
+            if m and depth in chain:
+                chain[depth][1] = True
             if cond[depth] and last.get(depth) and \
                     version_num(cond[depth]) >= version_num(last[depth]):
                 problem(rel, line, f"branch svp_pg_{cond[depth]} comes after svp_pg_{last[depth]} "
@@ -101,7 +107,15 @@ def check_file(rel, src, existing, included, problem):
                 last[depth] = cond[depth]
         elif cmd == "else":
             cond[depth] = ""
+            if depth in chain:
+                chain[depth][2] = True
         elif cmd == "endif":
+            c = chain.pop(depth, None)
+            # a top-level version chain (a dispatcher) without \else prints
+            # nothing on older versions; a nested one is a feature guard
+            if c and c[1] and not c[2] and depth == 1 and folder == "sql":
+                problem(rel, c[0], "version branches without an \\else: add "
+                                   '"\\else  \\qecho - Not supported on version :svp_server_version"')
             depth = max(depth - 1, 0)
         elif cmd in ("i", "ir") and (m := INCLUDE_RE.match(text)):
             target = m.group(2)

@@ -119,6 +119,14 @@ class CheckReadmeTest(unittest.TestCase):
         self.assertNotIn("`a.sql`", out)
         self.assertIn("`b.sql`: version cell '9.5+' isn't", out)
 
+    def test_version_cells_that_are_not_a_major(self):
+        self.sql("a.sql", DISPATCHER.format(name="a").replace("svp_pg_95", "svp_pg_10").replace("_95up", "_10up"))
+        for cell in ("PG >= 10.1", "PG >= 9.5.3", "PG >= 9", "PG >= 9.7", "PG >= 7.4"):
+            self.readme(f"| Database | `a.sql` | {cell} | A |")
+            rc, out = self.run_check()
+            self.assertEqual(rc, 1, (cell, out))
+            self.assertIn("isn't", out)
+
     def test_two_digit_versions(self):
         self.sql("a.sql", DISPATCHER.format(name="a").replace("svp_pg_95", "svp_pg_10").replace("_95up", "_10up"))
         self.readme("| Database | `a.sql` | PG >= 10 | A |")

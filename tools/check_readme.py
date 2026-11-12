@@ -93,15 +93,21 @@ def min_version(text):
 
 
 def parse_cell(cell):
-    """'PG >= 9.5' -> '95', 'PG >= 10' -> '10', '' or 'PG >= 8.2' -> '82'."""
+    """'PG >= 9.5' -> '95', 'PG >= 10' -> '10', '' or 'PG >= 8.2' -> '82'; None
+    for anything else: a minor release (PG >= 10.1, PG >= 9.5.3), a missing
+    minor before 10 (PG >= 9) or a version that doesn't exist (PG >= 9.7)."""
     cell = cell.strip()
     if not cell:
         return "82"
     m = re.fullmatch(r"PG\s*>=\s*(\d+)(?:\.(\d+))?", cell)
     if not m:
         return None
-    major, minor = m.group(1), m.group(2)
-    return major if int(major) >= 10 else f"{major}{minor or '0'}"
+    major, minor = int(m.group(1)), m.group(2)
+    if major >= 10:
+        v = None if minor is not None else str(major)
+    else:
+        v = None if minor is None else f"{major}{minor}"
+    return v if v in ORDER else None
 
 
 def check(repo):

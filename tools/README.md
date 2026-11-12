@@ -56,7 +56,8 @@ The check reports:
 - A branch `\if :svp_pg_VV` / `\elif :svp_pg_VV` that includes a `<name>_WWup.sql` with another version.
 - `svp_pg_*` branches of one `\if` chain that don't go from newest to oldest version (`96` is 9.6 and `82` is 8.2, both older than `10`).
 - A versioned file (`<name>_VVup.sql`, `<name>_VV-.sql`) that no script includes, i.e. an unreachable implementation.
-- `\qecho - not supported on version` with a lowercase `n`.
+- `\qecho - not supported on version` with a lowercase `n`, or any other wording than exactly `\qecho - Not supported on version :svp_server_version` (e.g. `- x is not supported on version`, `- NOT SUPPORTED ON VERSION`).
+- A top-level chain of `svp_pg_VV` branches in `sql/` without an `\else`: older versions would print nothing. A nested version check inside a feature guard (`\if :svp_lib` … `\if :svp_pg_91`) needs none.
 
 psql commands are found with `check_sql_style.py`'s tokenizer, so a `\` line inside a comment, a string or a `$$` body isn't taken as a command.
 
@@ -92,7 +93,7 @@ The catalog in the main README is the list users read; it drifts when a script i
 
 - An entry script of `sql/` (a dispatcher or an unversioned file) with no catalog row. `variables.sql` needs none.
 - A catalog row whose file is in neither `sql/` nor `reports/`.
-- A "PG >= X.Y" cell that differs from the dispatcher: the oldest version among its top-level `\if` / `\elif :svp_pg_VV` branches, unless its `\else` still includes a file (then every version). An empty cell and "PG >= 8.2" both mean 8.2; a "PG < X" cell (a removed feature, e.g. `tables_with_oid.sql`) isn't compared. Nested `\if`s (privileges, extensions) don't count.
+- A "PG >= X.Y" cell that differs from the dispatcher: the oldest version among its top-level `\if` / `\elif :svp_pg_VV` branches, unless its `\else` still includes a file (then every version). An empty cell and "PG >= 8.2" both mean 8.2; a "PG < X" cell (a removed feature, e.g. `tables_with_oid.sql`) isn't compared. Nested `\if`s (privileges, extensions) don't count. A cell that isn't a major version is reported too: a minor release (`PG >= 10.1`, `PG >= 9.5.3`), a missing minor before 10 (`PG >= 9`) or a version that doesn't exist (`PG >= 9.7`).
 
 ```bash
 ./tools/check_readme.py [repo_dir]
