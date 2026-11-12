@@ -4,7 +4,7 @@ SELECT
     i.relname AS "Index",
     lpad(pg_size_pretty(pg_table_size(x.indrelid)), 11) AS "Table Size",
     lpad(pg_size_pretty(pg_relation_size(x.indexrelid)), 11) AS "Index Size",
-    trunc(100 * pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid),1) AS "Ind/Table %",
+    trunc(100.0 * pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid),1) AS "Ind/Table %",
     --t.spcname AS tablespace,
     pg_get_indexdef(i.oid) AS indexdef
 FROM pg_index x
