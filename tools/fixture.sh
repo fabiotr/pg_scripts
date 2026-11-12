@@ -334,7 +334,9 @@ EOF
   [[ $n -ge 1000 ]] && echo "ANALYZE part_events;"
   [[ $n -ge 1100 ]] && echo "ANALYZE part_hash;"
   [[ $n -ge 901 ]] && echo "ANALYZE coll_tbl; ANALYZE unlogged_cache;"
-  [[ $n -ge 904 ]] && echo "ANALYZE docs_jsonb;"
+  # an if, not [[ ]] &&: as the group's last command a false test would make
+  # build_sql fail under set -e on the versions without jsonb
+  if [[ $n -ge 904 ]]; then echo "ANALYZE docs_jsonb;"; fi
   } > "$B"
 }
 
