@@ -335,7 +335,6 @@ EOF
   [[ $n -ge 1100 ]] && echo "ANALYZE part_hash;"
   [[ $n -ge 901 ]] && echo "ANALYZE coll_tbl; ANALYZE unlogged_cache;"
   [[ $n -ge 904 ]] && echo "ANALYZE docs_jsonb;"
-  echo "INSERT INTO fixture_info VALUES ($FIXTURE_VERSION, now());"
   } > "$B"
 }
 
@@ -379,6 +378,8 @@ do_build() {
   [[ $n -lt 803 ]] && P -d "$DB" -c "CREATE INDEX inv_tbl_k_invalid ON inv_tbl (k)" \
       -c "UPDATE pg_index SET indisvalid = false WHERE indexrelid = 'inv_tbl_k_invalid'::regclass" >/dev/null
   [[ $(P -d "$DB" -Atc "SELECT count(*) FROM pg_index WHERE NOT indisvalid") -ge 1 ]] || die "no invalid index"
+  # complete: only now the version row, which makes the next run skip the build
+  P -d "$DB" -v ON_ERROR_STOP=1 -c "INSERT INTO fixture_info VALUES ($FIXTURE_VERSION, now())" >/dev/null
   echo "fixture pg$v: $DB built (version $FIXTURE_VERSION, $(P -d "$DB" -Atc "SELECT pg_size_pretty(pg_database_size(current_database()))"))"
 }
 
@@ -387,6 +388,8 @@ do_load() {
   local L="$TMP/load.sql" i
   {
     echo "SET client_min_messages TO warning;"
+    # DELETE activity too (rows from the previous load), and keeps no_pk from growing
+    echo "DELETE FROM no_pk WHERE b = 'load';"
     for i in $(seq 1 60); do
       echo "SELECT count(*) FROM bloat_upd WHERE id = $i;"
       echo "SELECT * FROM idx_zoo WHERE a = $((i * 7 % 1000)) AND b = $((i % 7));"

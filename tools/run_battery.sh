@@ -70,6 +70,9 @@ OUT=${OUT:-battery_out/$v}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 
 if [[ -n "$ONLY" ]]; then SCRIPTS=$(for s in $ONLY; do echo "$s.sql"; done)
 else SCRIPTS=$(cd "$REPO/sql" && ls *.sql | grep -vE '_[0-9]{2}(up|-)\.sql$'); fi
+# statistics resets last: in name order stats_reset_all would zero the
+# counters that tables_delete/_insert/_update and others read after it
+SCRIPTS=$(printf '%s\n' $SCRIPTS | grep -v '^stats_reset' || true; printf '%s\n' $SCRIPTS | grep '^stats_reset' || true)
 
 fix() { "$REPO/tools/fixture.sh" "$@" >> "$OUT/fixture.log" 2>&1; }
 CSV="$OUT/results.csv"
@@ -112,6 +115,7 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2
   else
     rrc=0
+    rm -rf "$OUT/reports"  # a reused output directory: count only this run's reports
     (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" -o "$OUT/reports" "$SERVICE") \
       </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
     md=$(cat "$OUT"/reports/*/*.md 2>/dev/null || true)

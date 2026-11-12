@@ -138,6 +138,14 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 2, out)
         self.assertIn("82-99", out)
 
+    def test_results_without_runs_fail(self):
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "results.csv").write_text(HEADER)
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("no runs recorded", out)
+
     def test_no_results(self):
         (self.root / "out").mkdir()
         rc, out = self.check()

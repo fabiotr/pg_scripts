@@ -136,10 +136,14 @@ def main(argv):
     new = defaultdict(lambda: defaultdict(list))  # script -> first message -> versions
     n_known = 0
     for c in csvs:
+        rows = 0
         for r in csv.DictReader(c.open(newline="")):
-            runs += 1
+            rows += 1
             versions.add(r["version"])
             ran.add((r["script"], r["version"]))
+        runs += rows
+        if not rows:  # header only: an interrupted or never-started battery is not a clean one
+            new["(no runs)"][f"no runs recorded in {c}"].append(c.parent.name)
         for v, s, msgs in problems(c):
             hit = next((e for e in known if e["script"] == s
                         and (e["versions"] is None or v in e["versions"])
