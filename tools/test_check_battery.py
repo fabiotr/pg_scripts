@@ -264,6 +264,38 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn('empty column "only" (all 2 rows)', out)
 
+    def test_consecutive_tables_without_a_blank_line(self):
+        # footers off: the second table follows the first one right away
+        text = (" a | b \n---+---\n 1 | x\n 2 | y\n"
+                " name | note \n------+------\n a    |      \n b    |      \n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
+    def test_needs_as_superuser(self):
+        text = "- Needs superuser (or EXECUTE on pg_ls_dir())\n"
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "t.out").write_text(text)
+        (d / "t@low.out").write_text(text)
+        (d / "results.csv").write_text(HEADER + "16,t,0,1,0,0,0,0,1,x\n16,t@low,0,1,0,0,0,0,1,x\n16,END,0,0,0,0,0,0,0,\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW t\n", out)
+        self.assertIn("as superuser: - Needs superuser", out)
+        self.assertNotIn("t@low", out)  # expected without privileges
+
+    def test_lowpriv_role_with_translated_messages(self):
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "LOWPRIV.out").write_text("ERROR:  role r has lc_messages=fr_FR: set ALTER ROLE r SET lc_messages TO 'C'\n")
+        (d / "results.csv").write_text(HEADER + "16,LOWPRIV,1,1,1,0,0,0,0,\n16,END,0,0,0,0,0,0,0,\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW LOWPRIV", out)
+        self.assertIn("lc_messages=fr_FR", out)
+
     def test_one_row_table_and_filled_columns_pass(self):
         self.run_version("16", {"t": (0, " name | note \n------+------\n a    |      \n(1 row)\n", False),
                                 "u": (0, " name | n \n------+---\n a    | 1 \n b    | 2 \n", False)})

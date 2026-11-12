@@ -25,7 +25,9 @@ stale entry with --strict), 2 when the input can't be read (a PATH that doesn't
 exist or holds no results.csv).
 
 It also reports a column that is empty in every row of a table with 2 or
-more rows ('empty column "X" (all N rows)'): a value the script never gets.
+more rows ('empty column "X" (all N rows)'): a value the script never gets;
+and a "- Needs ..." line in a superuser run (rows without @low), where the
+fixture installs every extension: a privilege or extension check gone wrong.
 
 known_failures.csv columns: script,versions,pattern,reason
   script:   an entry for "x" also covers "x@low" (run_battery.sh --lowpriv);
@@ -153,6 +155,11 @@ def tables(lines):
             rows, cont = [], False
             while j < len(lines) and (j < end if end is not None
                                       else lines[j].strip() and not FOOTER.match(lines[j].strip())):
+                # with footers off, the next table can follow right away
+                # (as normalize_md.py handles): a header line or a \\x record
+                if not cont and (RECORD.match(lines[j]) or (
+                        j + 1 < len(lines) and lines[j].strip() and SEP_ALIGNED.match(lines[j + 1].strip()))):
+                    break
                 cells, more = cut(lines[j], bounds)
                 if cont and rows:  # the rest of a multi-line value
                     rows[-1] = [p + ("\n" + c if c else "") for p, c in zip(rows[-1], cells)]
@@ -196,6 +203,12 @@ def empty_columns(path):
     return out
 
 
+def needs_lines(path):
+    if not path.exists():
+        return []
+    return [f"as superuser: {l.strip()}" for l in path.open(errors="replace") if l.startswith("- Needs")]
+
+
 def problems(csv_path):
     """Yield (version, script, [messages]) for every failed run in one results.csv."""
     d = csv_path.parent
@@ -213,10 +226,14 @@ def problems(csv_path):
             for md in sorted(d.glob("reports/*/*.md")):
                 msgs += error_lines(md)
         else:
-            empty = [] if s.startswith(("FIXTURE", "CONNECT")) else empty_columns(d / f"{s}.out")
-            if not (err or fat or to or rc or empty):
+            plain = not s.startswith(("FIXTURE", "CONNECT", "LOWPRIV"))
+            empty = empty_columns(d / f"{s}.out") if plain else []
+            # "- Needs ..." in a superuser run, on the fixture that installs every
+            # extension: a privilege or extension check that is wrong
+            needs = needs_lines(d / f"{s}.out") if plain and "@" not in s and int(r["needs"] or 0) else []
+            if not (err or fat or to or rc or empty or needs):
                 continue
-            msgs = error_lines(d / f"{s}.out") + empty
+            msgs = error_lines(d / f"{s}.out") + empty + needs
         if to:
             msgs.append("TIMEOUT")
         elif rc and msgs:

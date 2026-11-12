@@ -150,6 +150,18 @@ for s in $SCRIPTS; do
 done
 # the read-only scripts again as an unprivileged user (e.g. pg_monitor): they
 # must print "- Needs ..." where they lack a privilege, not fail
+# The role sets its own lc_messages (only a superuser may at login): with
+# translated messages ("ERREUR:") the ERROR count would miss failures, so the
+# pass only runs when the role's messages are in English
+lowpriv_ok() {
+  local lm
+  lm=$(PGOPTIONS="${PGOPTIONS//-c lc_messages=C/}" psql -X -At -U "$LOWPRIV" -d "$DB" -c 'SHOW lc_messages' </dev/null 2>&1) || lm="(cannot connect: $lm)"
+  if [[ $lm =~ ^(C|POSIX|en)([._@].*)?$ ]]; then return 0; fi
+  echo "ERROR:  role $LOWPRIV has lc_messages=$lm: set ALTER ROLE $LOWPRIV SET lc_messages TO 'C' (the battery reads English messages)" > "$OUT/LOWPRIV.out"
+  echo "$v,LOWPRIV,1,1,1,0,0,0,0," >> "$CSV"
+  return 1
+}
+if [[ -n "$LOWPRIV" ]] && ! lowpriv_ok; then LOWPRIV=""; fi
 if [[ -n "$LOWPRIV" ]]; then
   for s in $SCRIPTS; do
     writes "${s%.sql}" || run_script "$s" "$REPO/sql" "${s%.sql}@low" "$LOWPRIV"
