@@ -106,21 +106,16 @@ SET client_min_messages TO warning;
 
       \qecho '### Publications'
       \qecho
-      -- not a dispatcher: no variables.sql to turn off the \timing on the previous
-      -- dispatcher left, which would print "Time: ... ms" into the report
-      \timing off
       \ir publications.sql
       \qecho
 
       \qecho '### Schemas in publications'
       \qecho
-      \timing off
       \ir publication_schemas.sql
       \qecho
 
       \qecho '### Tables in publications'
       \qecho
-      \timing off
       \ir publication_tables.sql
       \qecho
     \endif
@@ -399,7 +394,6 @@ SET client_min_messages TO warning;
 
     \qecho '### Partial indexes'
     \qecho
-    \timing off
     \ir index_partial.sql
     \qecho
 
@@ -435,7 +429,6 @@ SET client_min_messages TO warning;
 
     \qecho '### Non BTREE indexes'
     \qecho
-    \timing off
     \ir index_non_btree.sql
     \qecho
 
@@ -509,7 +502,6 @@ SET client_min_messages TO warning;
 
     \qecho '### Vacuum "to prevent wraparound"'
     \qecho
-    \timing off
     \ir vacuum_wraparound.sql
     \qecho
 

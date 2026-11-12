@@ -1,6 +1,9 @@
-SELECT  'DROP TABLE ' || quote_ident(schemaname) || '.' || quote_ident(relname) || ' CASCADE;'
-    FROM pg_stat_user_tables 
-    WHERE 
-        seq_scan + coalesce(idx_scan, 0) < 10 AND
-        schemaname NOT LIKE 'pg_%'
-    ORDER BY schemaname, relname;
+\ir variables.sql
+
+\if :svp_pg_82
+  \ir tables_not_used_drop_82up.sql
+\else
+  \qecho - Not supported on version :svp_server_version
+\endif
+\timing on
+\set QUIET off
