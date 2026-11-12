@@ -418,6 +418,7 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 | `run_battery.sh`             | Runs every entry script of `sql/` and both reports on one server and records exit codes and `ERROR`/`FATAL`/timeouts. |
 | `check_battery.py`           | Compares the results with `known_failures.csv`; exits with 1 on a new problem, an interrupted run or a version that didn't run. |
 | `known_failures.csv`         | Errors the test environment can't avoid (a script that needs input, another server or an extension). |
+| `check_report_md.py`         | Checks the generated Markdown reports: psql row counts or timings leaking in, broken tables, unclosed code blocks. |
 
 ```bash
 PGSERVICE=pg16 ./tools/run_battery.sh --fixture -o /tmp/battery/16   # one run per version
