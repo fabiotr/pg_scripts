@@ -193,6 +193,24 @@ class CheckDispatchers(unittest.TestCase):
         code, out = run(with_files({"sql/t.sql": nested}))
         self.assertEqual(code, 0, out)
 
+    def test_else_must_print_the_template(self):
+        chain = "\\if :svp_pg_16\n    \\ir t_16up.sql\n\\else\n{}\\endif\n"
+        bad = ["    \\echo - Not supported on version :svp_server_version\n",
+               "    \\qecho - Not supported on this version\n",
+               "    \\qecho - Unsupported version :svp_server_version\n",
+               "    \\qecho '- t is not supported on version ' :svp_server_version\n",
+               ""]
+        for body in bad:
+            self.assertProblem(with_files({"sql/t.sql": chain.format(body), "sql/t_10up.sql": None}),
+                               "doesn't print exactly", "sql/t.sql:1:")
+        good = ["    \\qecho '# WARNING'\n    \\qecho - Not supported on version :svp_server_version\n",
+                "    \\set svp_x FALSE\n",           # sets defaults, as variables.sql: not a fallback message
+                "    \\ir t_old.sql\n"]             # runs something on older versions
+        for body in good:
+            code, out = run(with_files({"sql/t.sql": chain.format(body), "sql/t_old.sql": "SELECT 1;\n",
+                                        "sql/t_10up.sql": None}))
+            self.assertEqual(code, 0, (body, out))
+
     def test_version_chain_without_else(self):
         files = with_files({"sql/t.sql": "\\if :svp_pg_16\n    \\ir t_16up.sql\n\\endif\n",
                             "sql/t_10up.sql": None})

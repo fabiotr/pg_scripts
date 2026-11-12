@@ -49,6 +49,7 @@ INCLUDE_RE = re.compile(r"\\(ir?)\s+(\S+)")
 # A versioned implementation: <name>_16up.sql, <name>_95-.sql
 UP_FILE_RE = re.compile(r"_([0-9]+)up\.sql$")
 VERSIONED_RE = re.compile(r"_[0-9]+(?:up|-)\.sql$")
+CANONICAL = "\\qecho - Not supported on version :svp_server_version"
 LOWERCASE_MESSAGE = "\\qecho - not supported on version"
 # any other wording of the fallback ("- vacuum_x is not supported on version ...")
 # (?-i:...): only the exact wording is accepted; IGNORECASE finds the variants
@@ -85,7 +86,10 @@ def check_file(rel, src, existing, included, problem):
     """Checks one script; rel is its path relative to the repository."""
     folder = rel.split("/")[0]
     depth, cond, last = 0, {}, {}
-    chain = {}  # depth -> [line of its \if, has an svp_pg_VV branch, has an \else]
+    # depth -> [line of its \if, has an svp_pg_VV branch, has an \else,
+    #           its \else prints the template message, its \else prints
+    #           something, its \else does anything at all]
+    chain = {}
     for line, text in commands(src):
         word = text[1:].split(None, 1)
         cmd, rest = (word[0], text) if word else ("", text)
@@ -93,7 +97,7 @@ def check_file(rel, src, existing, included, problem):
             depth += 1
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = last[depth] = m.group(1) if m else ""
-            chain[depth] = [line, bool(m), False]
+            chain[depth] = [line, bool(m), False, False, False, False]
         elif cmd == "elif" and len(word) > 1:
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = m.group(1) if m else ""
@@ -113,9 +117,16 @@ def check_file(rel, src, existing, included, problem):
             c = chain.pop(depth, None)
             # a top-level version chain (a dispatcher) without \else prints
             # nothing on older versions; a nested one is a feature guard
-            if c and c[1] and not c[2] and depth == 1 and folder == "sql":
-                problem(rel, c[0], "version branches without an \\else: add "
-                                   '"\\else  \\qecho - Not supported on version :svp_server_version"')
+            if c and c[1] and depth == 1 and folder == "sql":
+                if not c[2]:
+                    problem(rel, c[0], "version branches without an \\else: add "
+                                       '"\\else  \\qecho - Not supported on version :svp_server_version"')
+                # an \else that prints, or does nothing at all, is the fallback for
+                # older versions: the template message (an \else that only sets
+                # variables, as in variables.sql, isn't a fallback message)
+                elif not c[3] and (c[4] or not c[5]):
+                    problem(rel, c[0], "the \\else of these version branches doesn't print exactly "
+                                       '"\\qecho - Not supported on version :svp_server_version"')
             depth = max(depth - 1, 0)
         elif cmd in ("i", "ir") and (m := INCLUDE_RE.match(text)):
             target = m.group(2)
@@ -132,6 +143,16 @@ def check_file(rel, src, existing, included, problem):
             up = UP_FILE_RE.search(name)
             if up and depth > 0 and cond.get(depth) and up.group(1) != cond[depth]:
                 problem(rel, line, f"branch svp_pg_{cond[depth]} includes {name} (version mismatch)")
+        in_else = depth >= 1 and chain.get(1) and chain[1][2] and cmd not in ("else", "endif")
+        if in_else:
+            chain[1][5] = True
+            if cmd in ("qecho", "echo"):
+                chain[1][4] = True
+        if text.strip() == CANONICAL and depth == 1 and chain.get(1) and chain[1][2]:
+            chain[1][3] = True
+        # the \else may also include a file (every version runs): then it needs no message
+        if cmd in ("i", "ir") and depth == 1 and chain.get(1) and chain[1][2]:
+            chain[1][3] = True
         if LOWERCASE_MESSAGE in text:
             problem(rel, line, 'use "\\qecho - Not supported on version :svp_server_version" '
                                "(capital N)")

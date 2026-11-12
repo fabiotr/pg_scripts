@@ -127,6 +127,26 @@ class CheckReadmeTest(unittest.TestCase):
             self.assertEqual(rc, 1, (cell, out))
             self.assertIn("isn't", out)
 
+    def test_a_version_newer_than_the_list(self):
+        # svp_pg_20 when PG 20 comes: ordered as the newest, no crash
+        self.sql("a.sql", DISPATCHER.format(name="a").replace("svp_pg_16", "svp_pg_20").replace("_16up", "_20up"))
+        self.readme("| Database | `a.sql` | PG >= 9.5 | A |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+        self.sql("a.sql", "\\if :svp_pg_20\n  \\ir a_20up.sql\n\\else\n  \\qecho - Not supported on version x\n\\endif\n")
+        rc, out = self.run_check()
+        self.assertIn("supports PG >= 20", out)
+        self.readme("| Database | `a.sql` | PG >= 20 | A |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+
+    def test_leading_zeros_are_not_a_version(self):
+        self.sql("a.sql", DISPATCHER.format(name="a"))
+        for cell in ("PG >= 09.5", "PG >= 010"):
+            self.readme(f"| Database | `a.sql` | {cell} | A |")
+            rc, out = self.run_check()
+            self.assertEqual(rc, 1, (cell, out))
+
     def test_two_digit_versions(self):
         self.sql("a.sql", DISPATCHER.format(name="a").replace("svp_pg_95", "svp_pg_10").replace("_95up", "_10up"))
         self.readme("| Database | `a.sql` | PG >= 10 | A |")

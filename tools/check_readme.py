@@ -44,8 +44,16 @@ INCLUDE = re.compile(r"^\s*\\ir?\s")
 
 
 def label(v):
-    """'82' -> '8.2', '96' -> '9.6', '10' -> '10'."""
-    return v if v.startswith("1") else f"{v[0]}.{v[1]}"
+    """'82' -> '8.2', '96' -> '9.6', '10' -> '10', '20' -> '20'. Labels from 80
+    are 8.x/9.x; below, the major itself (10 ... 79)."""
+    return f"{v[0]}.{v[1]}" if int(v) >= 80 else v
+
+
+def vkey(v):
+    """Sort key, oldest first: 8.2 ... 9.6, then 10, 11, ... (also a major not
+    in ORDER yet, such as svp_pg_20 when PG 20 comes, instead of failing)."""
+    n = int(v)
+    return n * 10 if n >= 80 else 1000 + n
 
 
 def commands(src):
@@ -89,7 +97,7 @@ def min_version(text):
         return None
     if fallback:
         return "82"  # a version chain's \\else still runs a query: every version
-    return min(versions, key=ORDER.index)
+    return min(versions, key=vkey)
 
 
 def parse_cell(cell):
@@ -99,14 +107,14 @@ def parse_cell(cell):
     cell = cell.strip()
     if not cell:
         return "82"
-    m = re.fullmatch(r"PG\s*>=\s*(\d+)(?:\.(\d+))?", cell)
+    # no leading zeros: "PG >= 09.5" and "PG >= 010" aren't how versions are written
+    m = re.fullmatch(r"PG\s*>=\s*([1-9]\d*)(?:\.(0|[1-9]\d*))?", cell)
     if not m:
         return None
     major, minor = int(m.group(1)), m.group(2)
-    if major >= 10:
-        v = None if minor is not None else str(major)
-    else:
-        v = None if minor is None else f"{major}{minor}"
+    if major >= 10:  # 10 on: the major alone, also one newer than ORDER (PG >= 20)
+        return None if minor is not None or major >= 80 else str(major)
+    v = None if minor is None else f"{major}{minor}"
     return v if v in ORDER else None
 
 
