@@ -12,7 +12,8 @@
 # connection through the usual libpq variables (PGHOST, PGPORT, PGUSER,
 # PGSERVICE...). The report SQL files run directly (rows report_cluster and
 # report_database, stderr included); generate_reports.sh runs too (row REPORTS)
-# when there is a pg_service.conf entry (-S or PGSERVICE).
+# when there is a pg_service.conf entry (-S or PGSERVICE), and
+# tools/check_report_md.py then checks its Markdown (row report_md).
 #
 # Important: for THROWAWAY test clusters only. The battery runs everything,
 # including kill_* (terminates sessions), stats_reset_all (resets statistics),
@@ -161,6 +162,13 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
       </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
     md=$(cat "$OUT"/reports/*/*.md 2>/dev/null || true)
     echo "$v,REPORTS,$rrc,$(printf '%s' "$md" | grep -c '' || true),$(printf '%s' "$md" | grep -c 'ERROR:' || true),$(cnt 'FATAL:' "$OUT/reports.log"),0,0,0,$(ls "$OUT"/reports/*/*.md 2>/dev/null | wc -l | tr -d ' ')" >> "$CSV"
+    # the Markdown itself: psql footers or "Time:" lines leaking in, broken tables
+    mds=("$OUT"/reports/*/*.md)
+    if [[ -e "${mds[0]}" ]]; then
+      o="$OUT/report_md.out"; rc=0
+      python3 "$REPO/tools/check_report_md.py" "${mds[@]}" > "$o" 2>&1 || rc=$?
+      echo "$v,report_md,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt 'ERROR:' "$o"),0,0,0,0,$(md5f "$o")" >> "$CSV"
+    fi
   fi
 fi
 end_row
