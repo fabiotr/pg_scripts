@@ -273,6 +273,15 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn('empty column "note" (all 2 rows)', out)
 
+    def test_aligned_table_right_after_expanded_records(self):
+        text = ("-[ RECORD 1 ]---\nname | a\nsize | 1\n"
+                "-[ RECORD 2 ]---\nname | b\nsize | 2\n"
+                " key | note \n-----+------\n x   |      \n y   |      \n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
     def test_needs_as_superuser(self):
         text = "- Needs superuser (or EXECUTE on pg_ls_dir())\n"
         d = self.root / "out" / "16"

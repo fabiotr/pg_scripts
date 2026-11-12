@@ -172,6 +172,11 @@ def tables(lines):
         elif RECORD.match(lines[i]):
             recs, cur = [], {}
             while i < len(lines) and (RECORD.match(lines[i]) or "|" in lines[i]):
+                # an aligned table right after (footers off): leave its header
+                # for the outer loop
+                if (not RECORD.match(lines[i]) and i + 1 < len(lines)
+                        and SEP_ALIGNED.match(lines[i + 1].strip())):
+                    break
                 if RECORD.match(lines[i]):
                     if cur:
                         recs.append(cur)
