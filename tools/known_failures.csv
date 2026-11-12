@@ -31,8 +31,8 @@ stats_last_reset,all,"empty column ""(stats_reset)""",never reset: stats_reset i
 tables_bloat_approx,all,"empty column ""(Tablespace)""",every table is in the default tablespace
 tablespaces,all,"empty column ""(Access privileges|Location|Options)""","only pg_default and pg_global: no location, options or grants"
 trigger_tables,all,"empty column ""(Defer)""",no deferrable trigger
-report_cluster,all,"empty column ""(Access privileges|Location|Options|Privileges|leader_pid|unit)""","the same sections as conf_others, database_size, tablespaces, connections_running"
-report_database,all,"empty column ""(Avg time|Collation|Default|Hit %|Hit/Tot|ICU Rules|Last|MinMax|Read/Tot|Read/Tot %|Tablespace|Writes|Writes/Call|rowfilter)""","the same sections as the scripts above; Hit %, Read/Tot and Writes are NULL for a zero counter (io_sequence, statements_shared)"
+report_cluster,all,"empty column ""(Access privileges|Location|Options|Privileges|leader_pid|unit|S Read/Day)""","the same sections as conf_others, database_size, tablespaces, connections_running"
+report_database,all,"empty column ""(Avg time|Collation|Default|Hit %|Hit/Tot|ICU Rules|Last|MinMax|Read/Tot|Read/Tot %|Tablespace|Writes|Writes/Call|rowfilter|Dirtied)""","the same sections as the scripts above; Hit %, Read/Tot and Writes are NULL for a zero counter (io_sequence, statements_shared)"
 connections_blocking_vacuum@low,82-96,"empty column ""(Query T|Status|Wait|Xact T|wait_event|waiting)""",before pg_read_all_stats (10) other users' session details are hidden
 connections_by_app_name@low,82-96,"empty column ""(Avg query|Avg xact|Max query|Max xact|Status)""",before pg_read_all_stats (10) other users' session details are hidden
 connections_running@low,82-96,"empty column ""(Q Conn|Q Start|Q Xact|host|waiting)""",before pg_read_all_stats (10) other users' session details are hidden
@@ -45,3 +45,9 @@ statements_rows_call@low,82-96,"empty column ""(id|queryid)""",before pg_read_al
 statements_shared@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
 statements_temp@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
 statements_top5@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_cluster_summary,all,"empty column ""(S Read/Day)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
+statements_cluster_total_by_database,all,"empty column ""(S Read/Day)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
+statements_cluster_total_by_user,all,"empty column ""(S Read/Day)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
+statements_summary_group,all,"empty column ""(S Read/Day)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
+statements_local,all,"empty column ""(Dirtied|Writes)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
+statements_shared,all,"empty column ""(Dirtied|Writes)""","nullif(..., 0): zero when none of the top queries read from disk / dirtied or wrote a page in that run (depends on the cache)"
