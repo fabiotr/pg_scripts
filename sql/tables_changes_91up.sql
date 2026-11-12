@@ -14,7 +14,7 @@ SELECT
     lpad(to_char((coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0)) / reset_days,'FM999G999G999G999'),16) 
         || lpad(' (' || round(100 * (coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0)) / 
         nullif(sum(coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0)) OVER (),0),1) || ' %)',10)                                                       AS "SELECT Rows/Day",
-    lpad(round(100 * (coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0)) /
+    lpad(round(100.0 * (coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0)) /
         nullif(coalesce(n_tup_ins,0) + coalesce(n_tup_upd,0) + coalesce(n_tup_del,0) + coalesce(seq_tup_read,0) + coalesce(idx_tup_fetch,0),0),1)
         || ' %',7)                                                                                                                                       AS "SELECT / DML Rows %"
 FROM
