@@ -11,7 +11,11 @@ SELECT
     lpad(pg_size_pretty(pg_total_relation_size(c.oid)),11) AS "Total Size",
     lpad(pg_size_pretty(pg_table_size(c.oid)),11)          AS "Size",
     lpad(to_char(c.reltuples,'FM999G999G999G999G999'),20) AS "Rows",
-    lpad(pg_size_pretty(trunc(pg_table_size(c.oid) / c.reltuples)::numeric), 11) AS "Avg Row Size"
+    -- reltuples is 0 for an empty analyzed table (crash recovery empties unlogged
+    -- tables) and -1 for one never analyzed (14+): no average then
+    CASE WHEN c.reltuples > 0
+        THEN lpad(pg_size_pretty(trunc(pg_table_size(c.oid) / c.reltuples)::numeric), 11)
+    END AS "Avg Row Size"
 FROM pg_class c
      LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
      LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
