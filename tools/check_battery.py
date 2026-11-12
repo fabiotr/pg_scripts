@@ -38,6 +38,8 @@ from pathlib import Path
 ORDER = ["82", "83", "84", "90", "91", "92", "93", "94", "95", "96",
          "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
 PREFIX = re.compile(r"^psql:[^:]+:\d+: ")
+# psql's own errors (an \ir to a missing file...): "psql:<file>:<line>: error: ..."
+CLIENT_ERROR = re.compile(r"^psql:\S+: error:")
 
 
 def vkey(v):
@@ -80,7 +82,7 @@ def error_lines(path):
     if not path.exists():
         return []
     return [PREFIX.sub("", l.strip()) for l in path.open(errors="replace")
-            if "ERROR:" in l or "FATAL:" in l]
+            if "ERROR:" in l or "FATAL:" in l or CLIENT_ERROR.match(l)]
 
 
 def problems(csv_path):

@@ -82,6 +82,17 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("exit code 2", out)
 
+    def test_psql_client_error(self):
+        out = "psql:a.sql:3: error: a_10up.sql: No such file or directory\n"
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "a.out").write_text(out)
+        # run_battery.sh counts it as an error; psql itself exits with 0
+        (d / "results.csv").write_text(HEADER + "16,a,0,1,1,0,0,0,0,x\n16,END,0,0,0,0,0,0,0,\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("error: a_10up.sql: No such file", out)
+
     def test_known_only_on_listed_versions(self):
         self.run_version("84", {"old_syntax": (0, 'ERROR:  syntax error at or near "WITH"\n', False)})
         self.run_version("90", {"old_syntax": (0, 'ERROR:  syntax error at or near "WITH"\n', False)})

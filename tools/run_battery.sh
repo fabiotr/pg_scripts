@@ -96,12 +96,15 @@ if [[ -n "$FIXTURE" ]]; then
   fix start || fixture_failed
 fi
 
-cnt() { grep -c "$1" "$2" || true; }
+cnt() { grep -cE "$1" "$2" || true; }
+# server errors, plus psql's own (e.g. an \ir to a missing file), which it
+# prints as "psql:<file>:<line>: error: ..." and then exits with 0
+ERR='ERROR:|^psql:[^ ]+: error:'
 for s in $SCRIPTS; do
   o="$OUT/${s%.sql}.out"; rc=0
   (cd "$REPO/sql" && "$TIMEOUT" "$TMO" psql -X -d "$DB" -f "$s" </dev/null > "$o" 2>&1) || rc=$?
   to=0; [[ $rc -eq 124 ]] && to=1
-  echo "$v,${s%.sql},$rc,$(wc -l < "$o" | tr -d ' '),$(cnt 'ERROR:' "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+  echo "$v,${s%.sql},$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
 done
 
 if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
@@ -116,19 +119,23 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
     o="$OUT/report_$k.out"; rc=0
     (cd "$REPO/reports" && "$TIMEOUT" 1200 psql -X -d "$DB" -v sql_dir="$REPO/sql" -f "report_$k.sql" </dev/null > "$o" 2>&1) || rc=$?
     to=0; [[ $rc -eq 124 ]] && to=1
-    echo "$v,report_$k,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt 'ERROR:' "$o"),$(cnt 'FATAL:' "$o"),$to,0,0,$(md5f "$o")" >> "$CSV"
+    echo "$v,report_$k,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,0,0,$(md5f "$o")" >> "$CSV"
   done
   if [[ -z "$SERVICE" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2
   else
     rrc=0
+    # an explicit, empty config: reports/report.conf (git-ignored, local) would
+    # otherwise be read by default and its dbname would win over -n
+    echo "# empty: no per-service overrides for the battery" > "$OUT/report.conf.battery"
     # a reused output directory: count only this run's reports. Only the date
     # folders generate_reports.sh creates go, never the directory itself (with
     # -o at the repository root, $OUT/reports is the repository's reports/)
     if [[ -d "$OUT/reports" ]]; then
       find "$OUT/reports" -mindepth 1 -maxdepth 1 -type d -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' -exec rm -rf {} +
     fi
-    (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" -o "$OUT/reports" "$SERVICE") \
+    (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" \
+        -c "$OUT/report.conf.battery" -o "$OUT/reports" "$SERVICE") \
       </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
     md=$(cat "$OUT"/reports/*/*.md 2>/dev/null || true)
     echo "$v,REPORTS,$rrc,$(printf '%s' "$md" | grep -c '' || true),$(printf '%s' "$md" | grep -c 'ERROR:' || true),$(cnt 'FATAL:' "$OUT/reports.log"),0,0,0,$(ls "$OUT"/reports/*/*.md 2>/dev/null | wc -l | tr -d ' ')" >> "$CSV"
