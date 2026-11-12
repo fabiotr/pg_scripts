@@ -12,7 +12,7 @@ SELECT
     to_char(now() - greatest(t.last_autoanalyze, t.last_analyze), 'DD HH24:MI:SS')
         || CASE WHEN coalesce(t.last_autoanalyze, '-infinity') > coalesce(t.last_analyze, '-infinity') THEN ' A' ELSE ' M' END AS "Last",
     t.autoanalyze_count AS "Qt A",
-    CASE t.autoanalyze_count WHEN 0 THEN NULL ELSE to_char((now() - d.stats_reset) / t.autoanalyze_count,'DD HH24:MI:SS') END AS "Avg time",
+    CASE t.autoanalyze_count WHEN 0 THEN NULL ELSE to_char((now() - COALESCE(d.stats_reset, :svp_stats_start_db)) / t.autoanalyze_count,'DD HH24:MI:SS') END AS "Avg time",
     CASE WHEN NOT e.enabled THEN 'X' END AS "Disabled"
 FROM
     pg_stat_user_tables t

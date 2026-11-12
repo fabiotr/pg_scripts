@@ -149,3 +149,34 @@ SELECT
   \set svp_read_file :svp_rol_super
   \set svp_read_file_range :svp_rol_super
 \endif
+
+-- pg_stat_file() checks for superuser in its own code before 11; missing_ok exists since 9.5
+\if :svp_pg_11
+  SELECT coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_stat_file(text, boolean)'), 'EXECUTE'), FALSE) AS stat_file
+  \gset svp_
+\elif :svp_pg_95
+  \set svp_stat_file :svp_rol_super
+\else
+  \set svp_stat_file FALSE
+\endif
+
+-- Start of the statistics when stats_reset is NULL (never reset: from 15 on a new database or
+-- replication slot is no longer stamped with its creation time). SQL expressions, used as
+-- COALESCE(stats_reset, :svp_stats_start_db) in a query on pg_stat_database (needs its datid).
+-- svp_stats_start_shared: last reset of the shared statistics, which are also stamped when the
+--   statistics are initialized (initdb, crash), so the counters can't be older than it.
+-- svp_stats_start_db: the later of that and the database creation (modification time of its
+--   PG_VERSION file, when pg_stat_file() is allowed, not on DBaaS, and
+--   the database is in pg_default).
+\if :svp_pg_94
+  \set svp_stats_start_shared '(SELECT stats_reset FROM pg_stat_archiver)'
+\else
+  \set svp_stats_start_shared '(SELECT stats_reset FROM pg_stat_bgwriter)'
+\endif
+\set svp_stats_start_db :svp_stats_start_shared
+-- Not on DBaaS: its data directory isn't the real storage, so the file times can't be trusted
+\if :svp_not_dbaas
+  \if :svp_stat_file
+    \set svp_stats_start_db 'GREATEST((pg_stat_file(''base/'' || datid || ''/PG_VERSION'', TRUE)).modification, ' :svp_stats_start_shared ')'
+  \endif
+\endif
