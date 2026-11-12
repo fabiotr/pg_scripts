@@ -166,14 +166,17 @@ SELECT
 -- svp_stats_start_shared: last reset of the shared statistics, which are also stamped when the
 --   statistics are initialized (initdb, crash), so the counters can't be older than it.
 -- svp_stats_start_db: the later of that and the database creation (modification time of its
---   PG_VERSION file, when pg_stat_file() is allowed and the database is in pg_default).
+--   PG_VERSION file, when pg_stat_file() is allowed, not on DBaaS, and
+--   the database is in pg_default).
 \if :svp_pg_94
   \set svp_stats_start_shared '(SELECT stats_reset FROM pg_stat_archiver)'
 \else
   \set svp_stats_start_shared '(SELECT stats_reset FROM pg_stat_bgwriter)'
 \endif
-\if :svp_stat_file
-  \set svp_stats_start_db 'GREATEST((pg_stat_file(''base/'' || datid || ''/PG_VERSION'', TRUE)).modification, ' :svp_stats_start_shared ')'
-\else
-  \set svp_stats_start_db :svp_stats_start_shared
+\set svp_stats_start_db :svp_stats_start_shared
+-- Not on DBaaS: its data directory isn't the real storage, so the file times can't be trusted
+\if :svp_not_dbaas
+  \if :svp_stat_file
+    \set svp_stats_start_db 'GREATEST((pg_stat_file(''base/'' || datid || ''/PG_VERSION'', TRUE)).modification, ' :svp_stats_start_shared ')'
+  \endif
 \endif
