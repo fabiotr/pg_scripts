@@ -79,7 +79,10 @@ command -v psql >/dev/null || die "needs psql in PATH"
 # "error:" prefix, and the battery could not tell them from normal output
 [[ $(psql --version | sed -E 's/^[^0-9]*([0-9]+).*/\1/') -ge 12 ]] || die "needs psql 12+ in PATH (client errors are only recognizable from 12 on)"
 if [[ -n "$FIXTURE" ]]; then DB=${DB:-${FIXDB:-fixdb}}; export FIXDB=$DB; else DB=${DB:-${PGDATABASE:-postgres}}; fi
-svn=$(psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) || die "cannot connect (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
+# every psql runs under a timeout: a server that accepts the connection and
+# never answers must not hang the whole battery
+svn=$("$TIMEOUT" 30 psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) \
+  || die "cannot connect, or no answer in 30 s (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
 if [[ $svn -ge 100000 ]]; then v=$(( svn / 10000 )); else v=$(( svn / 10000 * 10 + svn / 100 % 100 )); fi
 OUT=${OUT:-battery_out/$v}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 
@@ -156,9 +159,9 @@ done
 # row (a problem) says why the pass didn't run.
 lowpriv_ok() {
   local out lm su why=""
-  out=$(PGOPTIONS="${PGOPTIONS//-c lc_messages=C/}" psql -X -At -F '|' -U "$LOWPRIV" -d "$DB" \
+  out=$(PGOPTIONS="${PGOPTIONS//-c lc_messages=C/}" "$TIMEOUT" 30 psql -X -At -F '|' -U "$LOWPRIV" -d "$DB" \
         -c "SELECT current_setting('lc_messages'), rolsuper FROM pg_roles WHERE rolname = CURRENT_USER" </dev/null 2>&1) \
-    || why="cannot connect as $LOWPRIV: $out"
+    || why="cannot connect as $LOWPRIV, or no answer in 30 s: $out"
   lm=${out%%|*}; su=${out##*|}
   if [[ -z "$why" && $su == t ]]; then
     why="role $LOWPRIV is a superuser: the unprivileged pass needs a role without it (e.g. pg_monitor)"
