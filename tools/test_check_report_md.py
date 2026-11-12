@@ -101,6 +101,13 @@ class CheckReportMdTest(unittest.TestCase):
         rc, out = self.check("| a | b |\n|---|---|\n| alpha\u2028beta | 1 kB |\n| x\u2029y | 2 kB |\n")
         self.assertEqual(rc, 0, out)
 
+    def test_separator_forms_gfm_accepts(self):
+        for sep in ("|---|---", "---|---|", "--- | ---", "| :-: | -: |", "|-|-|"):
+            rc, out = self.check(f"| Info | Value |\n{sep}\n| a | b |\n")
+            self.assertEqual(rc, 0, (sep, out))
+        rc, out = self.check("| Info | Value |\n---\n")  # a rule, not a delimiter row
+        self.assertEqual(rc, 1, out)
+
     def test_separator_width(self):
         rc, out = self.check("| a | b |\n|---|\n| 1 | 2 |\n")
         self.assertEqual(rc, 1, out)

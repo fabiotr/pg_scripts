@@ -35,7 +35,9 @@ FEEDBACK = re.compile(
     r"Border style is |Output format is |Tuples only is |Footer is |"
     r"Pager usage is |Title is |Default footer is )")
 FENCE = re.compile(r"^ {0,3}(`{3,})(.*)$")
-SEPARATOR = re.compile(r"^\|(\s*:?-{3,}:?\s*\|)+\s*$")
+# GFM delimiter row: cells of hyphens (one or more) with optional colons, the
+# pipes at both ends optional, but at least one pipe (a bare --- is a rule)
+SEPARATOR = re.compile(r"^(?=.*\|)\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$")
 
 
 def pipes(s):
