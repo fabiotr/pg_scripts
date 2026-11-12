@@ -13,7 +13,7 @@ SELECT
   tuples_skipped                                                                              AS "Rows Skipped",
   trunc((tuples_skipped::numeric   * 100) / nullif(reltuples - tuples_excluded,0)::numeric,1) AS "% Rows Skipped",
   trunc((tuples_processed::numeric * 100) / nullif(reltuples - tuples_excluded,0)::numeric,1) AS "% Rows Copied",
-  trunc(tuples_excluded::numeric * 100 / reltuples::numeric)                                  AS "% Rows excluded"
+  trunc(tuples_excluded::numeric * 100 / nullif(reltuples,0)::numeric)                       AS "% Rows excluded"
 FROM
   pg_stat_progress_copy p
   JOIN pg_stat_activity a USING (pid)
