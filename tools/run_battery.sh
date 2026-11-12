@@ -5,7 +5,8 @@
 # code, output lines and ERROR / FATAL / timeout counts. tools/check_battery.py
 # then compares the results with tools/known_failures.csv.
 #
-# Requirements: bash 4+, psql 10+ in PATH (the scripts need \if; any server
+# Requirements: bash 4+, psql 12+ in PATH (the scripts need 10+ for \if; the
+# battery needs 12+, whose client errors start with "error:"; any server
 # 8.2 -> 18), GNU timeout (`timeout` or Homebrew's `gtimeout`), a superuser
 # connection through the usual libpq variables (PGHOST, PGPORT, PGUSER,
 # PGSERVICE...). The report SQL files run directly (rows report_cluster and
@@ -62,7 +63,9 @@ elif command -v gtimeout >/dev/null; then TIMEOUT=gtimeout
 else die "needs GNU timeout (Linux coreutils, or 'brew install coreutils' for gtimeout)"; fi
 if command -v md5sum >/dev/null; then md5f() { md5sum < "$1" | cut -d' ' -f1; }; else md5f() { md5 -q "$1"; }; fi
 command -v psql >/dev/null || die "needs psql in PATH"
-[[ $(psql --version | sed -E 's/^[^0-9]*([0-9]+).*/\1/') -ge 10 ]] || die "needs psql 10+ in PATH (the scripts use \\if)"
+# psql 12+: before it, client errors (e.g. an \ir to a missing file) have no
+# "error:" prefix, and the battery could not tell them from normal output
+[[ $(psql --version | sed -E 's/^[^0-9]*([0-9]+).*/\1/') -ge 12 ]] || die "needs psql 12+ in PATH (client errors are only recognizable from 12 on)"
 if [[ -n "$FIXTURE" ]]; then DB=${DB:-${FIXDB:-fixdb}}; export FIXDB=$DB; else DB=${DB:-${PGDATABASE:-postgres}}; fi
 svn=$(psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) || die "cannot connect (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
 if [[ $svn -ge 100000 ]]; then v=$(( svn / 10000 )); else v=$(( svn / 10000 * 10 + svn / 100 % 100 )); fi

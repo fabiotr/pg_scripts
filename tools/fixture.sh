@@ -77,6 +77,9 @@ for a in "$@"; do
   esac
 done
 
+# English messages from psql and the server: the load step looks for ERROR,
+# which a translated psql prints differently ("ERRO", ...)
+export LC_ALL=C PGOPTIONS="${PGOPTIONS:+$PGOPTIONS }-c lc_messages=C"
 P() { psql -X -q "$@" </dev/null; }
 die() { echo "fixture${v:+ pg$v}: $*" >&2; exit 1; }
 # the name is used unquoted in SQL: only a plain lowercase identifier, so the

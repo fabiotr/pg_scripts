@@ -14,7 +14,7 @@ Tools for contributors, not part of the script library. The static checks keep t
 | `known_failures.csv`         | Errors the battery expects (test environment, not bugs).       |
 | `test_check_battery.py`      | Tests for `check_battery.py`.                                   |
 
-Requirements for the static checks: Python 3.9+, standard library only. No other packages, and no database. The battery also needs bash 4+, psql 10+, GNU `timeout` and a throwaway PostgreSQL server.
+Requirements for the static checks: Python 3.9+, standard library only. No other packages, and no database. The battery also needs bash 4+, psql 12+ (any server from 8.2; the scripts themselves need psql 10+), GNU `timeout` and a throwaway PostgreSQL server.
 
 ## Quick start
 
