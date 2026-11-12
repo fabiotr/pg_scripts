@@ -31,6 +31,9 @@
 #       --reuse-fixture  with --fixture: keep the database when it is already at
 #                        the fixture's version (faster, e.g. to iterate on one
 #                        script), only load it again
+#   -L, --lowpriv ROLE   also run the read-only scripts and the report SQL as
+#                        this unprivileged login role (rows <name>@low); the
+#                        fixture creates fix_monitor (pg_monitor on 10+)
 #   -s, --scripts LIST   only these entry scripts (names without .sql, space
 #                        separated)
 #   -S, --service NAME   pg_service.conf entry for the reports (default PGSERVICE)
@@ -46,12 +49,13 @@ set -euo pipefail
 
 usage() { sed -n '2,/^set -euo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-OUT=""; DB=""; FIXTURE=""; REUSE=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
+OUT=""; DB=""; FIXTURE=""; REUSE=""; LOWPRIV=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -o|--out) OUT=$2; shift 2 ;;
     -d|--dbname) DB=$2; shift 2 ;;
     -f|--fixture) FIXTURE=1; shift ;;
+    -L|--lowpriv) LOWPRIV=$2; shift 2 ;;
     --reuse-fixture) REUSE=1; shift ;;
     -s|--scripts) ONLY=$2; shift 2 ;;
     -S|--service) SERVICE=$2; shift 2 ;;
@@ -123,11 +127,36 @@ cnt() { grep -cE "$1" "$2" || true; }
 # server errors, plus psql's own (e.g. an \ir to a missing file), which it
 # prints as "psql:<file>:<line>: error: ..." and then exits with 0
 ERR='ERROR:|^psql:[^ ]+: error:'
+# Scripts whose name says they write (CLAUDE.md: kill_*, *_drop, *_adjust,
+# revoke_*; plus the statistics resets and pgbouncer_fdw's setup DDL). Every
+# other script runs in a read-only transaction, so a hidden write is an error.
+WRITES='^(kill_|revoke_|stats_reset|pgbouncer_fdw$)|_(drop|adjust)(_|$)'
+writes() { [[ $1 =~ $WRITES ]]; }
+# run_script <file.sql> <dir> <row name> [psql user]: one run, one results row
+run_script() {
+  local f=$1 dir=$2 name=$3 user=${4:-} o="$OUT/$3.out" rc=0 to=0 po=$PGOPTIONS
+  writes "${f%.sql}" || po="$po -c default_transaction_read_only=on"
+  # only a superuser may set lc_messages at login; the fixture gives
+  # fix_monitor lc_messages=C with ALTER ROLE instead
+  [[ -n "$user" ]] && po=${po//-c lc_messages=C/}
+  (cd "$dir" && PGOPTIONS="$po" \
+     "$TIMEOUT" "$TMO" psql -X ${user:+-U "$user"} -d "$DB" -v sql_dir="$REPO/sql" -f "$f" </dev/null > "$o" 2>&1) || rc=$?
+  [[ $rc -eq 124 ]] && to=1
+  echo "$v,$name,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+}
 for s in $SCRIPTS; do
-  o="$OUT/${s%.sql}.out"; rc=0
-  (cd "$REPO/sql" && "$TIMEOUT" "$TMO" psql -X -d "$DB" -f "$s" </dev/null > "$o" 2>&1) || rc=$?
-  to=0; [[ $rc -eq 124 ]] && to=1
-  echo "$v,${s%.sql},$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+  [[ $s == stats_reset* ]] && continue  # last, after the low-privilege pass
+  run_script "$s" "$REPO/sql" "${s%.sql}"
+done
+# the read-only scripts again as an unprivileged user (e.g. pg_monitor): they
+# must print "- Needs ..." where they lack a privilege, not fail
+if [[ -n "$LOWPRIV" ]]; then
+  for s in $SCRIPTS; do
+    writes "${s%.sql}" || run_script "$s" "$REPO/sql" "${s%.sql}@low" "$LOWPRIV"
+  done
+fi
+for s in $SCRIPTS; do
+  [[ $s == stats_reset* ]] && run_script "$s" "$REPO/sql" "${s%.sql}"
 done
 
 if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
@@ -139,10 +168,8 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
   # stderr only when a report fails, so an error inside a report section that
   # still produces output would not show up in the Markdown
   for k in cluster database; do
-    o="$OUT/report_$k.out"; rc=0
-    (cd "$REPO/reports" && "$TIMEOUT" 1200 psql -X -d "$DB" -v sql_dir="$REPO/sql" -f "report_$k.sql" </dev/null > "$o" 2>&1) || rc=$?
-    to=0; [[ $rc -eq 124 ]] && to=1
-    echo "$v,report_$k,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,0,0,$(md5f "$o")" >> "$CSV"
+    TMO=1200 run_script "report_$k.sql" "$REPO/reports" "report_$k"
+    [[ -n "$LOWPRIV" ]] && TMO=1200 run_script "report_$k.sql" "$REPO/reports" "report_$k@low" "$LOWPRIV"
   done
   if [[ -z "$SERVICE" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2

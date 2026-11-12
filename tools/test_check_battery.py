@@ -209,6 +209,43 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
         self.assertIn("does not exist", p.stderr)
 
+    ALIGNED = (" name | size | note \n"
+               "------+------+------\n"
+               " a    | 1 kB |      \n"
+               " b    | 2 kB |      \n"
+               "(2 rows)\n")
+
+    def test_empty_column_aligned(self):
+        self.run_version("16", {"t": (0, self.ALIGNED, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('[16] empty column "note" (all 2 rows)', out)
+        self.assertNotIn('"size"', out)
+
+    def test_empty_column_expanded(self):
+        text = ("-[ RECORD 1 ]-----\nname | a\nnote | \n"
+                "-[ RECORD 2 ]-----\nname | b\nnote | -\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
+    def test_one_row_table_and_filled_columns_pass(self):
+        self.run_version("16", {"t": (0, " name | note \n------+------\n a    |      \n(1 row)\n", False),
+                                "u": (0, " name | n \n------+---\n a    | 1 \n b    | 2 \n", False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 0, out)
+
+    def test_known_error_and_known_empty_column_from_two_entries(self):
+        known = self.root / "k2.csv"
+        known.write_text('script,versions,pattern,reason\n'
+                         't,all,"empty column ""note""",no notes in the fixture\n'
+                         't,all,boom,environment\n')
+        self.run_version("16", {"t": (0, "ERROR:  boom\n" + self.ALIGNED, False)})
+        rc, out = self.check(known=known)
+        self.assertEqual(rc, 0, out)
+        self.assertIn("1 known", out)
+
     def test_no_results(self):
         (self.root / "out").mkdir()
         rc, out = self.check()

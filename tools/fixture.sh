@@ -13,7 +13,7 @@
 #
 # Important: for THROWAWAY test clusters only. It drops and recreates its own
 # database (never one it didn't create), creates the cluster-wide roles
-# fix_reader and fix_writer, writes to pg_autovacuum (8.2/8.3) and pg_index
+# fix_reader, fix_writer and fix_monitor (LOGIN, pg_monitor on 10+), writes to pg_autovacuum (8.2/8.3) and pg_index
 # (8.2), and the battery it is made for kills sessions and resets statistics.
 #
 # Every feature is created only on the versions that have it, with plain SQL
@@ -65,7 +65,7 @@
 # Example: PGSERVICE=pg16 tools/fixture.sh && PGSERVICE=pg16 tools/fixture.sh start
 set -euo pipefail
 
-FIXTURE_VERSION=2
+FIXTURE_VERSION=3
 DB="${FIXDB:-fixdb}"
 ADMIN="${FIXTURE_ADMIN_DB:-postgres}"
 cmd=all; rebuild=0
@@ -409,6 +409,13 @@ do_build() {
   for r in fix_reader fix_writer; do
     [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_roles WHERE rolname = '$r'") ]] || P -d "$ADMIN" -c "CREATE ROLE $r NOLOGIN" >/dev/null
   done
+  # the unprivileged login of run_battery.sh --lowpriv: pg_monitor from 10 on
+  # (the usual monitoring role on DBaaS), a plain user before
+  [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_roles WHERE rolname = 'fix_monitor'") ]] \
+    || P -d "$ADMIN" -c "CREATE ROLE fix_monitor LOGIN" >/dev/null
+  if [[ $n -ge 1000 ]]; then P -d "$ADMIN" -c "GRANT pg_monitor TO fix_monitor" >/dev/null; fi
+  # English messages (the battery counts ERROR:): it can't set lc_messages itself
+  P -d "$ADMIN" -c "ALTER ROLE fix_monitor SET lc_messages TO 'C'" >/dev/null
   install_extensions
   build_sql "$TMP/build.sql"
   P -d "$DB" -v ON_ERROR_STOP=1 -f "$TMP/build.sql" >"$TMP/build.out" 2>&1 || { cat "$TMP/build.out" >&2; die "build failed"; }

@@ -88,6 +88,63 @@ def error_lines(path):
             if "ERROR:" in l or "FATAL:" in l or CLIENT_ERROR.match(l)]
 
 
+SEP_ALIGNED = re.compile(r"^-+(\+-+)*$")
+RECORD = re.compile(r"^-\[ RECORD \d+ \]")
+FOOTER = re.compile(r"^\(\d+ rows?\)$")
+EMPTY = ("", "-")  # psql's default null display, and the reports' ' - '
+
+
+def tables(lines):
+    """Yield (column names, rows) for each psql table in an output: aligned
+    (header, then a ---+--- line) and expanded (\\x, -[ RECORD n ]- blocks)."""
+    i = 0
+    while i < len(lines):
+        if i + 1 < len(lines) and lines[i].strip() and SEP_ALIGNED.match(lines[i + 1].strip()):
+            sep, bounds, start = lines[i + 1], [], 0
+            for k, ch in enumerate(sep + "+"):
+                if ch == "+":
+                    bounds.append((start, k))
+                    start = k + 1
+            heads = [lines[i][a:b].strip() for a, b in bounds]
+            rows, i = [], i + 2
+            while i < len(lines) and lines[i].strip() and not FOOTER.match(lines[i].strip()):
+                rows.append([lines[i][a:b].strip() for a, b in bounds])
+                i += 1
+            yield heads, rows
+        elif RECORD.match(lines[i]):
+            recs, cur = [], {}
+            while i < len(lines) and (RECORD.match(lines[i]) or "|" in lines[i]):
+                if RECORD.match(lines[i]):
+                    if cur:
+                        recs.append(cur)
+                    cur = {}
+                else:
+                    k, _, val = lines[i].partition("|")
+                    cur.setdefault(k.strip(), val.strip())
+                i += 1
+            if cur:
+                recs.append(cur)
+            heads = list(dict.fromkeys(k for r in recs for k in r))
+            yield heads, [[r.get(h, "") for h in heads] for r in recs]
+        else:
+            i += 1
+
+
+def empty_columns(path):
+    """'empty column "X" (all N rows)' for each column of a table with 2 or
+    more rows that is empty in all of them: a value the script never gets."""
+    if not path.exists():
+        return []
+    out = []
+    for heads, rows in tables(path.read_text(errors="replace").split("\n")):
+        if len(rows) < 2:
+            continue
+        for c, h in enumerate(heads):
+            if h and all(r[c] in EMPTY for r in rows if c < len(r)):
+                out.append(f'empty column "{h}" (all {len(rows)} rows)')
+    return out
+
+
 def problems(csv_path):
     """Yield (version, script, [messages]) for every failed run in one results.csv."""
     d = csv_path.parent
@@ -105,9 +162,10 @@ def problems(csv_path):
             for md in sorted(d.glob("reports/*/*.md")):
                 msgs += error_lines(md)
         else:
-            if not (err or fat or to or rc):
+            empty = [] if s.startswith(("FIXTURE", "CONNECT")) else empty_columns(d / f"{s}.out")
+            if not (err or fat or to or rc or empty):
                 continue
-            msgs = error_lines(d / f"{s}.out")
+            msgs = error_lines(d / f"{s}.out") + empty
         if to:
             msgs.append("TIMEOUT")
         elif rc and msgs:
@@ -175,15 +233,19 @@ def main(argv):
         elif not ended:
             new["(incomplete)"][f"run interrupted: no END row in {c}"].append(cv)
         for v, s, msgs in problems(c):
-            hit = next((e for e in known if e["script"] == s
-                        and (e["versions"] is None or v in e["versions"])
-                        and all(e["pattern"].search(m) for m in msgs)), None)
-            if hit:
-                hit["hits"] += 1
+            # known when every message is covered by an entry for this script and
+            # version (one entry may cover an error, another an empty column)
+            mine = [e for e in known if e["script"] == s and (e["versions"] is None or v in e["versions"])]
+            bad = []
+            for m in msgs:
+                hits = [e for e in mine if e["pattern"].search(m)]
+                for e in hits:
+                    e["hits"] += 1
+                if not hits:
+                    bad.append(m)
+            if not bad:
                 n_known += 1
             else:
-                bad = [m for m in msgs if not any(
-                    e["pattern"].search(m) for e in known if e["script"] == s)] or msgs
                 new[s][f"{bad[0][:160]}" + (f" (+{len(bad) - 1} more)" if len(bad) > 1 else "")].append(v)
 
     # stale: never matched although its script ran on one of its versions
