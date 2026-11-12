@@ -10,11 +10,10 @@ SELECT
     pg_terminate_backend(pid) "Killed?"
 FROM 
     pg_stat_activity AS a
-    JOIN pg_wait_events w ON w.type = a.wait_event_type
 WHERE 
     a.pid != pg_backend_pid() AND
     a.state = 'active' AND
     a.backend_type = 'client backend' AND
-    type != 'Client' AND
+    a.wait_event_type IN (SELECT w.type FROM pg_wait_events w WHERE w.type != 'Client') AND
     query_start < CURRENT_TIMESTAMP - INTERVAL '1 second'
 ORDER BY query_start;
