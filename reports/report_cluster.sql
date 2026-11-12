@@ -59,6 +59,8 @@ SET client_encoding TO 'UTF8';
 \qecho '## Last statistics reset'
 \qecho
 \ir stats_last_reset.sql
+-- it ends with \pset footer on (for standalone use): every table after it got "(N rows)"
+\pset footer off
 
 \if :svp_not_gcp
   \qecho '## 📊 Shared Memory use'
