@@ -14,7 +14,7 @@
   - Update wal.sql with new bytes written to WAL for full page images on PG19
   - Update scripts based on pg_stat_*_tables, pg_stat_*_indexes, pg_stat_*_sequences, pg_stat_user_functions and pg_stat_database_conflicts to use the new column stats_reset on PG19
   - Update extensions.sql to use the new column location on PG19
-  - Update kill_active_bufferpin.sql due to wait event type BUFFERPIN renamed to BUFFER on PG19 
+  - ~~Update kill_active_bufferpin.sql due to wait event type BUFFERPIN renamed to BUFFER on PG19~~ (see `kill_active_bufferpin_19up.sql`)
   - Explore the new pg_plan_advice and pg_stash_advice extensions on PG19
   - Explore the new $PGDATA/pg_hosts.conf file
   - Add new parameters for all conf_***.sql scripts on PG19:
