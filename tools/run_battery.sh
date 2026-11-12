@@ -22,8 +22,13 @@
 #   -o, --out DIR        output directory (default: battery_out/<version>)
 #   -d, --dbname DB      database to run the scripts on (default: the fixture's
 #                        database with --fixture, else PGDATABASE or postgres)
-#   -f, --fixture        build/load tools/fixture.sh first and keep its
-#                        background sessions running during the battery
+#   -f, --fixture        rebuild and load tools/fixture.sh first and keep its
+#                        background sessions running during the battery; the
+#                        rebuild makes every run start from the same state (the
+#                        battery changes it: pgbouncer_fdw, stats_reset_all...)
+#       --reuse-fixture  with --fixture: keep the database when it is already at
+#                        the fixture's version (faster, e.g. to iterate on one
+#                        script), only load it again
 #   -s, --scripts LIST   only these entry scripts (names without .sql, space
 #                        separated)
 #   -S, --service NAME   pg_service.conf entry for the reports (default PGSERVICE)
@@ -39,12 +44,13 @@ set -euo pipefail
 
 usage() { sed -n '2,/^set -euo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-OUT=""; DB=""; FIXTURE=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
+OUT=""; DB=""; FIXTURE=""; REUSE=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -o|--out) OUT=$2; shift 2 ;;
     -d|--dbname) DB=$2; shift 2 ;;
     -f|--fixture) FIXTURE=1; shift ;;
+    --reuse-fixture) REUSE=1; shift ;;
     -s|--scripts) ONLY=$2; shift 2 ;;
     -S|--service) SERVICE=$2; shift 2 ;;
     -R|--no-reports) NO_REPORTS=1; shift ;;
@@ -93,7 +99,7 @@ if [[ -n "$FIXTURE" ]]; then
   : > "$OUT/fixture.log"
   # a database the fixture refused (or failed to build) is neither tested nor
   # cleaned up: the stop trap only once the build succeeded
-  fix || fixture_failed
+  if [[ -n "$REUSE" ]]; then fix || fixture_failed; else fix --rebuild || fixture_failed; fi
   trap 'fix stop || true' EXIT
   trap 'exit 130' INT TERM  # a killed battery still stops the fixture sessions (EXIT trap)
   fix start || fixture_failed

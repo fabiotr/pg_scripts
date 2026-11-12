@@ -365,7 +365,34 @@ install_extensions() {
   fi
 }
 
+# Settings without which some scripts don't fail but come out empty, so the
+# battery would pass without testing them: warn (nothing changes them here)
+check_settings() {
+  local want=() name val ok
+  if [[ $n -ge 803 ]]; then want+=(track_counts=on track_activities=on)
+  else want+=(stats_start_collector=on stats_row_level=on stats_command_string=on); fi
+  [[ $n -ge 804 ]] && want+=(track_functions=all)
+  [[ $n -ge 902 ]] && want+=(track_io_timing=on)
+  for w in "${want[@]}"; do
+    name=${w%%=*}
+    val=$(P -d "$ADMIN" -Atc "SHOW $name" 2>/dev/null || true)
+    ok=0
+    case "$w" in
+      track_functions=all) [[ $val == all || $val == pl ]] && ok=1 ;;
+      *) [[ $val == "${w#*=}" ]] && ok=1 ;;
+    esac
+    [[ $ok -eq 1 ]] || echo "fixture pg$v: WARNING: $name = ${val:-?} (want ${w#*=}): the scripts that read it show nothing"
+  done
+  if [[ $n -ge 804 ]]; then
+    val=$(P -d "$ADMIN" -Atc "SHOW shared_preload_libraries" 2>/dev/null || true)
+    [[ $val == *pg_stat_statements* ]] \
+      || echo "fixture pg$v: WARNING: pg_stat_statements is not in shared_preload_libraries: the statements_* scripts have no data"
+  fi
+  return 0
+}
+
 do_build() {
+  check_settings
   local have owned exists r
   exists=$(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_database WHERE datname = '$DB'")
   owned=$(P -d "$DB" -Atc "SELECT 1 FROM pg_class WHERE relname = 'fixture_info' AND relkind = 'r'" 2>/dev/null || true)

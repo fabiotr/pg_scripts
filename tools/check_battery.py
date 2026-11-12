@@ -12,14 +12,17 @@ Requirements: Python 3.9+, standard library only. It reads files only, it
 does not connect to any database.
 
 Usage:
-  ./tools/check_battery.py [--known FILE] [--strict] PATH [PATH ...]
+  ./tools/check_battery.py [--known FILE] [--strict] [--versions LIST] PATH [PATH ...]
   PATH: a results.csv, or a directory searched recursively for results.csv
   (e.g. one run_battery.sh output directory per version under one parent).
   --known   known failures file (default: known_failures.csv next to this script)
   --strict  also fail when a known failure no longer happens (stale entry)
+  --versions LIST  versions that must have results ("82 83 10-18", or "all");
+            one without any is a new problem (it never ran)
 
 Exit code: 0 when every problem is known, 1 when there is a new problem (or a
-stale entry with --strict), 2 when the input can't be read.
+stale entry with --strict), 2 when the input can't be read (a PATH that doesn't
+exist or holds no results.csv).
 
 known_failures.csv columns: script,versions,pattern,reason
   versions: space-separated labels (82 83 ... 96 10 ... 18), ranges in that
@@ -124,7 +127,15 @@ def main(argv):
     ap.add_argument("paths", nargs="+", type=Path)
     ap.add_argument("--known", type=Path, default=Path(__file__).absolute().parent / "known_failures.csv")
     ap.add_argument("--strict", action="store_true")
+    ap.add_argument("--versions", default="",
+                    help="versions that must have results, e.g. '82 83 10 18' or 'all'")
     a = ap.parse_args(argv)
+    try:
+        expected = (set(ORDER[:-1]) if a.versions.strip() == "all"
+                    else expand_versions(a.versions) if a.versions.strip() else set())
+    except ValueError as e:
+        print(f"check_battery: --versions: {e}", file=sys.stderr)
+        return 2
     try:
         known = read_known(a.known)
     except (OSError, ValueError, re.error) as e:
@@ -132,7 +143,14 @@ def main(argv):
         return 2
     csvs = []
     for p in a.paths:
-        csvs += [p] if p.is_file() else sorted(p.rglob("results.csv"))
+        if not p.exists():  # a typo or a version that never ran: never skip it silently
+            print(f"check_battery: {p} does not exist", file=sys.stderr)
+            return 2
+        found = [p] if p.is_file() else sorted(p.rglob("results.csv"))
+        if not found:
+            print(f"check_battery: no results.csv in {p}", file=sys.stderr)
+            return 2
+        csvs += found
     if not csvs:
         print("check_battery: no results.csv found", file=sys.stderr)
         return 2
@@ -169,6 +187,10 @@ def main(argv):
                 new[s][f"{bad[0][:160]}" + (f" (+{len(bad) - 1} more)" if len(bad) > 1 else "")].append(v)
 
     # stale: never matched although its script ran on one of its versions
+    # a version asked for that left no results at all (its cluster never came up...)
+    for v in sorted(expected - versions, key=vkey):
+        new["(missing)"]["no results for this version: it did not run"].append(v)
+
     stale = [e for e in known if e["hits"] == 0
              and any(sc == e["script"] and (e["versions"] is None or v in e["versions"]) for sc, v in ran)]
     vs = sorted(versions, key=vkey)

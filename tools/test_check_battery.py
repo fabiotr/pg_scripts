@@ -181,6 +181,34 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertIn("NEW FIXTURE_LOAD", out)
         self.assertIn("load had errors", out)
 
+    def test_expected_version_missing(self):
+        self.run_version("82", {"a": (0, "ok\n", False)})
+        self.run_version("18", {"a": (0, "ok\n", False)})
+        rc, out = self.check("--versions", "82 83 18")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW (missing)", out)
+        self.assertIn("[83] no results for this version", out)
+        rc, out = self.check("--versions", "82 18")
+        self.assertEqual(rc, 0, out)
+
+    def test_expected_versions_range_and_all(self):
+        self.run_version("10", {"a": (0, "ok\n", False)})
+        rc, out = self.check("--versions", "96-10")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("[96] no results", out)
+        rc, out = self.check("--versions", "all")
+        self.assertIn("[82,83,84,90,91,92,93,94,95,96,11,12,13,14,15,16,17,18] no results", out)
+        rc, out = self.check("--versions", "10-99")
+        self.assertEqual(rc, 2, out)
+
+    def test_path_that_does_not_exist(self):
+        self.run_version("16", {"a": (0, "ok\n", False)})
+        p = subprocess.run([sys.executable, str(SCRIPT), "--known", str(self.known),
+                            str(self.root / "out" / "16"), str(self.root / "out" / "83")],
+                           capture_output=True, text=True)
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+        self.assertIn("does not exist", p.stderr)
+
     def test_no_results(self):
         (self.root / "out").mkdir()
         rc, out = self.check()

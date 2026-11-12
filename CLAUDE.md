@@ -120,7 +120,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.
-- Regression battery (throwaway clusters only, see `tools/README.md`): `tools/run_battery.sh --fixture -o <dir>/<VV>` on each version, then `tools/check_battery.py <dir>`, which must report 0 new problems. The fixture database has data and the odd objects that empty databases lack (invalid, partitioned and duplicate indexes, bloat, TOAST, quoted names, blocked sessions); run scripts on it rather than on an empty `postgres`. An error the test environment can't avoid goes in `tools/known_failures.csv` with its reason; a data-dependent bug gets an object in the fixture.
+- Regression battery (throwaway clusters only, see `tools/README.md`): `tools/run_battery.sh --fixture -o <dir>/<VV>` on each version, then `tools/check_battery.py --versions "<VV ...>" <dir>`, which must report 0 new problems (`--versions` makes a version that never ran a problem). The fixture database has data and the odd objects that empty databases lack (invalid, partitioned and duplicate indexes, bloat, TOAST, quoted names, blocked sessions); run scripts on it rather than on an empty `postgres`. An error the test environment can't avoid goes in `tools/known_failures.csv` with its reason; a data-dependent bug gets an object in the fixture.
 
 ## Git
 
