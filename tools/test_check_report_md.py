@@ -105,6 +105,10 @@ class CheckReportMdTest(unittest.TestCase):
         for sep in ("|---|---", "---|---|", "--- | ---", "| :-: | -: |", "|-|-|"):
             rc, out = self.check(f"| Info | Value |\n{sep}\n| a | b |\n")
             self.assertEqual(rc, 0, (sep, out))
+        rc, out = self.check("| a | b |\n- | -\n| 1 | 2 |\n| 3 | 4 | 5 |\n")  # looks like a list item
+        self.assertEqual(rc, 1, out)
+        self.assertNotIn("separator", out)
+        self.assertIn("r.md:4: table row has 3 columns", out)
         rc, out = self.check("| Info | Value |\n---\n")  # a rule, not a delimiter row
         self.assertEqual(rc, 1, out)
 

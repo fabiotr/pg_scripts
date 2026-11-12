@@ -99,7 +99,9 @@ def check(path):
             problems.append((no, f"psql row-count footer {line!r}: \\pset footer is on"))
         elif FEEDBACK.match(line):
             problems.append((no, f"psql feedback in the report: {line[:60]!r}"))
-        if table is not None and ends_table(line):
+        # the separator line was already validated with its header: it can look
+        # like a list item ("- | -") but never ends the table
+        if table is not None and no != table[0] + 1 and ends_table(line):
             table = None
         if table is None:
             if line.startswith("|"):  # a table starts: its next line must be the separator
