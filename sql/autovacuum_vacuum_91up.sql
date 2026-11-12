@@ -1,7 +1,7 @@
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_reset)::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
+    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_start)::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),16) AS "Live",
     lpad(pg_size_pretty(pg_table_size(t.relid)),11)      AS "Size",
     lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),16) AS "Dead",
@@ -13,7 +13,7 @@ SELECT
     to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS')
         || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END AS "Last",
     t.autovacuum_count "Qt A",
-    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - d.stats_reset) / t.autovacuum_count,'DD HH24:MI:SS') END  AS "Avg time",
+    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - d.stats_start) / t.autovacuum_count,'DD HH24:MI:SS') END  AS "Avg time",
     CASE WHEN NOT t.enabled THEN 'X' END AS "disabled"
 FROM
     (SELECT
@@ -21,7 +21,7 @@ FROM
         (SELECT option_value FROM pg_options_to_table(rc.reloptions) WHERE option_name = 'autovacuum_vacuum_scale_factor') AS scale,
         (SELECT FALSE FROM pg_options_to_table(rc.reloptions) WHERE option_name = 'autovacuum_enabled' AND option_value = 'false') AS enabled
     FROM pg_stat_all_tables st JOIN pg_class rc ON rc.oid = st.relid) t
-    JOIN pg_stat_database d ON d.datname = current_database()
+    JOIN (SELECT datname, COALESCE(stats_reset, :svp_stats_start_db) AS stats_start FROM pg_stat_database) d ON d.datname = current_database()
     JOIN pg_settings s ON s.name = 'autovacuum_vacuum_scale_factor'
 WHERE
     t.schemaname != 'pg_toast' AND
