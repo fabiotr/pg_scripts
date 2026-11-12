@@ -5,7 +5,7 @@
 \elif :svp_pg_14
   \ir statements_plan_14up.sql
 \else
-  \qecho - pg_stat_statements is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \timing on
 \set QUIET off

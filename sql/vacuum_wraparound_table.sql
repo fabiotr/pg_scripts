@@ -7,7 +7,7 @@
 \elif :svp_pg_82
   \ir vacuum_wraparound_table_82up.sql
 \else
-  \qecho - vacuum_wraparound_table is not supported on version :svp_server_version
+  \qecho - Not supported on version :svp_server_version
 \endif
 \timing on
 \set QUIET off

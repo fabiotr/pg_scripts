@@ -9,7 +9,8 @@ For every sql/*.sql file (and reports/*.sql for includes only):
   - the svp_pg_* branches of an \\if chain go from newest to oldest version
   - every versioned file (<name>_VVup.sql, <name>_VV-.sql) is included by
     some script, i.e. no unreachable implementation
-  - the fallback message is "\\qecho - Not supported on version ..." (capital N)
+  - the fallback message is exactly "\\qecho - Not supported on version
+    :svp_server_version" (capital N, no other wording)
 
 psql commands are found with check_sql_style.py's tokenizer, so a \\ line
 inside a comment, a string or a $$ body is not taken as a command.
@@ -47,6 +48,9 @@ INCLUDE_RE = re.compile(r"\\(ir?)\s+(\S+)")
 UP_FILE_RE = re.compile(r"_([0-9]+)up\.sql$")
 VERSIONED_RE = re.compile(r"_[0-9]+(?:up|-)\.sql$")
 LOWERCASE_MESSAGE = "\\qecho - not supported on version"
+# any other wording of the fallback ("- vacuum_x is not supported on version ...")
+OTHER_MESSAGE = re.compile(r"\\qecho - (?!Not supported on version :svp_server_version\s*$)"
+                           r".*\bnot supported on version", re.IGNORECASE)
 
 
 def version_num(v):
@@ -116,6 +120,9 @@ def check_file(rel, src, existing, included, problem):
         if LOWERCASE_MESSAGE in text:
             problem(rel, line, 'use "\\qecho - Not supported on version :svp_server_version" '
                                "(capital N)")
+        elif OTHER_MESSAGE.search(text):
+            problem(rel, line, 'use exactly "\\qecho - Not supported on version :svp_server_version" '
+                               "(the battery and readers count that wording)")
 
 
 def main(argv):

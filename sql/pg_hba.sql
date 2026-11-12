@@ -7,7 +7,8 @@
     \qecho - Needs superuser (or SELECT on pg_hba_file_rules and EXECUTE on pg_hba_file_rules())
   \endif
 \else
-  \qecho - Not supported on version :svp_server_version (BUT YOU SHOULD COLLECT THIS INFORMATION ON pg_hba.conf )
+  \qecho - Not supported on version :svp_server_version
+  \qecho - Read pg_hba.conf on the server instead
 \endif
 \timing on
 \set QUIET off
