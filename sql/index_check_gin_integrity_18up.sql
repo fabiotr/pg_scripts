@@ -1,4 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS amcheck;
 SELECT 'SELECT gin_index_check(' || c.oid || '); -- ' || to_char(row_number() OVER (ORDER BY c.relpages),'0000') || ' | ' || c.relname || ', SIZE:' || pg_size_pretty(pg_relation_size(c.oid))
     FROM 
              pg_index i
