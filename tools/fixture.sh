@@ -82,9 +82,10 @@ svn=$(P -d "$ADMIN" -Atc 'SHOW server_version_num' 2>/dev/null) \
 if [[ $svn -ge 100000 ]]; then n=$(( svn / 10000 * 100 )); else n=$(( svn / 100 )); fi
 if [[ $n -ge 1000 ]]; then v=$(( n / 100 )); else v=$(( n / 100 * 10 + n % 100 )); fi
 [[ $(P -d "$ADMIN" -Atc "SELECT usesuper FROM pg_user WHERE usename = current_user") == t ]] || die "needs a superuser"
-port=$(P -d "$ADMIN" -Atc 'SELECT inet_server_port()')
+port=$(P -d "$ADMIN" -Atc 'SHOW port')  # inet_server_port() is NULL over a Unix socket
 RUN="${FIXTURE_RUN_DIR:-${TMPDIR:-/tmp}/pg_scripts_fixture}"; mkdir -p "$RUN"
-key="${PGHOST:-local}_${port:-sock}_$DB"; key=${key//\//_}
+# one supervisor per service / host / port / database
+key="${PGSERVICE:-}_${PGHOST:-local}_${port}_$DB"; key=${key//[^A-Za-z0-9._-]/_}
 PIDF="$RUN/$key.pid"; SLOG="$RUN/$key.log"
 pidcol=pid; [[ $n -lt 902 ]] && pidcol=procpid
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/fixture.XXXXXX"); trap 'rm -rf "$TMP"' EXIT
@@ -99,7 +100,6 @@ build_sql() {
   {
   echo "SET client_min_messages TO warning;"
   [[ $n -lt 900 ]] && echo "CREATE LANGUAGE plpgsql;"
-  echo "CREATE TABLE fixture_info (fixture_version int, built_at timestamptz);"
 
   # --- bloat
   echo "CREATE TABLE bloat_upd (id serial PRIMARY KEY, val int, grp int, pad text) WITH (fillfactor = 70);"
@@ -351,15 +351,19 @@ install_extensions() {
 }
 
 do_build() {
-  local have exists r
+  local have owned exists r
   exists=$(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_database WHERE datname = '$DB'")
+  owned=$(P -d "$DB" -Atc "SELECT 1 FROM pg_class WHERE relname = 'fixture_info' AND relkind = 'r'" 2>/dev/null || true)
   have=$(P -d "$DB" -Atc "SELECT fixture_version FROM fixture_info" 2>/dev/null || true)
   if [[ $rebuild -eq 0 && "$have" == "$FIXTURE_VERSION" ]]; then echo "fixture pg$v: $DB already at version $FIXTURE_VERSION"; return 0; fi
   # never drop a database this script didn't create
-  [[ -z "$exists" || -n "$have" ]] || die "database $DB exists and was not created by this fixture (no fixture_info): drop it or set FIXDB"
+  [[ -z "$exists" || -n "$owned" ]] || die "database $DB exists and was not created by this fixture (no fixture_info): drop it or set FIXDB"
   do_stop >/dev/null
   P -d "$ADMIN" -c "SET client_min_messages TO warning" -c "DROP DATABASE IF EXISTS $DB" >/dev/null || die "cannot drop $DB (sessions connected?)"
   P -d "$ADMIN" -v ON_ERROR_STOP=1 -c "CREATE DATABASE $DB" >/dev/null || die "CREATE DATABASE failed"
+  # the marker first, so a build that fails halfway can still be dropped next time;
+  # its row (the version) is written last, when everything is in place
+  P -d "$DB" -v ON_ERROR_STOP=1 -c "CREATE TABLE fixture_info (fixture_version int, built_at timestamptz)" >/dev/null
   for r in fix_reader fix_writer; do
     [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_roles WHERE rolname = '$r'") ]] || P -d "$ADMIN" -c "CREATE ROLE $r NOLOGIN" >/dev/null
   done
@@ -367,7 +371,7 @@ do_build() {
   build_sql "$TMP/build.sql"
   P -d "$DB" -v ON_ERROR_STOP=1 -f "$TMP/build.sql" >"$TMP/build.out" 2>&1 || { cat "$TMP/build.out" >&2; die "build failed"; }
   # INVALID index: a unique CREATE INDEX CONCURRENTLY over duplicate keys fails and leaves it behind
-  P -d "$DB" -c "CREATE UNIQUE INDEX CONCURRENTLY inv_tbl_k_invalid ON inv_tbl (k)" >/dev/null 2>&1
+  P -d "$DB" -c "CREATE UNIQUE INDEX CONCURRENTLY inv_tbl_k_invalid ON inv_tbl (k)" >/dev/null 2>&1 || true  # meant to fail
   # 8.2 checks uniqueness in the first pass and leaves nothing: mark one invalid by hand
   [[ $n -lt 803 ]] && P -d "$DB" -c "CREATE INDEX inv_tbl_k_invalid ON inv_tbl (k)" \
       -c "UPDATE pg_index SET indisvalid = false WHERE indexrelid = 'inv_tbl_k_invalid'::regclass" >/dev/null
@@ -436,28 +440,38 @@ supervise() {
     psql -X -q -At -d "$DB" < "$f" >/dev/null 2>&1 &
     PSQL[$s]=$!
     exec {fd}>"$f"; FD[$s]=$fd
-    printf '%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n%s\n' "$appn" "$pf" "${!sqlv}" >&$fd
-    for i in $(seq 1 50); do [[ -s "$pf" ]] && break; sleep 0.1; done
+    if [[ $s == active || $s == blocked ]]; then  # these block: report the pid first
+      printf '%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n%s\n' "$appn" "$pf" "${!sqlv}" >&$fd
+    else  # the pid file shows the transaction (and the blocker's row lock) is in place
+      printf '%s\n%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n' "$appn" "${!sqlv}" "$pf" >&$fd
+    fi
+    for i in $(seq 1 100); do [[ -s "$pf" ]] && break; sleep 0.1; done
     BPID[$s]=$(tr -dc '0-9' < "$pf" 2>/dev/null || true)
   }
-  stop_one() {
+  stop_one() {  # every step may find its target already gone (a kill_* script got there first)
     local s=$1
-    [[ -n "${FD[$s]:-}" ]] && eval "exec ${FD[$s]}>&-"
-    [[ -n "${PSQL[$s]:-}" ]] && kill "${PSQL[$s]}" 2>/dev/null
-    [[ -n "${BPID[$s]:-}" ]] && P -d "$ADMIN" -Atc "SELECT pg_terminate_backend(${BPID[$s]})" >/dev/null 2>&1
+    if [[ -n "${FD[$s]:-}" ]]; then eval "exec ${FD[$s]}>&-" || true; fi
+    if [[ -n "${PSQL[$s]:-}" ]]; then
+      kill "${PSQL[$s]}" 2>/dev/null || true
+      wait "${PSQL[$s]}" 2>/dev/null || true
+    fi
+    if [[ -n "${BPID[$s]:-}" ]]; then end_backends "$pidcol = ${BPID[$s]}"; fi
     unset 'FD[$s]' 'PSQL[$s]' 'BPID[$s]'
   }
-  alive() {
-    local s=$1
+  alive() {  # backend still there and, for active/blocked, still running its query
+    local s=$1 busy=""   # (before 8.4 a kill_* script can only cancel it, leaving it idle)
+    if [[ $s == active || $s == blocked ]]; then
+      if [[ $n -ge 902 ]]; then busy="AND state = 'active'"; else busy="AND current_query NOT LIKE '<IDLE>%'"; fi
+    fi
     [[ -n "${BPID[$s]:-}" ]] && kill -0 "${PSQL[$s]}" 2>/dev/null &&
-      [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_stat_activity WHERE $pidcol = ${BPID[$s]}" 2>/dev/null) ]]
+      [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_stat_activity WHERE $pidcol = ${BPID[$s]} $busy" 2>/dev/null) ]]
   }
   trap 'for s in blocked blocker idle_tx active; do stop_one $s; done; rm -rf "$fifo_dir"; exit 0' TERM INT
   while :; do
     for s in idle_tx active; do alive $s || { stop_one $s; start_one $s; echo "$(date +%T) (re)started $s pid ${BPID[$s]}"; }; done
     if ! alive blocker || ! alive blocked; then
       stop_one blocked; stop_one blocker
-      start_one blocker; sleep 0.3; start_one blocked
+      start_one blocker; start_one blocked
       echo "$(date +%T) (re)started blocker pid ${BPID[blocker]} / blocked pid ${BPID[blocked]}"
     fi
     sleep 2 & wait $!
@@ -477,14 +491,23 @@ do_start() {
   echo "fixture pg$v: 4 sessions up (supervisor $(cat "$PIDF"))"
 }
 
+# end the backends matching a pg_stat_activity condition; pg_terminate_backend()
+# comes in 8.4, before that only the running query can be cancelled (an idle
+# session ends when its psql exits, which the supervisor takes care of)
+end_backends() {
+  local f=pg_terminate_backend
+  [[ $n -lt 804 ]] && f=pg_cancel_backend
+  P -d "$ADMIN" -Atc "SELECT $f($pidcol) FROM pg_stat_activity WHERE $1" >/dev/null 2>&1 || true
+}
+
 do_stop() {
   if [[ -f "$PIDF" ]]; then
     local p; p=$(cat "$PIDF")
-    if kill -0 "$p" 2>/dev/null; then kill "$p"; local i; for i in $(seq 1 50); do kill -0 "$p" 2>/dev/null || break; sleep 0.1; done; fi
+    if kill -0 "$p" 2>/dev/null; then kill "$p" 2>/dev/null || true; local i; for i in $(seq 1 50); do kill -0 "$p" 2>/dev/null || break; sleep 0.1; done; fi
     rm -f "$PIDF"
   fi
-  # leftovers (supervisor killed hard): any backend still in fixdb
-  P -d "$ADMIN" -Atc "SELECT pg_terminate_backend($pidcol) FROM pg_stat_activity WHERE datname = '$DB' AND $pidcol <> pg_backend_pid()" >/dev/null 2>&1
+  # leftovers (supervisor killed hard): any backend still in the database
+  end_backends "datname = '$DB' AND $pidcol <> pg_backend_pid()"
   echo "fixture pg$v: sessions stopped"
 }
 

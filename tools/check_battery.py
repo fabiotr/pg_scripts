@@ -102,6 +102,9 @@ def problems(csv_path):
             msgs = error_lines(d / f"{s}.out")
         if to:
             msgs.append("TIMEOUT")
+        elif rc and msgs:
+            # a known error line must not hide a failed psql (lost connection...)
+            msgs.append(f"exit code {rc}")
         if not msgs:
             out = d / ("fixture.log" if s == "FIXTURE" else f"{s}.out")
             lines = [l.strip() for l in out.open(errors="replace") if l.strip()] if out.exists() else []

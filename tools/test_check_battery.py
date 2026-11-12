@@ -76,6 +76,12 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("ERROR:  other", out)
 
+    def test_known_error_does_not_hide_a_failed_psql(self):
+        self.run_version("16", {"needs_input": (2, 'ERROR:  syntax error at or near ":"\nserver closed the connection\n', False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("exit code 2", out)
+
     def test_known_only_on_listed_versions(self):
         self.run_version("84", {"old_syntax": (0, 'ERROR:  syntax error at or near "WITH"\n', False)})
         self.run_version("90", {"old_syntax": (0, 'ERROR:  syntax error at or near "WITH"\n', False)})

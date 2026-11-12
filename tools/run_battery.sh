@@ -8,8 +8,9 @@
 # Requirements: bash 4+, psql 10+ in PATH (the scripts need \if; any server
 # 8.2 -> 18), GNU timeout (`timeout` or Homebrew's `gtimeout`), a superuser
 # connection through the usual libpq variables (PGHOST, PGPORT, PGUSER,
-# PGSERVICE...). The reports go through a pg_service.conf entry (-S or
-# PGSERVICE); without one they are skipped.
+# PGSERVICE...). The report SQL files run directly (rows report_cluster and
+# report_database, stderr included); generate_reports.sh runs too (row REPORTS)
+# when there is a pg_service.conf entry (-S or PGSERVICE).
 #
 # Important: for THROWAWAY test clusters only. The battery runs everything,
 # including kill_* (terminates sessions), stats_reset_all (resets statistics),
@@ -29,8 +30,8 @@
 #   -t, --timeout SECS   per-script timeout (default 120)
 #   -h, --help
 # Output: DIR/results.csv (version,script,rc,lines,errors,fatal,timeout,
-#         not_supported,needs,md5), DIR/<script>.out, DIR/reports/ +
-#         reports.log, DIR/fixture.log
+#         not_supported,needs,md5), DIR/<script>.out, DIR/report_<kind>.out,
+#         DIR/reports/ + reports.log (generate_reports.sh), DIR/fixture.log
 # Example: PGSERVICE=pg16 tools/run_battery.sh --fixture -o /tmp/battery/16
 #          tools/check_battery.py /tmp/battery
 set -euo pipefail
@@ -91,11 +92,20 @@ for s in $SCRIPTS; do
 done
 
 if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
+  # stats_reset_all emptied pg_stat_statements: load it again for the reports
+  [[ -n "$FIXTURE" ]] && { fix load || true; }
+  # the report SQL on its own, stderr included: generate_reports.sh keeps psql's
+  # stderr only when a report fails, so an error inside a report section that
+  # still produces output would not show up in the Markdown
+  for k in cluster database; do
+    o="$OUT/report_$k.out"; rc=0
+    (cd "$REPO/reports" && "$TIMEOUT" 1200 psql -X -d "$DB" -v sql_dir="$REPO/sql" -f "report_$k.sql" </dev/null > "$o" 2>&1) || rc=$?
+    to=0; [[ $rc -eq 124 ]] && to=1
+    echo "$v,report_$k,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt 'ERROR:' "$o"),$(cnt 'FATAL:' "$o"),$to,0,0,$(md5f "$o")" >> "$CSV"
+  done
   if [[ -z "$SERVICE" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2
   else
-    # stats_reset_all emptied pg_stat_statements: load it again for the reports
-    [[ -n "$FIXTURE" ]] && { fix load || true; }
     rrc=0
     (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" -o "$OUT/reports" "$SERVICE") \
       </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
