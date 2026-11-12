@@ -1,3 +1,5 @@
+\ir variables.sql
+
 \qecho
 \qecho Metrics:
 \qecho Until min age:      VACCUM has no effect on table age
@@ -25,3 +27,5 @@
 \qecho Tables Maintenance Commands
 \qecho
 \ir vacuum_wraparound_table_clean.sql
+\timing on
+\set QUIET off
