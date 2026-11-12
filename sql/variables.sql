@@ -87,10 +87,13 @@ SELECT
   SELECT
      (SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_publication) AS publication
     ,(SELECT CASE WHEN count(1) = 0 THEN FALSE ELSE TRUE END FROM pg_subscription) AS subscription
+    -- PUBLIC may read pg_subscription.oid only from 14 on: superuser before
+    ,coalesce(has_column_privilege('pg_catalog.pg_subscription', 'oid', 'SELECT'), FALSE) AS subscription_catalog
   \gset svp_
 \else
   \set svp_publication FALSE
   \set svp_subscription FALSE
+  \set svp_subscription_catalog FALSE
 \endif
 
 -- Functions and views that need an extension or more than the default privileges
@@ -103,10 +106,18 @@ SELECT
      coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_tmpdir(oid)'),   'EXECUTE'), FALSE) AS ls_tmpdir
     ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_waldir()'),      'EXECUTE'), FALSE) AS ls_waldir
     ,coalesce(has_function_privilege(to_regprocedure('pg_catalog.pg_ls_logdir()'),      'EXECUTE'), FALSE) AS ls_logdir
-    ,coalesce(has_function_privilege(to_regprocedure('pgstatindex(regclass)'),          'EXECUTE'), FALSE) AS pgstatindex
-    ,coalesce(has_function_privilege(to_regprocedure('pgstatginindex(regclass)'),       'EXECUTE'), FALSE) AS pgstatginindex
+    -- pgstattuple's functions check for superuser themselves before 10 (pgstattuple 1.5),
+    -- whatever EXECUTE says
+    ,coalesce(has_function_privilege(to_regprocedure('pgstatindex(regclass)'),          'EXECUTE'), FALSE)
+          AND (current_setting('server_version_num')::int >= 100000 OR (SELECT rolsuper FROM pg_roles WHERE rolname = CURRENT_USER)) AS pgstatindex
+    ,coalesce(has_function_privilege(to_regprocedure('pgstatginindex(regclass)'),       'EXECUTE'), FALSE)
+          AND (current_setting('server_version_num')::int >= 100000 OR (SELECT rolsuper FROM pg_roles WHERE rolname = CURRENT_USER)) AS pgstatginindex
     ,coalesce(has_function_privilege(to_regprocedure('pgstathashindex(regclass)'),      'EXECUTE'), FALSE) AS pgstathashindex
-    ,coalesce(has_function_privilege(to_regprocedure('pgstattuple_approx(regclass)'),   'EXECUTE'), FALSE) AS pgstattuple_approx
+    ,coalesce(has_function_privilege(to_regprocedure('pgstattuple_approx(regclass)'),   'EXECUTE'), FALSE)
+          AND (current_setting('server_version_num')::int >= 100000 OR (SELECT rolsuper FROM pg_roles WHERE rolname = CURRENT_USER)) AS pgstattuple_approx
+    -- amcheck (10+; gin_index_check() 18+): the scripts don't create the extension
+    ,coalesce(has_function_privilege(to_regprocedure('bt_index_check(regclass)'),       'EXECUTE'), FALSE) AS bt_index_check
+    ,coalesce(has_function_privilege(to_regprocedure('gin_index_check(regclass)'),      'EXECUTE'), FALSE) AS gin_index_check
     ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_shmem_allocations'),       'SELECT'),  FALSE) AS shmem_allocations
     ,coalesce(has_table_privilege(to_regclass('pg_catalog.pg_largeobject'),             'SELECT'),  FALSE) AS largeobject
     -- these views read a function that PUBLIC can't execute either: both are needed
@@ -121,15 +132,19 @@ SELECT
   -- Before 9.4 the scripts only call pgstatindex(text) and pgstatginindex(regclass)
   SELECT
      EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatindex'    AND oidvectortypes(proargtypes) = 'text'
-             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatindex
+             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE'))
+       AND (SELECT rolsuper FROM pg_roles WHERE rolname = CURRENT_USER) AS pgstatindex
     ,EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'pgstatginindex' AND oidvectortypes(proargtypes) = 'regclass'
-             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE')) AS pgstatginindex
+             AND pg_function_is_visible(oid) AND has_function_privilege(oid, 'EXECUTE'))
+       AND (SELECT rolsuper FROM pg_roles WHERE rolname = CURRENT_USER) AS pgstatginindex
   \gset svp_
   \set svp_ls_tmpdir FALSE
   \set svp_ls_waldir FALSE
   \set svp_ls_logdir FALSE
   \set svp_pgstathashindex FALSE
   \set svp_pgstattuple_approx FALSE
+  \set svp_bt_index_check FALSE
+  \set svp_gin_index_check FALSE
   \set svp_shmem_allocations FALSE
   \set svp_config FALSE
   \set svp_hba_file_rules FALSE

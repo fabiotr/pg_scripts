@@ -6,10 +6,11 @@ SELECT
     confl_deadlock    AS "Deadlock",
     confl_snapshot    AS "Snapshot",
     confl_bufferpin   AS "Bufferpin",
-    age(now(),stats_reset) AS "Age" 
+    age(now(), sd.stats_start) AS "Age" 
 FROM 
 	pg_database d
-        JOIN pg_stat_database sd ON d.oid = sd.datid
+        JOIN (SELECT datid, datname, conflicts, COALESCE(stats_reset, :svp_stats_start_db) AS stats_start
+              FROM pg_stat_database) sd ON d.oid = sd.datid
 	JOIN pg_stat_database_conflicts c ON sd.datid = c.datid
 WHERE d.datistemplate IS FALSE
 ORDER BY d.datname;

@@ -9,7 +9,11 @@
 \elif :svp_pg_14
   \ir subscription_stats_14up.sql
 \elif :svp_pg_10
-  \ir subscription_stats_10up.sql
+  \if :svp_subscription_catalog
+    \ir subscription_stats_10up.sql
+  \else
+    \qecho - Needs superuser (or SELECT on pg_subscription)
+  \endif
 \else
   \qecho - Not supported on version :svp_server_version
 \endif
