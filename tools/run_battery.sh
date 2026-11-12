@@ -77,9 +77,13 @@ SCRIPTS=$(printf '%s\n' $SCRIPTS | grep -v '^stats_reset' || true; printf '%s\n'
 fix() { "$REPO/tools/fixture.sh" "$@" >> "$OUT/fixture.log" 2>&1; }
 CSV="$OUT/results.csv"
 echo "version,script,rc,lines,errors,fatal,timeout,not_supported,needs,md5" > "$CSV"
+# the last row: check_battery.py treats a results.csv without it as an
+# interrupted run, not a clean one
+end_row() { echo "$v,END,0,0,0,0,0,0,0," >> "$CSV"; }
 fixture_failed() {
   echo "$v,FIXTURE,1,0,1,0,0,0,0," >> "$CSV"
   echo "pg$v: fixture failed, nothing run (see $OUT/fixture.log)" >&2
+  end_row
   exit 1
 }
 if [[ -n "$FIXTURE" ]]; then
@@ -88,6 +92,7 @@ if [[ -n "$FIXTURE" ]]; then
   # cleaned up: the stop trap only once the build succeeded
   fix || fixture_failed
   trap 'fix stop || true' EXIT
+  trap 'exit 130' INT TERM  # a killed battery still stops the fixture sessions (EXIT trap)
   fix start || fixture_failed
 fi
 
@@ -101,7 +106,9 @@ done
 
 if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
   # stats_reset_all emptied pg_stat_statements: load it again for the reports
-  [[ -n "$FIXTURE" ]] && { fix load || true; }
+  if [[ -n "$FIXTURE" ]] && ! fix load; then
+    echo "$v,FIXTURE_LOAD,1,0,1,0,0,0,0," >> "$CSV"  # the reports would run without the workload
+  fi
   # the report SQL on its own, stderr included: generate_reports.sh keeps psql's
   # stderr only when a report fails, so an error inside a report section that
   # still produces output would not show up in the Markdown
@@ -115,12 +122,18 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2
   else
     rrc=0
-    rm -rf "$OUT/reports"  # a reused output directory: count only this run's reports
+    # a reused output directory: count only this run's reports. Only the date
+    # folders generate_reports.sh creates go, never the directory itself (with
+    # -o at the repository root, $OUT/reports is the repository's reports/)
+    if [[ -d "$OUT/reports" ]]; then
+      find "$OUT/reports" -mindepth 1 -maxdepth 1 -type d -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' -exec rm -rf {} +
+    fi
     (cd "$REPO/reports" && "$TIMEOUT" 1200 ./generate_reports.sh -k cluster,database -f md -n "$DB" -o "$OUT/reports" "$SERVICE") \
       </dev/null > "$OUT/reports.log" 2>&1 || rrc=$?
     md=$(cat "$OUT"/reports/*/*.md 2>/dev/null || true)
     echo "$v,REPORTS,$rrc,$(printf '%s' "$md" | grep -c '' || true),$(printf '%s' "$md" | grep -c 'ERROR:' || true),$(cnt 'FATAL:' "$OUT/reports.log"),0,0,0,$(ls "$OUT"/reports/*/*.md 2>/dev/null | wc -l | tr -d ' ')" >> "$CSV"
   fi
 fi
+end_row
 bad=$(awk -F, 'NR > 1 && ($5 > 0 || $6 > 0 || $7 > 0 || ($2 == "REPORTS" && $3 != 0))' "$CSV" | wc -l | tr -d ' ')
-echo "pg$v: $(( $(wc -l < "$CSV") - 1 )) runs, $bad with ERROR/FATAL/timeout -> $CSV"
+echo "pg$v: $(( $(wc -l < "$CSV") - 2 )) runs, $bad with ERROR/FATAL/timeout -> $CSV"

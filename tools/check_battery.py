@@ -3,7 +3,8 @@
 
 A run is a problem when its output has an ERROR or FATAL line, it timed out,
 psql exited with an error, or (for the REPORTS row) generate_reports.sh
-failed. A problem is known when tools/known_failures.csv has an entry for
+failed. A results.csv with no runs, or without the END row run_battery.sh
+writes last (an interrupted battery), is a problem too. A problem is known when tools/known_failures.csv has an entry for
 that script and version whose pattern matches EVERY error line of the run, so
 a second, new error in a script with a known one is still reported.
 
@@ -87,6 +88,8 @@ def problems(csv_path):
     d = csv_path.parent
     for r in csv.DictReader(csv_path.open(newline="")):
         v, s = r["version"], r["script"]
+        if s == "END":
+            continue
         rc, err, fat, to = (int(r[k] or 0) for k in ("rc", "errors", "fatal", "timeout"))
         if s == "REPORTS":
             if rc == 0 and err == 0 and fat == 0:
@@ -106,7 +109,7 @@ def problems(csv_path):
             # a known error line must not hide a failed psql (lost connection...)
             msgs.append(f"exit code {rc}")
         if not msgs:
-            out = d / ("fixture.log" if s == "FIXTURE" else f"{s}.out")
+            out = d / ("fixture.log" if s.startswith("FIXTURE") else f"{s}.out")
             lines = [l.strip() for l in out.open(errors="replace") if l.strip()] if out.exists() else []
             # the first line that looks like the cause, else the last one
             last = [l for l in lines if re.search(r"error|fail|cannot|not found|no such", l, re.I)][:1] or lines[-1:]
@@ -136,14 +139,21 @@ def main(argv):
     new = defaultdict(lambda: defaultdict(list))  # script -> first message -> versions
     n_known = 0
     for c in csvs:
-        rows = 0
+        rows, ended, cv = 0, False, c.parent.name
         for r in csv.DictReader(c.open(newline="")):
+            if r["script"] == "END":
+                ended = True
+                continue
             rows += 1
+            cv = r["version"]
             versions.add(r["version"])
             ran.add((r["script"], r["version"]))
         runs += rows
-        if not rows:  # header only: an interrupted or never-started battery is not a clean one
-            new["(no runs)"][f"no runs recorded in {c}"].append(c.parent.name)
+        # an interrupted or never-started battery is not a clean one
+        if not rows:
+            new["(no runs)"][f"no runs recorded in {c}"].append(cv)
+        elif not ended:
+            new["(incomplete)"][f"run interrupted: no END row in {c}"].append(cv)
         for v, s, msgs in problems(c):
             hit = next((e for e in known if e["script"] == s
                         and (e["versions"] is None or v in e["versions"])

@@ -35,8 +35,8 @@ class CheckBatteryTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def run_version(self, v, runs):
-        """runs: {script: (rc, output text, timeout)}"""
+    def run_version(self, v, runs, ended=True):
+        """runs: {script: (rc, output text, timeout)}; ended: write the END row"""
         d = self.root / "out" / v
         d.mkdir(parents=True)
         rows = []
@@ -44,7 +44,7 @@ class CheckBatteryTest(unittest.TestCase):
             (d / f"{s}.out").write_text(text)
             rows.append(f"{v},{s},{rc},{text.count(chr(10))},{text.count('ERROR:')},"
                         f"{text.count('FATAL:')},{int(to)},0,0,x\n")
-        (d / "results.csv").write_text(HEADER + "".join(rows))
+        (d / "results.csv").write_text(HEADER + "".join(rows) + (f"{v},END,0,0,0,0,0,0,0,\n" if ended else ""))
 
     def check(self, *extra, known=None):
         p = subprocess.run([sys.executable, str(SCRIPT), "--known", str(known or self.known),
@@ -108,7 +108,7 @@ class CheckBatteryTest(unittest.TestCase):
         (d / "reports" / "pg16").mkdir(parents=True)
         (d / "reports" / "pg16" / "db.md").write_text("ERROR:  in a report\n")
         (d / "reports.log").write_text("ok\n")
-        (d / "results.csv").write_text(HEADER + "16,REPORTS,0,1,1,0,0,0,0,1\n")
+        (d / "results.csv").write_text(HEADER + "16,REPORTS,0,1,1,0,0,0,0,1\n16,END,0,0,0,0,0,0,0,\n")
         rc, out = self.check()
         self.assertEqual(rc, 1, out)
         self.assertIn("NEW REPORTS", out)
@@ -145,6 +145,30 @@ class CheckBatteryTest(unittest.TestCase):
         rc, out = self.check()
         self.assertEqual(rc, 1, out)
         self.assertIn("no runs recorded", out)
+
+    def test_interrupted_run_fails(self):
+        self.run_version("16", {"a": (0, "ok\n", False)}, ended=False)
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("run interrupted: no END row", out)
+        self.assertIn("[16] run interrupted", out)
+
+    def test_end_row_is_not_a_run(self):
+        self.run_version("16", {"a": (0, "ok\n", False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 0, out)
+        self.assertIn("1 runs on 1 version(s)", out)
+
+    def test_fixture_load_failure(self):
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "fixture.log").write_text("fixture pg16: load had errors\nERROR:  relation \"bloat_upd\" does not exist\n")
+        (d / "results.csv").write_text(HEADER + "16,a,0,1,0,0,0,0,0,x\n16,FIXTURE_LOAD,1,0,1,0,0,0,0,\n16,END,0,0,0,0,0,0,0,\n")
+        (d / "a.out").write_text("ok\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW FIXTURE_LOAD", out)
+        self.assertIn("load had errors", out)
 
     def test_no_results(self):
         (self.root / "out").mkdir()
