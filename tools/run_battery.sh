@@ -7,7 +7,8 @@
 #
 # Requirements: bash 4+, psql 12+ in PATH (the scripts need 10+ for \if; the
 # battery needs 12+, whose client errors start with "error:"; any server
-# 8.2 -> 18), GNU timeout (`timeout` or Homebrew's `gtimeout`), a superuser
+# 8.2 -> 18), GNU timeout and a stdbuf (Linux coreutils; on macOS Homebrew's
+# coreutils, unprefixed or as gtimeout/gstdbuf, or the system stdbuf), a superuser
 # connection through the usual libpq variables (PGHOST, PGPORT, PGUSER,
 # PGSERVICE...). The report SQL files run directly (rows report_cluster and
 # report_database, stderr included); generate_reports.sh runs too (row REPORTS)
@@ -76,6 +77,18 @@ if [[ -n "$FIXTURE" ]]; then DB=${DB:-${FIXDB:-fixdb}}; export FIXDB=$DB; else D
 svn=$(psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) || die "cannot connect (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
 if [[ $svn -ge 100000 ]]; then v=$(( svn / 10000 )); else v=$(( svn / 10000 * 10 + svn / 100 % 100 )); fi
 OUT=${OUT:-battery_out/$v}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
+
+# generate_reports.sh calls `timeout` and `stdbuf` unprefixed: where only
+# Homebrew's gtimeout / gstdbuf exist, put same-named links to them first in
+# PATH (macOS's own stdbuf takes -oL and is kept)
+SHIMS="$OUT/.gnu_shims"; rm -rf "$SHIMS"
+if ! { command -v timeout >/dev/null && timeout --version >/dev/null 2>&1; } && command -v gtimeout >/dev/null; then
+  mkdir -p "$SHIMS"; ln -s "$(command -v gtimeout)" "$SHIMS/timeout"
+fi
+if ! command -v stdbuf >/dev/null && command -v gstdbuf >/dev/null; then
+  mkdir -p "$SHIMS"; ln -s "$(command -v gstdbuf)" "$SHIMS/stdbuf"
+fi
+[[ -d "$SHIMS" ]] && export PATH="$SHIMS:$PATH"
 
 if [[ -n "$ONLY" ]]; then SCRIPTS=$(for s in $ONLY; do echo "$s.sql"; done)
 else SCRIPTS=$(cd "$REPO/sql" && ls *.sql | grep -vE '_[0-9]{2}(up|-)\.sql$'); fi

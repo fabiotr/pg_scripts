@@ -397,17 +397,34 @@ In addition to SQL scripts, this repository provides shell utilities for OS-leve
 
 ## 🧰 Maintenance Tools
 
-[`tools/`](tools/README.md) holds the checks that keep the repository consistent. They are for contributors: none of them connects to a database, and CI runs them on every pull request. They need only Python 3.9+, standard library only.
+[`tools/`](tools/README.md) holds the tools for contributors. None of them is part of the script library.
+
+**Static checks.** They keep the repository consistent without a database, and CI runs them on every pull request. They need only Python 3.9+, standard library only.
 
 | Name                         | Description                                                                                                       |
 | :---                         | :---                                                                                                              |
 | `check_dispatchers.py`       | Checks the version dispatchers (`\if :svp_pg_VV` → `\ir <name>_VVup.sql`): include targets, versions, branch order, unreachable files. |
 | `check_sql_style.py`         | Checks the SQL style (keyword and identifier case, ASCII identifiers, backslashes in strings); `--fix` fixes most of it. |
-| `test_check_*.py`            | Tests for both checks.                                                                                            |
 
 ```bash
 ./tools/check_dispatchers.py && ./tools/check_sql_style.py
 ```
+
+**Regression battery.** It runs every script and both reports on a live server, one version at a time, on a database with data, and fails on any error that isn't a known test-environment one. It isn't in CI yet. It needs bash 4+, psql 12+ and GNU `timeout`, plus **a throwaway test cluster**: it kills sessions, resets statistics and drops and recreates its own database.
+
+| Name                         | Description                                                                                                       |
+| :---                         | :---                                                                                                              |
+| `fixture.sh`                 | Builds a test database (`fixdb`) with bloat, TOAST, partitions, every index type, invalid/duplicate/unused indexes, odd quoted names and more, plus background sessions (idle in transaction, a lock wait, a long query, a COPY in progress). 8.2 → 18. |
+| `run_battery.sh`             | Runs every entry script of `sql/` and both reports on one server and records exit codes and `ERROR`/`FATAL`/timeouts. |
+| `check_battery.py`           | Compares the results with `known_failures.csv`; exits with 1 on a new problem, an interrupted run or a version that didn't run. |
+| `known_failures.csv`         | Errors the test environment can't avoid (a script that needs input, another server or an extension). |
+
+```bash
+PGSERVICE=pg16 ./tools/run_battery.sh --fixture -o /tmp/battery/16   # one run per version
+./tools/check_battery.py --versions "16" /tmp/battery
+```
+
+The fixture is what found the bugs fixed in [#90](https://github.com/fabiotr/pg_scripts/pull/90) and [#93](https://github.com/fabiotr/pg_scripts/pull/93): errors that only show up with data, such as an invalid or a partitioned index, or an empty analyzed table. `test_check_*.py` are the tests for the checks.
 
 See [tools/README.md](tools/README.md) for every rule, the options, the tests and the pre-commit hook, and [CONTRIBUTING.md](CONTRIBUTING.md) for when to run them.
 
