@@ -23,6 +23,7 @@ SELECT
     ,current_setting('server_version_num')::int >= 160000  AS pg_16
     ,current_setting('server_version_num')::int >= 170000  AS pg_17
     ,current_setting('server_version_num')::int >= 180000  AS pg_18
+    ,current_setting('server_version_num')::int >= 190000  AS pg_19
     ,current_setting('server_version_num')::int <  120000  AS under_pg_12
     ,current_setting('server_version')                     AS server_version
     ,:VERSION_NUM >= 160000                                AS psql_16

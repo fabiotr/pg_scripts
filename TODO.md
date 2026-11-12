@@ -1,5 +1,5 @@
 - PG19 new features
-  - Add PG19 on variables.sql
+  - ~~Add PG19 on variables.sql~~ (see `svp_pg_19` in `variables.sql`)
   - Add new script for pg_stat_lock on PG19
   - Add new script for pg_stat_recovery on PG19
   - Add new script for pg_stat_autovacuum_scores on PG19
