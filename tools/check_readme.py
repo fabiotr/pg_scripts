@@ -26,6 +26,11 @@ import re
 import sys
 from pathlib import Path
 
+# check_sql_style.py lives next to this file: its tokenizer finds the psql
+# commands outside comments and strings
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import check_sql_style as ck  # noqa: E402
+
 ORDER = ["82", "83", "84", "90", "91", "92", "93", "94", "95", "96",
          "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
 NOT_IN_CATALOG = {"variables.sql"}
@@ -35,6 +40,7 @@ BRANCH = re.compile(r"^\s*\\(if|elif)\s+:svp_pg_(\d{2})\s*$")
 ELSE = re.compile(r"^\s*\\else\s*$")
 ENDIF = re.compile(r"^\s*\\endif\s*$")
 IF = re.compile(r"^\s*\\if\b")
+INCLUDE = re.compile(r"^\s*\\ir?\s")
 
 
 def label(v):
@@ -42,39 +48,47 @@ def label(v):
     return v if v.startswith("1") else f"{v[0]}.{v[1]}"
 
 
+def commands(src):
+    """Text of every psql \\ command of src, skipping comments and strings."""
+    return [text for kind, _, _, text in ck.tokens(src) if kind == ck.META]
+
+
 def min_version(text):
     """Oldest version the dispatcher supports, or None for a file without
-    svp_pg_VV branches (version-independent)."""
-    depth, versions, else_text, in_else = 0, [], [], False
-    for line in text.splitlines():
-        if IF.match(line):
+    svp_pg_VV branches (version-independent). Only top-level \\if chains with
+    svp_pg_VV branches count; when the \\else of such a chain includes a file
+    anywhere below it (e.g. inside a privilege check), every version runs."""
+    depth, chain, versions, fallback = 0, None, [], False
+    for cmd in commands(text):
+        if IF.match(cmd):
             depth += 1
             if depth == 1:
-                m = BRANCH.match(line)
-                if m:
-                    versions.append(m.group(2))
-                in_else = False
+                m = BRANCH.match(cmd)
+                chain = {"versions": [m.group(2)] if m else [], "in_else": False, "includes": False}
             continue
-        if depth == 1:
-            m = BRANCH.match(line)
+        if depth == 1 and chain is not None:
+            m = BRANCH.match(cmd)
             if m:
-                versions.append(m.group(2))
-                in_else = False
+                chain["versions"].append(m.group(2))
+                chain["in_else"] = False
                 continue
-            if ELSE.match(line):
-                in_else = True
+            if ELSE.match(cmd):
+                chain["in_else"] = True
                 continue
-        if ENDIF.match(line):
+        if ENDIF.match(cmd):
             depth -= 1
-            if depth == 0:
-                in_else = False
+            if depth == 0 and chain is not None:
+                if chain["versions"]:
+                    versions += chain["versions"]
+                    fallback = fallback or chain["includes"]
+                chain = None
             continue
-        if in_else and depth == 1:
-            else_text.append(line)
+        if chain is not None and chain["in_else"] and INCLUDE.match(cmd):
+            chain["includes"] = True
     if not versions:
         return None
-    if any(re.match(r"\s*\\ir?\s", l) for l in else_text):
-        return "82"  # the \else branch still runs a query: every version
+    if fallback:
+        return "82"  # a version chain's \\else still runs a query: every version
     return min(versions, key=ORDER.index)
 
 
@@ -94,12 +108,13 @@ def check(repo):
     problems = []
     readme = repo / "README.md"
     sql = repo / "sql"
-    rows = {}
-    for no, line in enumerate(readme.read_text().splitlines(), 1):
+    rows = []  # every row, so a duplicate row is checked too
+    for no, line in enumerate(readme.read_text(encoding="utf-8").splitlines(), 1):
         m = ROW.match(line)
         if m:
-            rows.setdefault(m.group(1), (no, m.group(2)))
-    for name, (no, cell) in rows.items():
+            rows.append((m.group(1), no, m.group(2)))
+    listed = {name for name, _, _ in rows}
+    for name, no, cell in rows:
         path = sql / name
         if not path.exists() and not (repo / "reports" / name).exists():
             problems.append(f"README.md:{no}: `{name}` is in the catalog but not in sql/ or reports/")
@@ -108,7 +123,7 @@ def check(repo):
             continue
         if re.fullmatch(r"\s*PG\s*<\s*[\d.]+\s*", cell):
             continue  # "PG < 12": up to a version (e.g. tables_with_oid)
-        want = min_version(path.read_text())
+        want = min_version(path.read_text(encoding="utf-8"))
         have = parse_cell(cell)
         if have is None:
             problems.append(f"README.md:{no}: `{name}`: version cell {cell.strip()!r} isn't \"PG >= X.Y\"")
@@ -118,7 +133,7 @@ def check(repo):
     for p in sorted(sql.glob("*.sql")):
         if VERSIONED.search(p.name) or p.name in NOT_IN_CATALOG:
             continue
-        if p.name not in rows:
+        if p.name not in listed:
             problems.append(f"sql/{p.name}:1: entry script missing from the README catalog")
     return problems
 

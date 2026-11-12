@@ -173,6 +173,11 @@ class CheckDispatchers(unittest.TestCase):
             "- Not supported on version", "- t_report is not supported on version")})
         self.assertProblem(files, "use exactly", "sql/t.sql:6:")
 
+    def test_uppercase_not_supported_wording(self):
+        files = with_files({"sql/t.sql": DISPATCHER.replace(
+            "- Not supported on version", "- NOT SUPPORTED ON VERSION")})
+        self.assertProblem(files, "use exactly", "sql/t.sql:6:")
+
     def test_nested_if_restores_the_outer_branch(self):
         # after the inner \endif, t_10up.sql is back in the svp_pg_16 branch
         nested = ("\\if :svp_pg_16\n    \\if :other\n    \\endif\n    \\ir t_10up.sql\n"

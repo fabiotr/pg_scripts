@@ -49,7 +49,8 @@ UP_FILE_RE = re.compile(r"_([0-9]+)up\.sql$")
 VERSIONED_RE = re.compile(r"_[0-9]+(?:up|-)\.sql$")
 LOWERCASE_MESSAGE = "\\qecho - not supported on version"
 # any other wording of the fallback ("- vacuum_x is not supported on version ...")
-OTHER_MESSAGE = re.compile(r"\\qecho - (?!Not supported on version :svp_server_version\s*$)"
+# (?-i:...): only the exact wording is accepted; IGNORECASE finds the variants
+OTHER_MESSAGE = re.compile(r"\\qecho - (?!(?-i:Not supported on version :svp_server_version)\s*$)"
                            r".*\bnot supported on version", re.IGNORECASE)
 
 

@@ -125,6 +125,44 @@ class CheckReadmeTest(unittest.TestCase):
         rc, out = self.run_check()
         self.assertEqual(rc, 0, out)
 
+    def test_commented_out_branch_is_ignored(self):
+        self.sql("a.sql", "/*\n\\if :svp_pg_82\n\\endif\n*/\n" + DISPATCHER.format(name="a"))
+        self.readme("| Database | `a.sql` | PG >= 9.5 | A |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+
+    def test_else_of_a_non_version_chain_does_not_count(self):
+        self.sql("a.sql", DISPATCHER.format(name="a") +
+                 "\\if :svp_psql_16\n  \\pset xheader_width full\n\\else\n  \\ir helper.sql\n\\endif\n")
+        self.readme("| Database | `a.sql` | PG >= 9.5 | A |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+
+    def test_fallback_include_inside_a_privilege_check(self):
+        self.sql("a.sql", "\\ir variables.sql\n\\if :svp_pg_10\n  \\ir a_10up.sql\n\\else\n"
+                          "  \\if :svp_rol_super\n    \\ir a_82up.sql\n  \\else\n    \\qecho - Needs superuser\n"
+                          "  \\endif\n\\endif\n")
+        self.readme("| Database | `a.sql` |  | A |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 0, out)
+
+    def test_every_duplicate_row_is_checked(self):
+        self.sql("a.sql", DISPATCHER.format(name="a"))
+        self.readme("| Database | `a.sql` | PG >= 9.5 | A |", "| Cluster | `a.sql` | PG >= 8.4 | A again |")
+        rc, out = self.run_check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("README.md:6: `a.sql` says PG >= 8.4", out)
+
+    def test_utf8_readme_without_a_utf8_locale(self):
+        self.sql("a.sql", DISPATCHER.format(name="a"))
+        (self.repo / "README.md").write_text(
+            "# \U0001F418 Catalog\n\n| S | N | V | D |\n|---|---|---|---|\n| Database | `a.sql` | PG >= 9.5 | A |\n",
+            encoding="utf-8")
+        env = dict(os.environ, LC_ALL="C", LANG="C", PYTHONUTF8="0", PYTHONCOERCECLOCALE="0")
+        p = subprocess.run([sys.executable, "-X", "utf8=0", str(SCRIPT), str(self.repo)],
+                           capture_output=True, text=True, env=env)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
     def test_not_the_repository(self):
         p = subprocess.run([sys.executable, str(SCRIPT), str(self.repo / "sql")], capture_output=True, text=True)
         self.assertEqual(p.returncode, 2)
