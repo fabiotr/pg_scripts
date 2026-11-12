@@ -339,8 +339,8 @@ EOF
   echo "SELECT lo_create(0) FROM generate_series(1, 3);"
   # large objects with data (large_objects sums their size): lo_from_bytea is 9.4+
   [[ $n -ge 904 ]] && echo "SELECT lo_from_bytea(0, convert_to(repeat('large object ', 2000), 'UTF8')) FROM generate_series(1, 2);"
-  # one with a comment (large_objects shows it); pg_largeobject_metadata is 9.0+
-  if [[ $n -ge 900 ]]; then printf '%s\n' "SELECT format('COMMENT ON LARGE OBJECT %s IS %L', min(oid), 'fixture: large object') FROM pg_largeobject_metadata" '\gexec'; fi
+  # one with a comment (large_objects shows it); format() is 9.1+
+  if [[ $n -ge 901 ]]; then printf '%s\n' "SELECT format('COMMENT ON LARGE OBJECT %s IS %L', min(oid), 'fixture: large object') FROM pg_largeobject_metadata" '\gexec'; fi
   [[ $n -ge 1000 ]] && echo "CREATE PUBLICATION fix_pub FOR TABLE fk_parent, idx_zoo;"
 
   # --- the bloat itself, then statistics (never_analyzed stays without)

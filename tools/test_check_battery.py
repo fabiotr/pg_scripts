@@ -246,6 +246,19 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 0, out)
         self.assertIn("1 known", out)
 
+    def test_entry_covers_the_unprivileged_pass(self):
+        known = self.root / "k3.csv"
+        known.write_text('script,versions,pattern,reason\n'
+                         't,all,boom,environment\n'
+                         'u@low,all,hidden,no privilege\n')
+        self.run_version("16", {"t": (0, "ERROR:  boom\n", False), "t@low": (0, "ERROR:  boom\n", False),
+                                "u": (0, "ERROR:  hidden\n", False), "u@low": (0, "ERROR:  hidden\n", False)})
+        rc, out = self.check(known=known)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW u\n", out)       # u@low's entry doesn't cover u
+        self.assertNotIn("NEW t", out)       # t's entry covers t and t@low
+        self.assertNotIn("NEW u@low", out)
+
     def test_no_results(self):
         (self.root / "out").mkdir()
         rc, out = self.check()

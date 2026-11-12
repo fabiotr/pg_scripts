@@ -24,12 +24,18 @@ Exit code: 0 when every problem is known, 1 when there is a new problem (or a
 stale entry with --strict), 2 when the input can't be read (a PATH that doesn't
 exist or holds no results.csv).
 
+It also reports a column that is empty in every row of a table with 2 or
+more rows ('empty column "X" (all N rows)'): a value the script never gets.
+
 known_failures.csv columns: script,versions,pattern,reason
+  script:   an entry for "x" also covers "x@low" (run_battery.sh --lowpriv);
+            one for "x@low" only that pass
   versions: space-separated labels (82 83 ... 96 10 ... 18), ranges in that
             order (82-92) or "all"
-  pattern:  Python regular expression searched in each error line (with the
-            "psql:file:line: " prefix removed); a run is known only when all
-            its error lines match. Lines starting with # are comments.
+  pattern:  Python regular expression searched in each message (error lines
+            with the "psql:file:line: " prefix removed, empty columns); a run
+            is known when each of its messages is matched by an entry for its
+            script and version. Lines starting with # are comments.
 """
 import argparse
 import csv
@@ -235,7 +241,10 @@ def main(argv):
         for v, s, msgs in problems(c):
             # known when every message is covered by an entry for this script and
             # version (one entry may cover an error, another an empty column)
-            mine = [e for e in known if e["script"] == s and (e["versions"] is None or v in e["versions"])]
+            # an entry for "x" also covers "x@low" (the unprivileged pass); one for
+            # "x@low" only that pass
+            mine = [e for e in known if e["script"] in (s, s.split("@")[0])
+                    and (e["versions"] is None or v in e["versions"])]
             bad = []
             for m in msgs:
                 hits = [e for e in mine if e["pattern"].search(m)]

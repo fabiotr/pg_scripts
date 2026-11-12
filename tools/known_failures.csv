@@ -1,9 +1,47 @@
-# Errors tools/run_battery.sh is expected to hit, read by tools/check_battery.py.
-# They come from the test environment, not from bugs: a script that needs input,
-# another server or an extension the test cluster doesn't have.
+# What tools/run_battery.sh is expected to report, read by tools/check_battery.py:
+# errors from the test environment (a script that needs input, another server
+# or an extension), and columns that are empty in every row for a reason, not
+# because of a bug ("empty column" messages).
+# script: an entry for "x" also covers "x@low" (the unprivileged pass); an
+#   entry for "x@low" only that pass.
 # versions: labels (82 ... 96 10 ... 18), ranges (82-92) or "all".
-# pattern: regular expression that must match EVERY error line of the run.
+# pattern: regular expression; a run is known when each of its messages is
+#   matched by an entry for its script and version.
 script,versions,pattern,reason
-clean_query,all,"syntax error at or near "":""","asks for a query ID with \prompt; with stdin closed :qid stays empty"
+clean_query,all,"syntax error at or near "":""",asks for a query ID with \prompt; with stdin closed :qid stays empty
 index_poor_rep,84-18,"relation ""pg_stat_user_indexes_ro[0-9]+"" does not exist","joins snapshot tables of the replicas' pg_stat_user_indexes (pg_stat_user_indexes_ro1, _ro5) that only exist where they were collected"
-pgbouncer_fdw,all,"function public\.dblink\(text, text\) does not exist|relation ""pgbouncer\.[a-z_]+"" does not exist|schema ""pgbouncer"" already exists","needs the dblink extension and a running pgbouncer (it creates the pgbouncer schema and views)"
+pgbouncer_fdw,all,"function public\.dblink\(text, text\) does not exist|relation ""pgbouncer\.[a-z_]+"" does not exist|schema ""pgbouncer"" already exists",needs the dblink extension and a running pgbouncer (it creates the pgbouncer schema and views)
+autovacuum_analyze,all,"empty column ""(Avg time)""",autovacuum never runs during the battery (the fixture turns it off on its tables)
+autovacuum_analyze_duration,all,"empty column ""(AA Avg Time|AA Last)""",autovacuum never runs during the battery
+autovacuum_vacuum,all,"empty column ""(Avg time|Last)""",autovacuum never runs during the battery
+autovacuum_vacuum_duration,all,"empty column ""(V Avg Time|V Last)""",autovacuum never runs during the battery
+autovacuum_vacuum_plus,all,"empty column ""(Avg time|Last)""",autovacuum never runs during the battery
+autovacuum_vacuum_queue,all,"empty column ""(index_count|index_vacuum_count|last_vacuumed|mode|pid|scanned_pct|vacuumed_pct|waiting)""",progress columns: no vacuum is running
+collations,all,"empty column ""(ICU Rules)""",no collation with ICU rules
+conf_others,all,"empty column ""(unit)""",the settings listed have no unit
+connections_running,all,"empty column ""(leader_pid)""",no parallel query running
+database_size,all,"empty column ""(Options|Privileges)""",no database options or grants on the test cluster
+domains,all,"empty column ""(Collation|Default)""",the fixture's domains have no collation or default
+index_size,all,"empty column ""(Tbs)""",every index is in the default tablespace
+publication_tables,all,"empty column ""(rowfilter)""",the fixture's publication has no row filter
+statements,all,"empty column ""(MinMax)""","shown only when min/max were reset apart from the rest (minmax_stats_since, 17+)"
+statements_exec,all,"empty column ""(MinMax)""","shown only when min/max were reset apart from the rest (minmax_stats_since, 17+)"
+statements_summary,all,"empty column ""(MinMax)""","shown only when min/max were reset apart from the rest (minmax_stats_since, 17+)"
+stats_last_reset,all,"empty column ""(stats_reset)""",never reset: stats_reset is NULL (15+ no longer stamps a new database)
+tables_bloat_approx,all,"empty column ""(Tablespace)""",every table is in the default tablespace
+tablespaces,all,"empty column ""(Access privileges|Location|Options)""","only pg_default and pg_global: no location, options or grants"
+trigger_tables,all,"empty column ""(Defer)""",no deferrable trigger
+report_cluster,all,"empty column ""(Access privileges|Location|Options|Privileges|leader_pid|unit)""","the same sections as conf_others, database_size, tablespaces, connections_running"
+report_database,all,"empty column ""(Avg time|Collation|Default|Hit %|Hit/Tot|ICU Rules|Last|MinMax|Read/Tot|Read/Tot %|Tablespace|Writes|Writes/Call|rowfilter)""","the same sections as the scripts above; Hit %, Read/Tot and Writes are NULL for a zero counter (io_sequence, statements_shared)"
+connections_blocking_vacuum@low,82-96,"empty column ""(Query T|Status|Wait|Xact T|wait_event|waiting)""",before pg_read_all_stats (10) other users' session details are hidden
+connections_by_app_name@low,82-96,"empty column ""(Avg query|Avg xact|Max query|Max xact|Status)""",before pg_read_all_stats (10) other users' session details are hidden
+connections_running@low,82-96,"empty column ""(Q Conn|Q Start|Q Xact|host|waiting)""",before pg_read_all_stats (10) other users' session details are hidden
+vacuum_blocker@low,82-96,"empty column ""(Duration|Status)""",before pg_read_all_stats (10) other users' session details are hidden
+report_cluster@low,82-96,"empty column ""(Duration|Q Conn|Q Start|Q Xact|Query T|Status|Wait|Xact T|host|wait_event|waiting)""",before pg_read_all_stats (10) other users' session details are hidden
+report_database@low,82-96,"empty column ""(queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_rows@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_rows_call@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_shared@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_temp@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
+statements_top5@low,82-96,"empty column ""(id|queryid)""",before pg_read_all_stats (10) other users' queryid is hidden
