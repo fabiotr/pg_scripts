@@ -443,12 +443,16 @@ supervise() {
     psql -X -q -At -d "$DB" < "$f" >/dev/null 2>&1 &
     PSQL[$s]=$!
     exec {fd}>"$f"; FD[$s]=$fd
-    if [[ $s == active || $s == blocked ]]; then  # these block: report the pid first
-      printf '%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n%s\n' "$appn" "$pf" "${!sqlv}" >&$fd
-    else  # the pid file shows the transaction (and the blocker's row lock) is in place
-      printf '%s\n%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n' "$appn" "${!sqlv}" "$pf" >&$fd
-    fi
+    # pid first, then the session's SQL, then (client side, no query, so the
+    # session still shows its own statement) a ready file once that SQL is done
+    rm -f "$pf.ready"
+    printf '%s\n\\o %s\nSELECT pg_backend_pid();\n\\o\n%s\n\\! touch %s\n' "$appn" "$pf" "${!sqlv}" "$pf.ready" >&$fd
     for i in $(seq 1 100); do [[ -s "$pf" ]] && break; sleep 0.1; done
+    # idle_tx and the blocker must hold their transaction (and row lock) before
+    # the next session starts; active and blocked never finish their statement
+    if [[ $s == idle_tx || $s == blocker ]]; then
+      for i in $(seq 1 100); do [[ -e "$pf.ready" ]] && break; sleep 0.1; done
+    fi
     BPID[$s]=$(tr -dc '0-9' < "$pf" 2>/dev/null || true)
   }
   stop_one() {  # every step may find its target already gone (a kill_* script got there first)
