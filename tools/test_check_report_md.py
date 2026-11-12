@@ -91,6 +91,16 @@ class CheckReportMdTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("not followed by a |---| separator", out)
 
+    def test_header_followed_by_blank_heading_or_eof(self):
+        for text in ("| a | b |\n\nmore\n", "| a | b |\n## Next\n", "text\n\n| a | b |\n", "| a | b |"):
+            rc, out = self.check(text)
+            self.assertEqual(rc, 1, (text, out))
+            self.assertIn("not followed by a |---| separator", out)
+
+    def test_unicode_line_separator_inside_a_cell(self):
+        rc, out = self.check("| a | b |\n|---|---|\n| alpha\u2028beta | 1 kB |\n| x\u2029y | 2 kB |\n")
+        self.assertEqual(rc, 0, out)
+
     def test_separator_width(self):
         rc, out = self.check("| a | b |\n|---|\n| 1 | 2 |\n")
         self.assertEqual(rc, 1, out)

@@ -72,11 +72,15 @@ def ends_table(line):
 
 def check(path):
     problems = []
-    lines = path.read_text(errors="replace").splitlines()
+    # LF only, as normalize_md.py writes them: splitlines() would also break at
+    # U+2028/U+2029 and other separators that can sit inside a value
+    lines = path.read_text(errors="replace").split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
     fence = None  # line where an open ``` started
     table = None  # (header line number, cells)
     for no, raw in enumerate(lines, 1):
-        line = raw.rstrip()
+        line = raw.rstrip(" \t\r")
         if line.startswith("```"):
             fence = None if fence else no
             table = None
@@ -90,13 +94,14 @@ def check(path):
         if table is not None and ends_table(line):
             table = None
         if table is None:
-            if line.startswith("|"):  # a table starts: header, then the separator
-                table = (no, cells(line))
+            if line.startswith("|"):  # a table starts: its next line must be the separator
+                nxt = lines[no].rstrip(" \t\r") if no < len(lines) else ""  # "" at EOF
+                if SEPARATOR.match(nxt):
+                    table = (no, cells(line))
+                else:
+                    problems.append((no, "table header not followed by a |---| separator line"))
         elif no == table[0] + 1:
-            if not SEPARATOR.match(line):
-                problems.append((no, "table header not followed by a |---| separator line"))
-                table = None
-            elif cells(line) != table[1]:
+            if cells(line) != table[1]:
                 problems.append((no, f"separator has {cells(line)} columns, its header (line {table[0]}) {table[1]}"))
         else:
             # GFM drops the cells past the header's count (data lost) and pads a
