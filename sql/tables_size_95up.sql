@@ -15,13 +15,13 @@ SELECT
     --c.relpages,
     lpad(pg_size_pretty(pg_total_relation_size(c.oid)),11)  AS "Total Size",
     lpad(pg_size_pretty(pg_indexes_size(c.oid)),11) 
-        || lpad('(' || round(100 * pg_indexes_size(c.oid) / 
+        || lpad('(' || round(100.0 * pg_indexes_size(c.oid) / 
         nullif(pg_total_relation_size(c.oid), 0),1) || ' %)',10)       AS "Index Size",
     lpad(pg_size_pretty(pg_relation_size(c.oid,'main')),11)           
-        || lpad('(' || round(100 * pg_relation_size(c.oid,'main') / 
+        || lpad('(' || round(100.0 * pg_relation_size(c.oid,'main') / 
         nullif(pg_total_relation_size(c.oid), 0),1) || ' %)',10)       AS "Heap Size",
     lpad(pg_size_pretty(pg_table_size(c.reltoastrelid)),11) 
-        || lpad('(' || round(100 * pg_table_size(c.reltoastrelid) / 
+        || lpad('(' || round(100.0 * pg_table_size(c.reltoastrelid) / 
         nullif(pg_total_relation_size(c.oid), 0),1) || ' %)',10)       AS "Toast Size",
     --lpad(pg_size_pretty(pg_relation_size(c.oid, 'fsm')),7) AS "FSM Size",
     --lpad(pg_size_pretty(pg_relation_size(c.oid, 'vm')),7)  AS "VM Size",
