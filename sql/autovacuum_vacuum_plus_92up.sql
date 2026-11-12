@@ -19,7 +19,7 @@ SELECT
     to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS') 
         || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END "Last",
     t.autovacuum_count "Qt A",
-    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - COALESCE(d.stats_reset, pg_postmaster_start_time())) / t.autovacuum_count,'DD HH24:MI:SS') END "Avg time",
+    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - COALESCE(d.stats_reset, :svp_stats_start_db)) / t.autovacuum_count,'DD HH24:MI:SS') END "Avg time",
     CASE WHEN NOT c.enabled THEN 'X' END "disabled"
 FROM 
     pg_stat_all_tables t

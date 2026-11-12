@@ -10,7 +10,7 @@ SELECT
 	trunc(100 * idx_blks_read / nullif(sum(idx_blks_read) OVER(), 0),1) AS "Read/Tot %"
 FROM 
 	pg_statio_all_tables
-	JOIN (SELECT datname, EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, pg_postmaster_start_time()))::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
+	JOIN (SELECT datname, EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, :svp_stats_start_db))::numeric/(60*60*24) AS reset_days FROM pg_stat_database) d ON d.datname = current_database()
 WHERE schemaname != 'pg_toast'
 ORDER BY coalesce(idx_blks_read,0) DESC 
 LIMIT 10;

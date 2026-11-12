@@ -1,7 +1,7 @@
 SELECT
     t.schemaname AS "Schema",
     t.relname    AS "Table",
-    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(d.stats_reset, pg_postmaster_start_time()))::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
+    lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(d.stats_reset, :svp_stats_start_db))::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),16) AS "Live",
     lpad(pg_size_pretty(pg_table_size(t.relid)),11)      AS "Size",
     lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),16) AS "Dead",
@@ -13,7 +13,7 @@ SELECT
     to_char(now() - greatest(t.last_autovacuum, t.last_vacuum), 'DD HH24:MI:SS')
         || CASE WHEN coalesce(t.last_autovacuum, '-infinity') > coalesce(t.last_vacuum, '-infinity') THEN ' A' ELSE ' M' END AS "Last",
     t.autovacuum_count "Qt A",
-    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - COALESCE(d.stats_reset, pg_postmaster_start_time())) / t.autovacuum_count,'DD HH24:MI:SS') END  AS "Avg time",
+    CASE t.autovacuum_count WHEN 0 THEN NULL ELSE to_char((now() - COALESCE(d.stats_reset, :svp_stats_start_db)) / t.autovacuum_count,'DD HH24:MI:SS') END  AS "Avg time",
     CASE WHEN NOT t.enabled THEN 'X' END AS "disabled"
 FROM
     (SELECT

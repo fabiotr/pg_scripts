@@ -7,7 +7,7 @@ SELECT
         nullif(sum(n_tup_ins) OVER (),0),1) || ' %)',9)          AS "INSERT Rows/Day"
 FROM
     pg_stat_all_tables,
-    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, pg_postmaster_start_time()))::numeric/(60*60*24) AS reset_days 
+    (SELECT EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, :svp_stats_start_db))::numeric/(60*60*24) AS reset_days 
     	FROM pg_stat_database 
     	WHERE datname = current_database()) AS r
 WHERE

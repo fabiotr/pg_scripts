@@ -10,7 +10,7 @@
       lpad(pg_size_pretty(round(stream_bytes::numeric / reset_days)),11) AS "Stream size/Day",
       lpad(pg_size_pretty(round(total_bytes::numeric  / reset_days)),11) AS "Total size/Day",
       date_trunc('second', CURRENT_TIMESTAMP - stats_reset)             AS "Age"
-    FROM (SELECT *, (EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, pg_postmaster_start_time())) / (60*60*24)) AS reset_days FROM pg_stat_replication_slots) AS rs
+    FROM (SELECT *, (EXTRACT(epoch FROM CURRENT_TIMESTAMP - COALESCE(stats_reset, :svp_stats_start_shared)) / (60*60*24)) AS reset_days FROM pg_stat_replication_slots) AS rs
     ORDER BY 1;
   \else
     SELECT 

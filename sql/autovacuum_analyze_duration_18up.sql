@@ -1,6 +1,6 @@
 WITH stats_age AS (
     SELECT GREATEST(
-        EXTRACT(epoch FROM (now() - COALESCE(sd.stats_reset, pg_postmaster_start_time()))) / 86400.0,
+        EXTRACT(epoch FROM (now() - COALESCE(sd.stats_reset, :svp_stats_start_db))) / 86400.0,
         1.0 / 86400.0
     ) AS days_since_reset
     FROM pg_stat_database sd
