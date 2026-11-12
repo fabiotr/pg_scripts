@@ -1,0 +1,10 @@
+# Errors tools/run_battery.sh is expected to hit, read by tools/check_battery.py.
+# They come from the test environment, not from bugs: a script that needs input,
+# another server or an extension the test cluster doesn't have.
+# versions: labels (82 ... 96 10 ... 18), ranges (82-92) or "all".
+# pattern: regular expression that must match EVERY error line of the run.
+script,versions,pattern,reason
+clean_query,all,"syntax error at or near "":""","asks for a query ID with \prompt; with stdin closed :qid stays empty"
+index_poor_rep,82-83,"syntax error at or near ""WITH table_scans""","uses WITH (CTEs come in 8.4); not a dispatcher, no version check"
+index_poor_rep,84-18,"relation ""pg_stat_user_indexes_ro[0-9]+"" does not exist","joins snapshot tables of the replicas' pg_stat_user_indexes (pg_stat_user_indexes_ro1, _ro5) that only exist where they were collected"
+pgbouncer_fdw,all,"function public\.dblink\(text, text\) does not exist|relation ""pgbouncer\.[a-z_]+"" does not exist|schema ""pgbouncer"" already exists","needs the dblink extension and a running pgbouncer (it creates the pgbouncer schema and views)"

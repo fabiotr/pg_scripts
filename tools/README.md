@@ -1,6 +1,6 @@
 # 🧰 Maintenance Tools
 
-Checks that keep the repository consistent. They are for contributors: none of them connects to a database, and none of them is part of the script library. CI runs all of them on every pull request (`.github/workflows/check-dispatchers.yml`).
+Tools for contributors, not part of the script library. The static checks keep the repository consistent without a database, and CI runs them on every pull request (`.github/workflows/check-dispatchers.yml`). The regression battery runs every script on a real server (see [Regression battery](#regression-battery)); it isn't in CI yet.
 
 | File                         | What it does                                                    |
 | :---                         | :---                                                            |
@@ -8,8 +8,13 @@ Checks that keep the repository consistent. They are for contributors: none of t
 | `check_sql_style.py`         | Checks (and with `--fix`, fixes) the SQL style of `sql/` and `reports/`. |
 | `test_check_dispatchers.py`  | Tests for `check_dispatchers.py`.                               |
 | `test_check_sql_style.py`    | Tests for `check_sql_style.py`.                                 |
+| `fixture.sh`                 | Builds a test database with data and odd objects, plus background sessions. |
+| `run_battery.sh`             | Runs every entry script and both reports on one server, records errors. |
+| `check_battery.py`           | Compares battery results with `known_failures.csv`.             |
+| `known_failures.csv`         | Errors the battery expects (test environment, not bugs).       |
+| `test_check_battery.py`      | Tests for `check_battery.py`.                                   |
 
-Requirements: Python 3.9+, standard library only. No other packages, and no database.
+Requirements for the static checks: Python 3.9+, standard library only. No other packages, and no database. The battery also needs bash 4+, psql 12+ (any server from 8.2; the scripts themselves need psql 10+), GNU `timeout` and a throwaway PostgreSQL server.
 
 ## Quick start
 
@@ -19,7 +24,7 @@ From the repository root:
 ./tools/check_dispatchers.py        # must print "All dispatchers OK"
 ./tools/check_sql_style.py          # must print "All SQL style checks OK"
 ./tools/check_sql_style.py --fix    # fixes what it can, see below
-python3 -m unittest discover -s tools -p 'test_*.py'   # tests for both checks
+python3 -m unittest discover -s tools -p 'test_*.py'   # tests for the checks
 ```
 
 Problems are printed as `file:line: message`. Both checks exit with 0 when everything is fine, 1 when a problem is found, and 2 when they can't run (not the pg_scripts repository, no SQL files).
@@ -85,6 +90,7 @@ python3 -m unittest discover -s tools -p 'test_*.py' -v
 
 - `test_check_dispatchers.py` runs each rule against a throwaway repository, plus a clean repository, a directory that isn't the repository, and the symlinked pre-commit hook. `CHECK_DISPATCHERS=/path/to/copy.py` points the tests at another copy of the script, for example a deliberately broken one, to confirm that some test fails.
 - `test_check_sql_style.py` covers the tokenizer (strings, nested comments, dollar quotes, numbers, psql variables and `\` lines), each rule, `--fix`, and the linear-time cases (many or unterminated dollar quotes).
+- `test_check_battery.py` builds fake battery output: clean runs, known and new errors, a second error in a script with a known one, version ranges, timeouts, exit codes, report failures, stale entries, and a check that `known_failures.csv` itself parses. `CHECK_BATTERY` points it at another copy of the script.
 
 When you change a check, add a case that fails without your change.
 
@@ -100,3 +106,50 @@ Or only the dispatcher check, as a symlink:
 ```bash
 ln -s ../../tools/check_dispatchers.py .git/hooks/pre-commit
 ```
+
+## Regression battery
+
+Static checks can't tell whether a query still works on 8.2 or on 18, or on a database with real data. The battery runs every entry script of `sql/` (the dispatchers and the unversioned files) and both reports on a live server, and `check_battery.py` fails when an error shows up that isn't in `known_failures.csv`.
+
+> [!WARNING]
+> Throwaway test clusters only, never a server with anything you want to keep. The battery runs everything, including `kill_*` (terminates sessions), `stats_reset_all` (resets statistics), `pgbouncer_fdw` (creates a schema) and the `\gexec` scripts. The fixture drops and recreates its own database and creates the roles `fix_reader` and `fix_writer`.
+
+### `fixture.sh`
+
+Without data many scripts return nothing and their logic is never exercised: the `pgstatindex()` call on an invalid index and `bt_index_check()` on a partitioned index (fixed in #90) only failed once there were such indexes, and a division by `reltuples` only once a table had 0 rows analyzed. `fixture.sh` builds a database (`fixdb` by default, about 10 s and 170 MB) with, on each version that supports them: bloated tables, large TOAST values, per-table `reloptions` (and `pg_autovacuum` rows on 8.2/8.3), inheritance and two-level declarative partitions, partitioned indexes, materialized views (one never populated), unlogged tables (one empty and analyzed, as crash recovery leaves them), sequences near their limit, every index type, a duplicate, an invalid and an unused index, a foreign key without an index, functions, triggers, domains, composite, enum and range types, collations, extended statistics, `WITH OIDS` tables, and a schema outside `search_path` whose names need quoting. It loads `pg_stat_statements`, `pgstattuple` and `pg_buffercache`. The full list is in the script header.
+
+```bash
+tools/fixture.sh            # build (skipped when already at the current version) + load
+tools/fixture.sh --rebuild  # drop and build again
+tools/fixture.sh load       # workload again: pg_stat_statements, function calls, scans, temp files
+tools/fixture.sh start      # background sessions: idle in transaction, a blocker and the
+                            # session it blocks, a long active query, a COPY in progress
+                            # into an empty analyzed table; respawned when killed
+tools/fixture.sh stop
+tools/fixture.sh status
+```
+
+It connects with the usual libpq variables (`PGHOST`, `PGPORT`, `PGUSER`, `PGSERVICE`) as a superuser, and uses plain SQL that every version parses (no `IF NOT EXISTS`, `ON CONFLICT` or `DO`). On servers before 9.1, which have no `CREATE EXTENSION`, the contrib scripts come from `FIXTURE_CONTRIB_DIR` or `` `pg_config --sharedir`/contrib `` (`PG_CONFIG` picks the `pg_config`). It refuses to drop a database it didn't create. It warns, without failing, when a setting some scripts need is off (`track_counts`, `track_activities`, `track_functions`, `track_io_timing`, `pg_stat_statements` in `shared_preload_libraries`; 8.2 has older names): those scripts would come out empty and pass without being tested.
+
+When a bug depends on data, add the object that shows it to the fixture and bump `FIXTURE_VERSION`, so the battery catches it from then on.
+
+### `run_battery.sh` and `check_battery.py`
+
+```bash
+PGSERVICE=pg16 tools/run_battery.sh --fixture -o /tmp/battery/16
+PGSERVICE=pg10 tools/run_battery.sh --fixture -o /tmp/battery/10
+tools/check_battery.py --versions "10 16" /tmp/battery   # every results.csv below it
+```
+
+`run_battery.sh` runs each script with `psql -X -f`, stdin closed and a timeout (`-t`, 120 s), from `sql/`, on the fixture database with `--fixture` (or `-d`). `--fixture` rebuilds the database every time, since the battery changes it (`pgbouncer_fdw` creates a schema, `stats_reset_all` zeroes counters), so every run starts from the same state; `--reuse-fixture` keeps it when it is current, to iterate faster on one script. Scripts run in name order except the statistics resets (`stats_reset_*`), which run last so the scripts that read activity counters still see the fixture's workload. A fixture that fails or refuses the database stops the run: nothing is run on a database it didn't build. It writes `results.csv` (version, script, exit code, lines, `ERROR` / `FATAL` / timeout counts, "Not supported" and "Needs" messages, checksum) and one `<script>.out` per script. The two report SQL files also run directly, stderr included (`report_cluster.out`, `report_database.out`): `generate_reports.sh` keeps psql's stderr only when a report fails, so an error inside a section would be lost. `generate_reports.sh` itself runs too (row `REPORTS`, Markdown under `reports/`, `reports.log`) when there is a `pg_service.conf` entry (`-S` or `PGSERVICE`), with an empty config of its own (`-c`), so a local `reports/report.conf` can't send the reports to another database. Before it, only the date folders of an earlier run are removed from `reports/`, never the directory itself. `-s "name ..."` limits the run to some scripts and `-R` skips the reports.
+
+`check_battery.py` reports every run with an `ERROR` or `FATAL` line, a psql client error (`psql:<file>:<line>: error: ...`, e.g. an `\ir` to a missing file, after which psql still exits with 0), a timeout or a failed psql, grouped by script and message with the versions where it happened, and exits with 1 when one of them isn't in `known_failures.csv`. An entry there names the script, the versions (`all`, `82-92`, `10 11`) and a regular expression that must match **every** error line of the run, so a new error in a script with a known one is still reported. An entry that no longer matches anything is printed as a note (`--strict` makes it fail), so it can be removed. `--versions` lists the versions that must have results (`82 83 10-18`, `all`): one without any, e.g. a cluster that never came up, is a new problem, and a path that doesn't exist stops the check. A `results.csv` with no runs, or without the `END` row `run_battery.sh` writes last, is reported too: an interrupted battery is not a clean one. So is a fixture load that fails before the reports (row `FIXTURE_LOAD`).
+
+```
+3914 runs on 19 version(s) (82 83 ... 17 18): 8 new problem(s), 57 known
+
+NEW index_check_btree_integrity
+   [11,12,13,14,15,16,17] ERROR:  only B-Tree indexes are supported as targets for verification
+```
+
+Docker images (`postgres:<VV>`) are the easiest way to get one server per version. Versions up to 9.2 use System V shared memory, which macOS limits to 4 MB in all, so only one of them can run at a time there.

@@ -8,7 +8,7 @@ Everything is written in English (code, comments, column aliases, commit message
 - `sql/` — all SQL scripts (flat, no subfolders). Run via psql; they rely on psql meta-commands.
 - `reports/` — full Markdown reports (`report_cluster.sql`, `report_database.sql`), generator (`generate_reports.sh` / `.ps1`), `normalize_md.py`, `report.conf.example` (copy to the git-ignored `report.conf`).
 - `linux_bash/` — bash scripts. `windows_power_shell/` — PowerShell ports **mirroring the same file names** (`.sh` → `.ps1`).
-- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.py` validates the dispatcher rules below; `tools/check_sql_style.py` validates the SQL style rules (keyword and identifier case, ASCII identifiers, ambiguous strings). Both are documented in `tools/README.md`; keep it in step when a rule changes.
+- `tools/` — repository maintenance scripts (not shipped to users, no PowerShell twin). `tools/check_dispatchers.py` validates the dispatcher rules below; `tools/check_sql_style.py` validates the SQL style rules (keyword and identifier case, ASCII identifiers, ambiguous strings). `tools/run_battery.sh` + `tools/fixture.sh` + `tools/check_battery.py` are the regression battery (every script on a live server, with data). All are documented in `tools/README.md`; keep it in step when a rule changes.
 - `psqlrc` — recommended `~/.psqlrc` (does `\cd $HOME/pg_scripts/sql`).
 - `README.md` — the script catalog. `TODO.md` — roadmap (done items are ~~struck through~~ with a "(see `file.sql`)" note).
 
@@ -121,6 +121,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.
+- Regression battery (throwaway clusters only, see `tools/README.md`): `tools/run_battery.sh --fixture -o <dir>/<VV>` on each version, then `tools/check_battery.py --versions "<VV ...>" <dir>`, which must report 0 new problems (`--versions` makes a version that never ran a problem). The fixture database has data and the odd objects that empty databases lack (invalid, partitioned and duplicate indexes, bloat, TOAST, quoted names, blocked sessions); run scripts on it rather than on an empty `postgres`. An error the test environment can't avoid goes in `tools/known_failures.csv` with its reason; a data-dependent bug gets an object in the fixture.
 
 ## Git
 
