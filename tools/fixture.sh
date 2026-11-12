@@ -13,7 +13,7 @@
 #
 # Important: for THROWAWAY test clusters only. It drops and recreates its own
 # database (never one it didn't create), creates the cluster-wide roles
-# fix_reader and fix_writer, writes to pg_autovacuum (8.2/8.3) and pg_index
+# fix_reader, fix_writer and fix_monitor (LOGIN, pg_monitor on 10+), writes to pg_autovacuum (8.2/8.3) and pg_index
 # (8.2), and the battery it is made for kills sessions and resets statistics.
 #
 # Every feature is created only on the versions that have it, with plain SQL
@@ -54,7 +54,7 @@
 #             exclusion constraint (9.0+), WITH OIDS table (<= 11), never
 #             analyzed table, large objects, publication (10+), role grants,
 #             a schema outside search_path with mixed-case / spaced names
-#   extensions pg_stat_statements (8.4+), pgstattuple, pg_buffercache
+#   extensions pg_stat_statements (8.4+), pgstattuple, pg_buffercache, amcheck (10+)
 #   It takes about 10 s and 160-190 MB.
 #
 # Usage: tools/fixture.sh [build|load|start|stop|status] [--rebuild]
@@ -65,7 +65,7 @@
 # Example: PGSERVICE=pg16 tools/fixture.sh && PGSERVICE=pg16 tools/fixture.sh start
 set -euo pipefail
 
-FIXTURE_VERSION=2
+FIXTURE_VERSION=4
 DB="${FIXDB:-fixdb}"
 ADMIN="${FIXTURE_ADMIN_DB:-postgres}"
 cmd=all; rebuild=0
@@ -229,6 +229,12 @@ build_sql() {
   echo "CREATE TABLE fk_child_idx (id int PRIMARY KEY, parent_id int REFERENCES fk_parent (id) ON DELETE CASCADE);"
   echo "CREATE INDEX fk_child_idx_parent ON fk_child_idx (parent_id);"
   echo "INSERT INTO fk_child_idx SELECT g, 1 + g % 2000 FROM generate_series(1, 5000) g;"
+  # a unique key column with a default (tables_uk_default_values)
+  echo "CREATE TABLE uk_default (id int PRIMARY KEY, code text DEFAULT 'none' UNIQUE, n int);"
+  echo "INSERT INTO uk_default SELECT g, 'c' || g::text, g FROM generate_series(1, 100) g;"
+  # columns ordered so that padding wastes space (tables_alignment_padding)
+  echo "CREATE TABLE padded (a bool, b int8, c bool, d int8, e int2, f int8);"
+  echo "INSERT INTO padded SELECT true, g, false, g, 1, g FROM generate_series(1, 20000) g;"
   echo "CREATE TABLE no_pk (a int, b text);"
   echo "INSERT INTO no_pk SELECT g, 'x' FROM generate_series(1, 1000) g;"
   echo "CREATE TABLE never_analyzed (a int, b text);"
@@ -245,8 +251,10 @@ build_sql() {
 
   # --- types, domains, collations
   echo "CREATE DOMAIN email_addr AS text CHECK (VALUE LIKE '%@%');"
+  echo "COMMENT ON DOMAIN email_addr IS 'fixture: e-mail address';"
   echo "CREATE DOMAIN positive_int AS int NOT NULL CHECK (VALUE > 0);"
   echo "CREATE TYPE address AS (street text, city text, zip varchar(10));"
+  echo "COMMENT ON TYPE address IS 'fixture: composite type';"
   [[ $n -ge 803 ]] && echo "CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"
   [[ $n -ge 902 ]] && echo "CREATE TYPE float_range AS RANGE (subtype = float8);"
   echo "CREATE TABLE typed_tbl (id positive_int PRIMARY KEY, mail email_addr, addr address$([[ $n -ge 803 ]] && echo ', feeling mood')$([[ $n -ge 902 ]] && echo ', fr float_range'));"
@@ -329,6 +337,10 @@ EOF
   echo "GRANT USAGE ON SCHEMA \"Odd Schema\" TO fix_reader;"
   echo "ALTER TABLE no_pk OWNER TO fix_writer;"
   echo "SELECT lo_create(0) FROM generate_series(1, 3);"
+  # large objects with data (large_objects sums their size): lo_from_bytea is 9.4+
+  [[ $n -ge 904 ]] && echo "SELECT lo_from_bytea(0, convert_to(repeat('large object ', 2000), 'UTF8')) FROM generate_series(1, 2);"
+  # one with a comment (large_objects shows it); format() is 9.1+
+  if [[ $n -ge 901 ]]; then printf '%s\n' "SELECT format('COMMENT ON LARGE OBJECT %s IS %L', min(oid), 'fixture: large object') FROM pg_largeobject_metadata" '\gexec'; fi
   [[ $n -ge 1000 ]] && echo "CREATE PUBLICATION fix_pub FOR TABLE fk_parent, idx_zoo;"
 
   # --- the bloat itself, then statistics (never_analyzed stays without)
@@ -338,7 +350,7 @@ EOF
   echo "DELETE FROM bloat_del WHERE id % 10 <> 0;"
   echo "UPDATE toast_big SET doc = doc || 'x' WHERE id % 2 = 0;"
   echo "UPDATE idx_zoo SET b = b + 1 WHERE id % 5 = 0;"
-  for t in bloat_upd bloat_del toast_big inh_parent inh_child_1 inh_child_2 inh_child_3 idx_zoo inv_tbl fk_parent \
+  for t in padded uk_default bloat_upd bloat_del toast_big inh_parent inh_child_1 inh_child_2 inh_child_3 idx_zoo inv_tbl fk_parent \
            fk_child_noidx fk_child_idx no_pk lock_tbl typed_tbl seq_nearly_full '"Odd Schema"."Mixed Case"'; do
     echo "ANALYZE $t;"
   done
@@ -354,7 +366,7 @@ EOF
 install_extensions() {
   local e f
   if [[ $n -ge 901 ]]; then
-    for e in pg_stat_statements pgstattuple pg_buffercache; do
+    for e in pg_stat_statements pgstattuple pg_buffercache $([[ $n -ge 1000 ]] && echo amcheck); do
       P -d "$DB" -v ON_ERROR_STOP=1 -c "CREATE EXTENSION $e" >/dev/null || die "CREATE EXTENSION $e failed"
     done
   else
@@ -409,6 +421,13 @@ do_build() {
   for r in fix_reader fix_writer; do
     [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_roles WHERE rolname = '$r'") ]] || P -d "$ADMIN" -c "CREATE ROLE $r NOLOGIN" >/dev/null
   done
+  # the unprivileged login of run_battery.sh --lowpriv: pg_monitor from 10 on
+  # (the usual monitoring role on DBaaS), a plain user before
+  [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_roles WHERE rolname = 'fix_monitor'") ]] \
+    || P -d "$ADMIN" -c "CREATE ROLE fix_monitor LOGIN" >/dev/null
+  if [[ $n -ge 1000 ]]; then P -d "$ADMIN" -c "GRANT pg_monitor TO fix_monitor" >/dev/null; fi
+  # English messages (the battery counts ERROR:): it can't set lc_messages itself
+  P -d "$ADMIN" -c "ALTER ROLE fix_monitor SET lc_messages TO 'C'" >/dev/null
   install_extensions
   build_sql "$TMP/build.sql"
   P -d "$DB" -v ON_ERROR_STOP=1 -f "$TMP/build.sql" >"$TMP/build.out" 2>&1 || { cat "$TMP/build.out" >&2; die "build failed"; }
@@ -460,6 +479,10 @@ do_load() {
       echo "SELECT * FROM v_fk_summary ORDER BY children DESC LIMIT 5;"
     done
     echo "RESET work_mem;"
+    # local (temporary table) blocks for the statements_* Local/Day columns
+    echo "CREATE TEMP TABLE tmp_load AS SELECT * FROM bloat_upd;"
+    echo "SELECT count(*) FROM tmp_load;"
+    echo "DROP TABLE tmp_load;"
     if [[ $n -ge 903 ]]; then echo "REFRESH MATERIALIZED VIEW mv_grp;"; fi
   } > "$L"
   P -d "$DB" -f "$L" >/dev/null 2>"$TMP/load.err"

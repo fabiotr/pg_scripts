@@ -209,6 +209,131 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
         self.assertIn("does not exist", p.stderr)
 
+    ALIGNED = (" name | size | note \n"
+               "------+------+------\n"
+               " a    | 1 kB |      \n"
+               " b    | 2 kB |      \n"
+               "(2 rows)\n")
+
+    def test_empty_column_aligned(self):
+        self.run_version("16", {"t": (0, self.ALIGNED, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('[16] empty column "note" (all 2 rows)', out)
+        self.assertNotIn('"size"', out)
+
+    def test_empty_column_expanded(self):
+        text = ("-[ RECORD 1 ]-----\nname | a\nnote | \n"
+                "-[ RECORD 2 ]-----\nname | b\nnote | -\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
+    def test_wide_characters_are_cut_by_display_width(self):
+        text = (" name | note | n \n"
+                "------+------+---\n"
+                " \u6f22   |      | 1\n"
+                " \u5b57   |      | 2\n"
+                "(2 rows)\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+        self.assertNotIn('"n"', out)
+
+    def test_multiline_value_is_one_row(self):
+        # psql marks a value that goes on with "+" in the cell's last column
+        text = (" name | note | n \n"
+                "------+------+---\n"
+                " ab  +|      | 1\n"
+                " cd   |      | \n"
+                "(1 row)\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 0, out)  # one row: below the 2-row threshold
+        text2 = (" n | last \n---+------\n 1 | ab  +\n   | cd\n 2 | \n(2 rows)\n")
+        self.run_version("17", {"t": (0, text2, False)})
+        rc, out = self.check()
+        self.assertNotIn('"last"', out)  # filled in the first row's second line
+
+    def test_one_column_null_rows_before_a_footer(self):
+        text = " only \n------\n \n \n(2 rows)\n"
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "only" (all 2 rows)', out)
+
+    def test_consecutive_tables_without_a_blank_line(self):
+        # footers off: the second table follows the first one right away
+        text = (" a | b \n---+---\n 1 | x\n 2 | y\n"
+                " name | note \n------+------\n a    |      \n b    |      \n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
+    def test_aligned_table_right_after_expanded_records(self):
+        text = ("-[ RECORD 1 ]---\nname | a\nsize | 1\n"
+                "-[ RECORD 2 ]---\nname | b\nsize | 2\n"
+                " key | note \n-----+------\n x   |      \n y   |      \n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+
+    def test_needs_as_superuser(self):
+        text = "- Needs superuser (or EXECUTE on pg_ls_dir())\n"
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "t.out").write_text(text)
+        (d / "t@low.out").write_text(text)
+        (d / "results.csv").write_text(HEADER + "16,t,0,1,0,0,0,0,1,x\n16,t@low,0,1,0,0,0,0,1,x\n16,END,0,0,0,0,0,0,0,\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW t\n", out)
+        self.assertIn("as superuser: - Needs superuser", out)
+        self.assertNotIn("t@low", out)  # expected without privileges
+
+    def test_lowpriv_role_with_translated_messages(self):
+        d = self.root / "out" / "16"
+        d.mkdir(parents=True)
+        (d / "LOWPRIV.out").write_text("ERROR:  role r has lc_messages=fr_FR: set ALTER ROLE r SET lc_messages TO 'C'\n")
+        (d / "results.csv").write_text(HEADER + "16,LOWPRIV,1,1,1,0,0,0,0,\n16,END,0,0,0,0,0,0,0,\n")
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW LOWPRIV", out)
+        self.assertIn("lc_messages=fr_FR", out)
+
+    def test_one_row_table_and_filled_columns_pass(self):
+        self.run_version("16", {"t": (0, " name | note \n------+------\n a    |      \n(1 row)\n", False),
+                                "u": (0, " name | n \n------+---\n a    | 1 \n b    | 2 \n", False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 0, out)
+
+    def test_known_error_and_known_empty_column_from_two_entries(self):
+        known = self.root / "k2.csv"
+        known.write_text('script,versions,pattern,reason\n'
+                         't,all,"empty column ""note""",no notes in the fixture\n'
+                         't,all,boom,environment\n')
+        self.run_version("16", {"t": (0, "ERROR:  boom\n" + self.ALIGNED, False)})
+        rc, out = self.check(known=known)
+        self.assertEqual(rc, 0, out)
+        self.assertIn("1 known", out)
+
+    def test_entry_covers_the_unprivileged_pass(self):
+        known = self.root / "k3.csv"
+        known.write_text('script,versions,pattern,reason\n'
+                         't,all,boom,environment\n'
+                         'u@low,all,hidden,no privilege\n')
+        self.run_version("16", {"t": (0, "ERROR:  boom\n", False), "t@low": (0, "ERROR:  boom\n", False),
+                                "u": (0, "ERROR:  hidden\n", False), "u@low": (0, "ERROR:  hidden\n", False)})
+        rc, out = self.check(known=known)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("NEW u\n", out)       # u@low's entry doesn't cover u
+        self.assertNotIn("NEW t", out)       # t's entry covers t and t@low
+        self.assertNotIn("NEW u@low", out)
+
     def test_no_results(self):
         (self.root / "out").mkdir()
         rc, out = self.check()

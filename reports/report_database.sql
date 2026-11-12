@@ -17,11 +17,6 @@
 SET client_encoding TO 'UTF8';
 SET client_min_messages TO warning;
 \r
-\if :svp_pg_91
-  \if :svp_not_standby
-    CREATE EXTENSION IF NOT EXISTS pgstattuple;
-  \endif
-\endif
 
 \pset footer off
 \pset null ' - '

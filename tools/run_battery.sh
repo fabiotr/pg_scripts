@@ -31,6 +31,9 @@
 #       --reuse-fixture  with --fixture: keep the database when it is already at
 #                        the fixture's version (faster, e.g. to iterate on one
 #                        script), only load it again
+#   -L, --lowpriv ROLE   also run the read-only scripts and the report SQL as
+#                        this unprivileged login role (rows <name>@low); the
+#                        fixture creates fix_monitor (pg_monitor on 10+)
 #   -s, --scripts LIST   only these entry scripts (names without .sql, space
 #                        separated)
 #   -S, --service NAME   pg_service.conf entry for the reports (default PGSERVICE)
@@ -46,12 +49,13 @@ set -euo pipefail
 
 usage() { sed -n '2,/^set -euo/p' "$0" | sed '$d; s/^# \{0,1\}//'; }
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-OUT=""; DB=""; FIXTURE=""; REUSE=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
+OUT=""; DB=""; FIXTURE=""; REUSE=""; LOWPRIV=""; ONLY=""; SERVICE="${PGSERVICE:-}"; NO_REPORTS=""; TMO=120
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -o|--out) OUT=$2; shift 2 ;;
     -d|--dbname) DB=$2; shift 2 ;;
     -f|--fixture) FIXTURE=1; shift ;;
+    -L|--lowpriv) LOWPRIV=$2; shift 2 ;;
     --reuse-fixture) REUSE=1; shift ;;
     -s|--scripts) ONLY=$2; shift 2 ;;
     -S|--service) SERVICE=$2; shift 2 ;;
@@ -75,7 +79,10 @@ command -v psql >/dev/null || die "needs psql in PATH"
 # "error:" prefix, and the battery could not tell them from normal output
 [[ $(psql --version | sed -E 's/^[^0-9]*([0-9]+).*/\1/') -ge 12 ]] || die "needs psql 12+ in PATH (client errors are only recognizable from 12 on)"
 if [[ -n "$FIXTURE" ]]; then DB=${DB:-${FIXDB:-fixdb}}; export FIXDB=$DB; else DB=${DB:-${PGDATABASE:-postgres}}; fi
-svn=$(psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) || die "cannot connect (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
+# every psql runs under a timeout: a server that accepts the connection and
+# never answers must not hang the whole battery
+svn=$("$TIMEOUT" 30 psql -X -At -d postgres -c 'SHOW server_version_num' </dev/null 2>/dev/null) \
+  || die "cannot connect, or no answer in 30 s (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
 if [[ $svn -ge 100000 ]]; then v=$(( svn / 10000 )); else v=$(( svn / 10000 * 10 + svn / 100 % 100 )); fi
 OUT=${OUT:-battery_out/$v}; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 
@@ -123,11 +130,57 @@ cnt() { grep -cE "$1" "$2" || true; }
 # server errors, plus psql's own (e.g. an \ir to a missing file), which it
 # prints as "psql:<file>:<line>: error: ..." and then exits with 0
 ERR='ERROR:|^psql:[^ ]+: error:'
+# Scripts whose name says they write (CLAUDE.md: kill_*, *_drop, *_adjust,
+# revoke_*; plus the statistics resets and pgbouncer_fdw's setup DDL). Every
+# other script runs in a read-only transaction, so a hidden write is an error.
+WRITES='^(kill_|revoke_|stats_reset|pgbouncer_fdw$)|_(drop|adjust)(_|$)'
+writes() { [[ $1 =~ $WRITES ]]; }
+# run_script <file.sql> <dir> <row name> [psql user]: one run, one results row
+run_script() {
+  local f=$1 dir=$2 name=$3 user=${4:-} o="$OUT/$3.out" rc=0 to=0 po=$PGOPTIONS
+  writes "${f%.sql}" || po="$po -c default_transaction_read_only=on"
+  # only a superuser may set lc_messages at login; the fixture gives
+  # fix_monitor lc_messages=C with ALTER ROLE instead
+  [[ -n "$user" ]] && po=${po//-c lc_messages=C/}
+  (cd "$dir" && PGOPTIONS="$po" \
+     "$TIMEOUT" "$TMO" psql -X ${user:+-U "$user"} -d "$DB" -v sql_dir="$REPO/sql" -f "$f" </dev/null > "$o" 2>&1) || rc=$?
+  [[ $rc -eq 124 ]] && to=1
+  echo "$v,$name,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+}
 for s in $SCRIPTS; do
-  o="$OUT/${s%.sql}.out"; rc=0
-  (cd "$REPO/sql" && "$TIMEOUT" "$TMO" psql -X -d "$DB" -f "$s" </dev/null > "$o" 2>&1) || rc=$?
-  to=0; [[ $rc -eq 124 ]] && to=1
-  echo "$v,${s%.sql},$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,$(cnt 'Not supported on version' "$o"),$(cnt '^- Needs' "$o"),$(md5f "$o")" >> "$CSV"
+  [[ $s == stats_reset* ]] && continue  # last, after the low-privilege pass
+  run_script "$s" "$REPO/sql" "${s%.sql}"
+done
+# the read-only scripts again as an unprivileged user (e.g. pg_monitor): they
+# must print "- Needs ..." where they lack a privilege, not fail
+# The pass only makes sense for a role that is not a superuser; and the role
+# sets its own lc_messages (only a superuser may at login): with translated
+# messages ("ERREUR:") the ERROR count would miss failures. Otherwise a LOWPRIV
+# row (a problem) says why the pass didn't run.
+lowpriv_ok() {
+  local out lm su why=""
+  out=$(PGOPTIONS="${PGOPTIONS//-c lc_messages=C/}" "$TIMEOUT" 30 psql -X -At -F '|' -U "$LOWPRIV" -d "$DB" \
+        -c "SELECT current_setting('lc_messages'), rolsuper FROM pg_roles WHERE rolname = CURRENT_USER" </dev/null 2>&1) \
+    || why="cannot connect as $LOWPRIV, or no answer in 30 s: $out"
+  lm=${out%%|*}; su=${out##*|}
+  if [[ -z "$why" && $su == t ]]; then
+    why="role $LOWPRIV is a superuser: the unprivileged pass needs a role without it (e.g. pg_monitor)"
+  elif [[ -z "$why" && ! $lm =~ ^(C|POSIX|en)([._@].*)?$ ]]; then
+    why="role $LOWPRIV has lc_messages=$lm: set ALTER ROLE $LOWPRIV SET lc_messages TO 'C' (the battery reads English messages)"
+  fi
+  [[ -z "$why" ]] && return 0
+  echo "ERROR:  $why" > "$OUT/LOWPRIV.out"
+  echo "$v,LOWPRIV,1,1,1,0,0,0,0," >> "$CSV"
+  return 1
+}
+if [[ -n "$LOWPRIV" ]] && ! lowpriv_ok; then LOWPRIV=""; fi
+if [[ -n "$LOWPRIV" ]]; then
+  for s in $SCRIPTS; do
+    writes "${s%.sql}" || run_script "$s" "$REPO/sql" "${s%.sql}@low" "$LOWPRIV"
+  done
+fi
+for s in $SCRIPTS; do
+  [[ $s == stats_reset* ]] && run_script "$s" "$REPO/sql" "${s%.sql}"
 done
 
 if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
@@ -139,10 +192,8 @@ if [[ -z "$NO_REPORTS" && -z "$ONLY" ]]; then
   # stderr only when a report fails, so an error inside a report section that
   # still produces output would not show up in the Markdown
   for k in cluster database; do
-    o="$OUT/report_$k.out"; rc=0
-    (cd "$REPO/reports" && "$TIMEOUT" 1200 psql -X -d "$DB" -v sql_dir="$REPO/sql" -f "report_$k.sql" </dev/null > "$o" 2>&1) || rc=$?
-    to=0; [[ $rc -eq 124 ]] && to=1
-    echo "$v,report_$k,$rc,$(wc -l < "$o" | tr -d ' '),$(cnt "$ERR" "$o"),$(cnt 'FATAL:' "$o"),$to,0,0,$(md5f "$o")" >> "$CSV"
+    TMO=1200 run_script "report_$k.sql" "$REPO/reports" "report_$k"
+    [[ -n "$LOWPRIV" ]] && TMO=1200 run_script "report_$k.sql" "$REPO/reports" "report_$k@low" "$LOWPRIV"
   done
   if [[ -z "$SERVICE" ]]; then
     echo "pg$v: reports skipped (no -S/PGSERVICE)" >&2

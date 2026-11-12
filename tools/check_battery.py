@@ -24,17 +24,26 @@ Exit code: 0 when every problem is known, 1 when there is a new problem (or a
 stale entry with --strict), 2 when the input can't be read (a PATH that doesn't
 exist or holds no results.csv).
 
+It also reports a column that is empty in every row of a table with 2 or
+more rows ('empty column "X" (all N rows)'): a value the script never gets;
+and a "- Needs ..." line in a superuser run (rows without @low), where the
+fixture installs every extension: a privilege or extension check gone wrong.
+
 known_failures.csv columns: script,versions,pattern,reason
+  script:   an entry for "x" also covers "x@low" (run_battery.sh --lowpriv);
+            one for "x@low" only that pass
   versions: space-separated labels (82 83 ... 96 10 ... 18), ranges in that
             order (82-92) or "all"
-  pattern:  Python regular expression searched in each error line (with the
-            "psql:file:line: " prefix removed); a run is known only when all
-            its error lines match. Lines starting with # are comments.
+  pattern:  Python regular expression searched in each message (error lines
+            with the "psql:file:line: " prefix removed, empty columns); a run
+            is known when each of its messages is matched by an entry for its
+            script and version. Lines starting with # are comments.
 """
 import argparse
 import csv
 import re
 import sys
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
@@ -88,6 +97,123 @@ def error_lines(path):
             if "ERROR:" in l or "FATAL:" in l or CLIENT_ERROR.match(l)]
 
 
+SEP_ALIGNED = re.compile(r"^-+(\+-+)*$")
+RECORD = re.compile(r"^-\[ RECORD \d+ \]")
+FOOTER = re.compile(r"^\(\d+ rows?\)$")
+EMPTY = ("", "-")  # psql's default null display, and the reports' ' - '
+
+
+def display_width(ch):
+    """Columns a character takes in psql's aligned output (as normalize_md.py):
+    0 for combining marks and format characters, 2 for East Asian wide ones."""
+    if unicodedata.combining(ch) or unicodedata.category(ch) in ("Mn", "Me", "Cf"):
+        return 0
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
+def cut(line, bounds):
+    """Cells of one aligned line, split by display column (bounds come from the
+    ---+--- line), and whether each one continues on the next line: psql puts
+    a "+" in a cell's last column when its value has more lines."""
+    cells, more, col = [[] for _ in bounds], [False] * len(bounds), 0
+    for ch in line:
+        for k, (a, b) in enumerate(bounds):
+            if a <= col < b:
+                if col == b - 1 and ch == "+":
+                    more[k] = True
+                else:
+                    cells[k].append(ch)
+                break
+        col += display_width(ch)
+    return ["".join(c).strip() for c in cells], any(more)
+
+
+def tables(lines):
+    """Yield (column names, rows) for each psql table in an output: aligned
+    (header, then a ---+--- line) and expanded (\\x, -[ RECORD n ]- blocks).
+    Rows are logical: the lines of a multi-line value are one row."""
+    i = 0
+    while i < len(lines):
+        if i + 1 < len(lines) and lines[i].strip() and SEP_ALIGNED.match(lines[i + 1].strip()):
+            sep, bounds, start = lines[i + 1].rstrip(), [], 0
+            for k, ch in enumerate(sep + "+"):
+                if ch == "+":
+                    bounds.append((start, k))
+                    start = k + 1
+            heads, _ = cut(lines[i], bounds)
+            j = i + 2
+            # one column: a NULL row is a blank line, so when a "(N rows)" footer
+            # follows, every line up to it is a row
+            end = None
+            if len(bounds) == 1:
+                for k in range(j, len(lines)):
+                    if FOOTER.match(lines[k].strip()):
+                        end = k
+                        break
+                    if k + 1 < len(lines) and SEP_ALIGNED.match(lines[k + 1].strip()):
+                        break  # another table starts first
+            rows, cont = [], False
+            while j < len(lines) and (j < end if end is not None
+                                      else lines[j].strip() and not FOOTER.match(lines[j].strip())):
+                # with footers off, the next table can follow right away
+                # (as normalize_md.py handles): a header line or a \\x record
+                if not cont and (RECORD.match(lines[j]) or (
+                        j + 1 < len(lines) and lines[j].strip() and SEP_ALIGNED.match(lines[j + 1].strip()))):
+                    break
+                cells, more = cut(lines[j], bounds)
+                if cont and rows:  # the rest of a multi-line value
+                    rows[-1] = [p + ("\n" + c if c else "") for p, c in zip(rows[-1], cells)]
+                else:
+                    rows.append(cells)
+                cont = more
+                j += 1
+            yield heads, rows
+            i = j
+        elif RECORD.match(lines[i]):
+            recs, cur = [], {}
+            while i < len(lines) and (RECORD.match(lines[i]) or "|" in lines[i]):
+                # an aligned table right after (footers off): leave its header
+                # for the outer loop
+                if (not RECORD.match(lines[i]) and i + 1 < len(lines)
+                        and SEP_ALIGNED.match(lines[i + 1].strip())):
+                    break
+                if RECORD.match(lines[i]):
+                    if cur:
+                        recs.append(cur)
+                    cur = {}
+                else:
+                    k, _, val = lines[i].partition("|")
+                    cur.setdefault(k.strip(), val.strip())
+                i += 1
+            if cur:
+                recs.append(cur)
+            heads = list(dict.fromkeys(k for r in recs for k in r))
+            yield heads, [[r.get(h, "") for h in heads] for r in recs]
+        else:
+            i += 1
+
+
+def empty_columns(path):
+    """'empty column "X" (all N rows)' for each column of a table with 2 or
+    more rows that is empty in all of them: a value the script never gets."""
+    if not path.exists():
+        return []
+    out = []
+    for heads, rows in tables(path.read_text(errors="replace").split("\n")):
+        if len(rows) < 2:
+            continue
+        for c, h in enumerate(heads):
+            if h and all(r[c] in EMPTY for r in rows if c < len(r)):
+                out.append(f'empty column "{h}" (all {len(rows)} rows)')
+    return out
+
+
+def needs_lines(path):
+    if not path.exists():
+        return []
+    return [f"as superuser: {l.strip()}" for l in path.open(errors="replace") if l.startswith("- Needs")]
+
+
 def problems(csv_path):
     """Yield (version, script, [messages]) for every failed run in one results.csv."""
     d = csv_path.parent
@@ -105,9 +231,14 @@ def problems(csv_path):
             for md in sorted(d.glob("reports/*/*.md")):
                 msgs += error_lines(md)
         else:
-            if not (err or fat or to or rc):
+            plain = not s.startswith(("FIXTURE", "CONNECT", "LOWPRIV"))
+            empty = empty_columns(d / f"{s}.out") if plain else []
+            # "- Needs ..." in a superuser run, on the fixture that installs every
+            # extension: a privilege or extension check that is wrong
+            needs = needs_lines(d / f"{s}.out") if plain and "@" not in s and int(r["needs"] or 0) else []
+            if not (err or fat or to or rc or empty or needs):
                 continue
-            msgs = error_lines(d / f"{s}.out")
+            msgs = error_lines(d / f"{s}.out") + empty + needs
         if to:
             msgs.append("TIMEOUT")
         elif rc and msgs:
@@ -175,15 +306,22 @@ def main(argv):
         elif not ended:
             new["(incomplete)"][f"run interrupted: no END row in {c}"].append(cv)
         for v, s, msgs in problems(c):
-            hit = next((e for e in known if e["script"] == s
-                        and (e["versions"] is None or v in e["versions"])
-                        and all(e["pattern"].search(m) for m in msgs)), None)
-            if hit:
-                hit["hits"] += 1
+            # known when every message is covered by an entry for this script and
+            # version (one entry may cover an error, another an empty column)
+            # an entry for "x" also covers "x@low" (the unprivileged pass); one for
+            # "x@low" only that pass
+            mine = [e for e in known if e["script"] in (s, s.split("@")[0])
+                    and (e["versions"] is None or v in e["versions"])]
+            bad = []
+            for m in msgs:
+                hits = [e for e in mine if e["pattern"].search(m)]
+                for e in hits:
+                    e["hits"] += 1
+                if not hits:
+                    bad.append(m)
+            if not bad:
                 n_known += 1
             else:
-                bad = [m for m in msgs if not any(
-                    e["pattern"].search(m) for e in known if e["script"] == s)] or msgs
                 new[s][f"{bad[0][:160]}" + (f" (+{len(bad) - 1} more)" if len(bad) > 1 else "")].append(v)
 
     # stale: never matched although its script ran on one of its versions

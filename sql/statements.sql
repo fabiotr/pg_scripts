@@ -11,18 +11,10 @@
     \else
       \if :svp_pg_91
         \if :svp_not_ext
-          \if :svp_not_standby
-            CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-            -- read the variables again: svp_pgss now has the extension's schema
-            \ir variables.sql
-            \set svp_run_ok TRUE
-          \else
-            \qecho '# WARNING'
-            \qecho 'pg_stat_statemens is not installed in this database and can not be installed on Standby cluster'
-            \qecho 'Please install it on Master cluster first'
-            \qecho
-            \set svp_run_ok FALSE
-          \endif
+          -- the scripts don't create extensions (read-only): ask for it
+          \qecho '- Needs the pg_stat_statements extension in this database (CREATE EXTENSION pg_stat_statements, on the primary)'
+          \qecho
+          \set svp_run_ok FALSE
         \else
           \set svp_run_ok TRUE
         \endif
