@@ -18,4 +18,4 @@ WHERE
     c.relkind IN ('r', 'm', 'p') AND
     i.relkind IN('i', 'I') AND
     NOT EXISTS (SELECT 1 FROM pg_stat_progress_create_index pi WHERE pi.index_relid = x.indexrelid)
-ORDER BY pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid) DESC
+ORDER BY "Ind/Table %" DESC

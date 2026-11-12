@@ -25,5 +25,5 @@ WHERE
     n_tup_del + n_tup_upd + n_tup_ins> 1000 AND
     n_mod_since_analyze > 1000 OR
     e.enabled = FALSE
-ORDER BY e.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE t.n_mod_since_analyze/t.n_live_tup END DESC
+ORDER BY e.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE t.n_mod_since_analyze::numeric / t.n_live_tup END DESC
 LIMIT 10;

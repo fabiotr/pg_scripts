@@ -15,5 +15,5 @@ WHERE
     (n_tup_upd::NUMERIC / tup_updated::NUMERIC) > 0.0001 AND
     n_tup_upd > 1000 AND
     n_tup_hot_upd * 100  / n_tup_upd < 95
-ORDER BY n_tup_hot_upd / n_tup_upd, n_tup_upd DESC, t.relname, t.schemaname
+ORDER BY n_tup_hot_upd::numeric / n_tup_upd, n_tup_upd DESC, t.relname, t.schemaname
 LIMIT 40;

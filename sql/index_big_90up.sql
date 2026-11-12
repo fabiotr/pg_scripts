@@ -16,4 +16,4 @@ WHERE
     pg_relation_size(x.indexrelid) > pg_table_size(x.indrelid) * 0.5 AND
     c.relkind IN ('r', 'm', 'p') AND
     i.relkind IN('i', 'I')
-ORDER BY pg_relation_size(x.indexrelid) / pg_table_size(x.indrelid) DESC;
+ORDER BY "Ind/Table %" DESC;
