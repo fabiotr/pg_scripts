@@ -4,7 +4,7 @@ SELECT
     lpad(to_char(c.reltuples, 'FM999G999G999G999'),16) AS "Rows",
     lpad(to_char((coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) / reset_days,'FM999G999G999G999'),16)
         || lpad(' (' || round(100 * (coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) /
-        nullif(sum(coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) OVER (),0),1) || ' %)',9) AS "SELECT Rows/Day"
+        nullif(sum(coalesce(s.seq_tup_read,0) + coalesce(s.idx_tup_fetch,0)) OVER (),0),1) || ' %)',10) AS "SELECT Rows/Day"
 FROM
     pg_stat_all_tables s JOIN
 	pg_class c ON relid = oid,
