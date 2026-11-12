@@ -230,6 +230,40 @@ class CheckBatteryTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn('empty column "note" (all 2 rows)', out)
 
+    def test_wide_characters_are_cut_by_display_width(self):
+        text = (" name | note | n \n"
+                "------+------+---\n"
+                " \u6f22   |      | 1\n"
+                " \u5b57   |      | 2\n"
+                "(2 rows)\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "note" (all 2 rows)', out)
+        self.assertNotIn('"n"', out)
+
+    def test_multiline_value_is_one_row(self):
+        # psql marks a value that goes on with "+" in the cell's last column
+        text = (" name | note | n \n"
+                "------+------+---\n"
+                " ab  +|      | 1\n"
+                " cd   |      | \n"
+                "(1 row)\n")
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 0, out)  # one row: below the 2-row threshold
+        text2 = (" n | last \n---+------\n 1 | ab  +\n   | cd\n 2 | \n(2 rows)\n")
+        self.run_version("17", {"t": (0, text2, False)})
+        rc, out = self.check()
+        self.assertNotIn('"last"', out)  # filled in the first row's second line
+
+    def test_one_column_null_rows_before_a_footer(self):
+        text = " only \n------\n \n \n(2 rows)\n"
+        self.run_version("16", {"t": (0, text, False)})
+        rc, out = self.check()
+        self.assertEqual(rc, 1, out)
+        self.assertIn('empty column "only" (all 2 rows)', out)
+
     def test_one_row_table_and_filled_columns_pass(self):
         self.run_version("16", {"t": (0, " name | note \n------+------\n a    |      \n(1 row)\n", False),
                                 "u": (0, " name | n \n------+---\n a    | 1 \n b    | 2 \n", False)})

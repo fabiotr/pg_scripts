@@ -41,6 +41,7 @@ import argparse
 import csv
 import re
 import sys
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
@@ -100,23 +101,67 @@ FOOTER = re.compile(r"^\(\d+ rows?\)$")
 EMPTY = ("", "-")  # psql's default null display, and the reports' ' - '
 
 
+def display_width(ch):
+    """Columns a character takes in psql's aligned output (as normalize_md.py):
+    0 for combining marks and format characters, 2 for East Asian wide ones."""
+    if unicodedata.combining(ch) or unicodedata.category(ch) in ("Mn", "Me", "Cf"):
+        return 0
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
+def cut(line, bounds):
+    """Cells of one aligned line, split by display column (bounds come from the
+    ---+--- line), and whether each one continues on the next line: psql puts
+    a "+" in a cell's last column when its value has more lines."""
+    cells, more, col = [[] for _ in bounds], [False] * len(bounds), 0
+    for ch in line:
+        for k, (a, b) in enumerate(bounds):
+            if a <= col < b:
+                if col == b - 1 and ch == "+":
+                    more[k] = True
+                else:
+                    cells[k].append(ch)
+                break
+        col += display_width(ch)
+    return ["".join(c).strip() for c in cells], any(more)
+
+
 def tables(lines):
     """Yield (column names, rows) for each psql table in an output: aligned
-    (header, then a ---+--- line) and expanded (\\x, -[ RECORD n ]- blocks)."""
+    (header, then a ---+--- line) and expanded (\\x, -[ RECORD n ]- blocks).
+    Rows are logical: the lines of a multi-line value are one row."""
     i = 0
     while i < len(lines):
         if i + 1 < len(lines) and lines[i].strip() and SEP_ALIGNED.match(lines[i + 1].strip()):
-            sep, bounds, start = lines[i + 1], [], 0
+            sep, bounds, start = lines[i + 1].rstrip(), [], 0
             for k, ch in enumerate(sep + "+"):
                 if ch == "+":
                     bounds.append((start, k))
                     start = k + 1
-            heads = [lines[i][a:b].strip() for a, b in bounds]
-            rows, i = [], i + 2
-            while i < len(lines) and lines[i].strip() and not FOOTER.match(lines[i].strip()):
-                rows.append([lines[i][a:b].strip() for a, b in bounds])
-                i += 1
+            heads, _ = cut(lines[i], bounds)
+            j = i + 2
+            # one column: a NULL row is a blank line, so when a "(N rows)" footer
+            # follows, every line up to it is a row
+            end = None
+            if len(bounds) == 1:
+                for k in range(j, len(lines)):
+                    if FOOTER.match(lines[k].strip()):
+                        end = k
+                        break
+                    if k + 1 < len(lines) and SEP_ALIGNED.match(lines[k + 1].strip()):
+                        break  # another table starts first
+            rows, cont = [], False
+            while j < len(lines) and (j < end if end is not None
+                                      else lines[j].strip() and not FOOTER.match(lines[j].strip())):
+                cells, more = cut(lines[j], bounds)
+                if cont and rows:  # the rest of a multi-line value
+                    rows[-1] = [p + ("\n" + c if c else "") for p, c in zip(rows[-1], cells)]
+                else:
+                    rows.append(cells)
+                cont = more
+                j += 1
             yield heads, rows
+            i = j
         elif RECORD.match(lines[i]):
             recs, cur = [], {}
             while i < len(lines) and (RECORD.match(lines[i]) or "|" in lines[i]):
