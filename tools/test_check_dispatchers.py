@@ -150,7 +150,8 @@ class CheckDispatchers(unittest.TestCase):
     def test_old_versions_compare_as_numbers(self):
         # 96 is 9.6, older than 10: 10 -> 96 -> 82 is the right order
         chain = ("\\if :svp_pg_10\n    \\ir t_10up.sql\n\\elif :svp_pg_96\n    \\ir t_96up.sql\n"
-                 "\\elif :svp_pg_82\n    \\ir t_82up.sql\n\\endif\n")
+                 "\\elif :svp_pg_82\n    \\ir t_82up.sql\n"
+                 "\\else\n    \\qecho - Not supported on version :svp_server_version\n\\endif\n")
         files = with_files({"sql/t.sql": chain, "sql/t_16up.sql": None,
                             "sql/t_96up.sql": "SELECT 1;\n", "sql/t_82up.sql": "SELECT 1;\n"})
         code, out = run(files)
@@ -168,6 +169,16 @@ class CheckDispatchers(unittest.TestCase):
         self.assertProblem(with_files({"sql/t.sql": DISPATCHER.replace("Not supported", "not supported")}),
                            "(capital N)", "sql/t.sql:6:")
 
+    def test_other_not_supported_wording(self):
+        files = with_files({"sql/t.sql": DISPATCHER.replace(
+            "- Not supported on version", "- t_report is not supported on version")})
+        self.assertProblem(files, "use exactly", "sql/t.sql:6:")
+
+    def test_uppercase_not_supported_wording(self):
+        files = with_files({"sql/t.sql": DISPATCHER.replace(
+            "- Not supported on version", "- NOT SUPPORTED ON VERSION")})
+        self.assertProblem(files, "use exactly", "sql/t.sql:6:")
+
     def test_nested_if_restores_the_outer_branch(self):
         # after the inner \endif, t_10up.sql is back in the svp_pg_16 branch
         nested = ("\\if :svp_pg_16\n    \\if :other\n    \\endif\n    \\ir t_10up.sql\n"
@@ -178,8 +189,38 @@ class CheckDispatchers(unittest.TestCase):
     def test_include_in_a_non_version_branch_is_not_matched(self):
         # the inner branch's condition isn't a version, so the file name isn't compared
         nested = ("\\if :svp_pg_16\n    \\if :other\n        \\ir t_10up.sql\n    \\endif\n"
-                  "    \\ir t_16up.sql\n\\endif\n")
+                  "    \\ir t_16up.sql\n\\else\n    \\qecho - Not supported on version :svp_server_version\n\\endif\n")
         code, out = run(with_files({"sql/t.sql": nested}))
+        self.assertEqual(code, 0, out)
+
+    def test_else_must_print_the_template(self):
+        chain = "\\if :svp_pg_16\n    \\ir t_16up.sql\n\\else\n{}\\endif\n"
+        bad = ["    \\echo - Not supported on version :svp_server_version\n",
+               "    \\qecho - Not supported on this version\n",
+               "    \\qecho - Unsupported version :svp_server_version\n",
+               "    \\qecho '- t is not supported on version ' :svp_server_version\n",
+               ""]
+        for body in bad:
+            self.assertProblem(with_files({"sql/t.sql": chain.format(body), "sql/t_10up.sql": None}),
+                               "doesn't print exactly", "sql/t.sql:1:")
+        good = ["    \\qecho '# WARNING'\n    \\qecho - Not supported on version :svp_server_version\n",
+                "    \\set svp_x FALSE\n",           # sets defaults, as variables.sql: not a fallback message
+                "    \\ir t_old.sql\n",             # runs something on older versions
+                # ... also inside a privilege check, with a "Needs" message otherwise
+                "    \\if :svp_rol_super\n        \\ir t_old.sql\n    \\else\n"
+                "        \\qecho - Needs superuser\n    \\endif\n"]
+        for body in good:
+            code, out = run(with_files({"sql/t.sql": chain.format(body), "sql/t_old.sql": "SELECT 1;\n",
+                                        "sql/t_10up.sql": None}))
+            self.assertEqual(code, 0, (body, out))
+
+    def test_version_chain_without_else(self):
+        files = with_files({"sql/t.sql": "\\if :svp_pg_16\n    \\ir t_16up.sql\n\\endif\n",
+                            "sql/t_10up.sql": None})
+        self.assertProblem(files, "version branches without an \\else", "sql/t.sql:1:")
+        # a nested version check inside a feature guard needs none
+        guard = ("\\if :svp_lib\n    \\if :svp_pg_16\n        SELECT 1;\n    \\endif\n\\endif\n")
+        code, out = run(with_files({"sql/t.sql": guard, "sql/t_16up.sql": None, "sql/t_10up.sql": None}))
         self.assertEqual(code, 0, out)
 
     def test_else_branch_is_not_matched(self):

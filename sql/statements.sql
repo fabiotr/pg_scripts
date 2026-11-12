@@ -39,7 +39,7 @@
   \endif
 \else
   \qecho '# WARNING'
-  \qecho '- pg_stat_statements is not supported on version ' :svp_server_version
+  \qecho - Not supported on version :svp_server_version
   \qecho
   \set svp_run_ok FALSE
 \endif

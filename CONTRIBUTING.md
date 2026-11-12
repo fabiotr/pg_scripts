@@ -24,6 +24,7 @@ We are always looking for new scripts! To ensure consistency, please follow thes
 
 4. **Run the checks** before opening a PR (CI runs them too):
    - `./tools/check_dispatchers.py` must print `All dispatchers OK`.
+   - `./tools/check_readme.py` must print `README catalog OK`: every entry script in the catalog, with its dispatcher's oldest version.
    - `./tools/check_sql_style.py` must print `All SQL style checks OK`. `./tools/check_sql_style.py --fix` fixes the case of the keywords and identifiers it reports (non-ASCII identifiers have to be renamed by hand), but leaves alone any file with an ambiguous string (a plain `'...'` with a backslash right before one of its quotes): rewrite that string by hand with `''` or `E'...'`.
    - If you change a check in `tools/`, run the tests: `python3 -m unittest discover -s tools -p 'test_*.py'`.
    - If you change SQL, run the regression battery on a throwaway cluster of each version your change touches: `tools/run_battery.sh --fixture -o <dir>/<VV>` for each one, then `tools/check_battery.py --versions "<VV ...>" <dir>`, which must report 0 new problems. See [tools/README.md](tools/README.md#regression-battery).

@@ -9,7 +9,10 @@ For every sql/*.sql file (and reports/*.sql for includes only):
   - the svp_pg_* branches of an \\if chain go from newest to oldest version
   - every versioned file (<name>_VVup.sql, <name>_VV-.sql) is included by
     some script, i.e. no unreachable implementation
-  - the fallback message is "\\qecho - Not supported on version ..." (capital N)
+  - the fallback message is exactly "\\qecho - Not supported on version
+    :svp_server_version" (capital N, no other wording), and a chain of
+    top-level svp_pg_VV branches in sql/ has an \\else (else older versions
+    get nothing; a nested version check is a feature guard and needs none)
 
 psql commands are found with check_sql_style.py's tokenizer, so a \\ line
 inside a comment, a string or a $$ body is not taken as a command.
@@ -46,7 +49,12 @@ INCLUDE_RE = re.compile(r"\\(ir?)\s+(\S+)")
 # A versioned implementation: <name>_16up.sql, <name>_95-.sql
 UP_FILE_RE = re.compile(r"_([0-9]+)up\.sql$")
 VERSIONED_RE = re.compile(r"_[0-9]+(?:up|-)\.sql$")
+CANONICAL = "\\qecho - Not supported on version :svp_server_version"
 LOWERCASE_MESSAGE = "\\qecho - not supported on version"
+# any other wording of the fallback ("- vacuum_x is not supported on version ...")
+# (?-i:...): only the exact wording is accepted; IGNORECASE finds the variants
+OTHER_MESSAGE = re.compile(r"\\qecho - (?!(?-i:Not supported on version :svp_server_version)\s*$)"
+                           r".*\bnot supported on version", re.IGNORECASE)
 
 
 def version_num(v):
@@ -78,6 +86,10 @@ def check_file(rel, src, existing, included, problem):
     """Checks one script; rel is its path relative to the repository."""
     folder = rel.split("/")[0]
     depth, cond, last = 0, {}, {}
+    # depth -> [line of its \if, has an svp_pg_VV branch, has an \else,
+    #           its \else prints the template message, its \else prints
+    #           something, its \else does anything at all]
+    chain = {}
     for line, text in commands(src):
         word = text[1:].split(None, 1)
         cmd, rest = (word[0], text) if word else ("", text)
@@ -85,9 +97,12 @@ def check_file(rel, src, existing, included, problem):
             depth += 1
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = last[depth] = m.group(1) if m else ""
+            chain[depth] = [line, bool(m), False, False, False, False]
         elif cmd == "elif" and len(word) > 1:
             m = PG_CONDITION_RE.search(rest)
             cond[depth] = m.group(1) if m else ""
+            if m and depth in chain:
+                chain[depth][1] = True
             if cond[depth] and last.get(depth) and \
                     version_num(cond[depth]) >= version_num(last[depth]):
                 problem(rel, line, f"branch svp_pg_{cond[depth]} comes after svp_pg_{last[depth]} "
@@ -96,7 +111,22 @@ def check_file(rel, src, existing, included, problem):
                 last[depth] = cond[depth]
         elif cmd == "else":
             cond[depth] = ""
+            if depth in chain:
+                chain[depth][2] = True
         elif cmd == "endif":
+            c = chain.pop(depth, None)
+            # a top-level version chain (a dispatcher) without \else prints
+            # nothing on older versions; a nested one is a feature guard
+            if c and c[1] and depth == 1 and folder == "sql":
+                if not c[2]:
+                    problem(rel, c[0], "version branches without an \\else: add "
+                                       '"\\else  \\qecho - Not supported on version :svp_server_version"')
+                # an \else that prints, or does nothing at all, is the fallback for
+                # older versions: the template message (an \else that only sets
+                # variables, as in variables.sql, isn't a fallback message)
+                elif not c[3] and (c[4] or not c[5]):
+                    problem(rel, c[0], "the \\else of these version branches doesn't print exactly "
+                                       '"\\qecho - Not supported on version :svp_server_version"')
             depth = max(depth - 1, 0)
         elif cmd in ("i", "ir") and (m := INCLUDE_RE.match(text)):
             target = m.group(2)
@@ -113,9 +143,24 @@ def check_file(rel, src, existing, included, problem):
             up = UP_FILE_RE.search(name)
             if up and depth > 0 and cond.get(depth) and up.group(1) != cond[depth]:
                 problem(rel, line, f"branch svp_pg_{cond[depth]} includes {name} (version mismatch)")
+        in_else = depth >= 1 and chain.get(1) and chain[1][2] and cmd not in ("else", "endif")
+        if in_else:
+            chain[1][5] = True
+            if cmd in ("qecho", "echo"):
+                chain[1][4] = True
+        if text.strip() == CANONICAL and depth == 1 and chain.get(1) and chain[1][2]:
+            chain[1][3] = True
+        # the \else may also include a file, anywhere below it (e.g. inside a
+        # privilege check, as check_readme.py reads it): older versions still
+        # run something, so it needs no message
+        if cmd in ("i", "ir") and depth >= 1 and chain.get(1) and chain[1][2]:
+            chain[1][3] = True
         if LOWERCASE_MESSAGE in text:
             problem(rel, line, 'use "\\qecho - Not supported on version :svp_server_version" '
                                "(capital N)")
+        elif OTHER_MESSAGE.search(text):
+            problem(rel, line, 'use exactly "\\qecho - Not supported on version :svp_server_version" '
+                               "(the battery and readers count that wording)")
 
 
 def main(argv):

@@ -37,7 +37,7 @@ Dispatcher template (copy exactly, only change the branches):
 Rules:
 - Branches go **from newest to oldest** version. Each `\ir` must point to the file matching its own `\if` (e.g. `svp_pg_16` → `_16up.sql`).
 - **Every** `_<VV>up.sql` file must be reachable from some branch. Past bugs: a PG16 branch calling `_17up.sql`; `_82up`/`_83up`/`_96up` files with no branch; a `svp_pg_13` branch placed before `svp_pg_18`, making the PG18 file dead code.
-- Run `./tools/check_dispatchers.py` after adding, renaming or editing any SQL file. It must print `All dispatchers OK`.
+- Run `./tools/check_dispatchers.py` after adding, renaming or editing any SQL file. It must print `All dispatchers OK`. Also `./tools/check_readme.py` (`README catalog OK`).
 - Always include with `\ir` (relative to the file), never `\i`. `\i` only works when the cwd is `sql/`.
 - The "not supported" message is exactly `\qecho - Not supported on version :svp_server_version` (capital N).
 - Add `\x on` / `\x off` around the branches when the output is a single wide row (e.g. `checkpoints.sql`).
@@ -117,7 +117,7 @@ Match the existing code (it differs from what `CONTRIBUTING.md` says about lower
 ## Testing
 
 - `./tools/check_dispatchers.py` (static checks: `\ir`, include targets, branch/file versions, branch order, unreachable files, message casing).
-- `./tools/check_sql_style.py` (keyword and identifier case, non-ASCII identifiers and dollar-quote tags, plain strings that depend on `standard_conforming_strings`; strings, comments and quoted identifiers are never checked). Tests for both checks: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_dispatchers.py` or `tools/test_check_sql_style.py` when changing a check). Both checks and the tests run in CI on every PR.
+- `./tools/check_sql_style.py` (keyword and identifier case, non-ASCII identifiers and dollar-quote tags, plain strings that depend on `standard_conforming_strings`; strings, comments and quoted identifiers are never checked). Tests for both checks: `python3 -m unittest discover -s tools -p 'test_*.py'` (add a case to `tools/test_check_dispatchers.py` or `tools/test_check_sql_style.py` when changing a check). `./tools/check_readme.py` checks the README catalog against `sql/` (every entry script listed, "PG >= X.Y" equal to the dispatcher's oldest branch). All three checks and the tests run in CI on every PR.
 - Run against **every supported major version** that has its own branch (Docker `postgres:<VV>` images are the easiest way), plus at least one DBaaS if the script checks `svp_not_rds`/`svp_not_aurora`.
 - Run with `psql -X` so a local `~/.psqlrc` doesn't change the output. `\timing` in psqlrc prints "Timing is on", which pollutes reports.
 - Minimum check: `psql -X -f sql/<name>.sql` on the oldest and the newest supported version.
