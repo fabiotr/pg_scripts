@@ -76,6 +76,9 @@ done
 
 P() { psql -X -q "$@" </dev/null; }
 die() { echo "fixture${v:+ pg$v}: $*" >&2; exit 1; }
+# the name is used unquoted in SQL: only a plain lowercase identifier, so the
+# database checked is the one dropped (FixDB would be checked as FixDB, dropped as fixdb)
+[[ $DB =~ ^[a-z_][a-z0-9_]{0,62}$ ]] || die "FIXDB must be a lowercase identifier ([a-z_][a-z0-9_]*, up to 63 characters): $DB"
 svn=$(P -d "$ADMIN" -Atc 'SHOW server_version_num' 2>/dev/null) \
   || die "cannot connect to database $ADMIN (set PGHOST/PGPORT/PGUSER or PGSERVICE)"
 # n: 802 ... 906, 1000 ... 1800 (as the svp_pg_* flags); v: the file suffix label (82, 96, 10, 18)
@@ -506,8 +509,11 @@ do_stop() {
     if kill -0 "$p" 2>/dev/null; then kill "$p" 2>/dev/null || true; local i; for i in $(seq 1 50); do kill -0 "$p" 2>/dev/null || break; sleep 0.1; done; fi
     rm -f "$PIDF"
   fi
-  # leftovers (supervisor killed hard): any backend still in the database
-  end_backends "datname = '$DB' AND $pidcol <> pg_backend_pid()"
+  # leftovers (supervisor killed hard): any backend still in the database,
+  # only when the database is the fixture's own
+  if [[ -n $(P -d "$DB" -Atc "SELECT 1 FROM pg_class WHERE relname = 'fixture_info' AND relkind = 'r'" 2>/dev/null || true) ]]; then
+    end_backends "datname = '$DB' AND $pidcol <> pg_backend_pid()"
+  fi
   echo "fixture pg$v: sessions stopped"
 }
 

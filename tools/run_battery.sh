@@ -74,13 +74,18 @@ else SCRIPTS=$(cd "$REPO/sql" && ls *.sql | grep -vE '_[0-9]{2}(up|-)\.sql$'); f
 fix() { "$REPO/tools/fixture.sh" "$@" >> "$OUT/fixture.log" 2>&1; }
 CSV="$OUT/results.csv"
 echo "version,script,rc,lines,errors,fatal,timeout,not_supported,needs,md5" > "$CSV"
+fixture_failed() {
+  echo "$v,FIXTURE,1,0,1,0,0,0,0," >> "$CSV"
+  echo "pg$v: fixture failed, nothing run (see $OUT/fixture.log)" >&2
+  exit 1
+}
 if [[ -n "$FIXTURE" ]]; then
   : > "$OUT/fixture.log"
+  # a database the fixture refused (or failed to build) is neither tested nor
+  # cleaned up: the stop trap only once the build succeeded
+  fix || fixture_failed
   trap 'fix stop || true' EXIT
-  if ! { fix && fix start; }; then
-    echo "$v,FIXTURE,1,0,1,0,0,0,0," >> "$CSV"
-    echo "pg$v: fixture failed (see $OUT/fixture.log)" >&2
-  fi
+  fix start || fixture_failed
 fi
 
 cnt() { grep -c "$1" "$2" || true; }
