@@ -116,14 +116,15 @@ Static checks can't tell whether a query still works on 8.2 or on 18, or on a da
 
 ### `fixture.sh`
 
-Without data many scripts return nothing and their logic is never exercised: the `pgstatindex()` call on an invalid index and `bt_index_check()` on a partitioned index (fixed in #90) only failed once there were such indexes. `fixture.sh` builds a database (`fixdb` by default, about 10 s and 170 MB) with, on each version that supports them: bloated tables, large TOAST values, per-table `reloptions` (and `pg_autovacuum` rows on 8.2/8.3), inheritance and two-level declarative partitions, partitioned indexes, materialized views (one never populated), unlogged tables, sequences near their limit, every index type, a duplicate, an invalid and an unused index, a foreign key without an index, functions, triggers, domains, composite, enum and range types, collations, extended statistics, `WITH OIDS` tables, and a schema outside `search_path` whose names need quoting. It loads `pg_stat_statements`, `pgstattuple` and `pg_buffercache`. The full list is in the script header.
+Without data many scripts return nothing and their logic is never exercised: the `pgstatindex()` call on an invalid index and `bt_index_check()` on a partitioned index (fixed in #90) only failed once there were such indexes, and a division by `reltuples` only once a table had 0 rows analyzed. `fixture.sh` builds a database (`fixdb` by default, about 10 s and 170 MB) with, on each version that supports them: bloated tables, large TOAST values, per-table `reloptions` (and `pg_autovacuum` rows on 8.2/8.3), inheritance and two-level declarative partitions, partitioned indexes, materialized views (one never populated), unlogged tables (one empty and analyzed, as crash recovery leaves them), sequences near their limit, every index type, a duplicate, an invalid and an unused index, a foreign key without an index, functions, triggers, domains, composite, enum and range types, collations, extended statistics, `WITH OIDS` tables, and a schema outside `search_path` whose names need quoting. It loads `pg_stat_statements`, `pgstattuple` and `pg_buffercache`. The full list is in the script header.
 
 ```bash
 tools/fixture.sh            # build (skipped when already at the current version) + load
 tools/fixture.sh --rebuild  # drop and build again
 tools/fixture.sh load       # workload again: pg_stat_statements, function calls, scans, temp files
 tools/fixture.sh start      # background sessions: idle in transaction, a blocker and the
-                            # session it blocks, a long active query; respawned when killed
+                            # session it blocks, a long active query, a COPY in progress
+                            # into an empty analyzed table; respawned when killed
 tools/fixture.sh stop
 tools/fixture.sh status
 ```

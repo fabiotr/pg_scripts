@@ -23,8 +23,10 @@
 #             it already holds this FIXTURE_VERSION; --rebuild forces it
 #   load      workload: pg_stat_statements entries, function calls, index and
 #             sequential scans, temp files (re-runnable, e.g. after a stats reset)
-#   start     background sessions, kept alive by a supervisor that respawns
-#             any one a kill_* script terminates
+#   start     background sessions: idle in transaction, a blocker and the
+#             session it blocks, a long active query, a COPY in progress into
+#             an empty analyzed table; a supervisor respawns any one a kill_*
+#             script terminates
 #   stop      stop the supervisor and its sessions
 #   status    show the fixture sessions in pg_stat_activity
 #   (none)    build + load
@@ -39,7 +41,8 @@
 #   partitions inheritance children with CHECKs (all); declarative two-level
 #             range -> list (10+), partitioned indexes, PK, default and hash
 #             partitions (11+)
-#   matviews  populated + one WITH NO DATA (9.3+); unlogged table (9.1+)
+#   matviews  populated + one WITH NO DATA (9.3+); unlogged tables (9.1+), one
+#             empty and analyzed (reltuples 0, as crash recovery leaves them)
 #   sequences int serial near its limit, CYCLE, smallint AS (10+), identity (10+)
 #   indexes   btree, partial, expression, multi-column, gist, gin (int[] all,
 #             tsvector 8.3+, jsonb 9.4+), spgist (9.2+), brin (9.5+), hash (10+),
@@ -62,7 +65,7 @@
 # Example: PGSERVICE=pg16 tools/fixture.sh && PGSERVICE=pg16 tools/fixture.sh start
 set -euo pipefail
 
-FIXTURE_VERSION=1
+FIXTURE_VERSION=2
 DB="${FIXDB:-fixdb}"
 ADMIN="${FIXTURE_ADMIN_DB:-postgres}"
 cmd=all; rebuild=0
@@ -171,7 +174,9 @@ build_sql() {
     echo "CREATE MATERIALIZED VIEW mv_empty AS SELECT id, created FROM inh_parent WITH NO DATA;"
   fi
   [[ $n -ge 901 ]] && { echo "CREATE UNLOGGED TABLE unlogged_cache (k text PRIMARY KEY, v text);"
-                        echo "INSERT INTO unlogged_cache SELECT md5(g::text), repeat('u', 100) FROM generate_series(1, 20000) g;"; }
+                        echo "INSERT INTO unlogged_cache SELECT md5(g::text), repeat('u', 100) FROM generate_series(1, 20000) g;"
+                        echo "CREATE UNLOGGED TABLE unlogged_empty (k int, v text);"
+                        echo "ANALYZE unlogged_empty;"; }
 
   # --- sequences
   echo "CREATE TABLE seq_nearly_full (id serial PRIMARY KEY, v text);"
@@ -228,6 +233,9 @@ build_sql() {
   [[ $n -ge 804 ]] && echo "ALTER TABLE never_analyzed SET (autovacuum_enabled = false);"
   [[ $n -lt 804 ]] && echo "INSERT INTO pg_autovacuum VALUES ('never_analyzed'::regclass, false, -1, -1, -1, -1, -1, -1, -1, -1);"
   [[ $n -le 1100 ]] && { echo "CREATE TABLE with_oids (a int) WITH OIDS;"; echo "INSERT INTO with_oids SELECT g FROM generate_series(1, 100) g;"; }
+  # the COPY session's target: empty and analyzed, so reltuples is 0
+  echo "CREATE TABLE copy_target (id int, v text);"
+  echo "ANALYZE copy_target;"
   # the lock target for the background sessions
   echo "CREATE TABLE lock_tbl (id int PRIMARY KEY, v int);"
   echo "INSERT INTO lock_tbl SELECT g, 0 FROM generate_series(1, 10) g;"
@@ -441,6 +449,8 @@ supervise() {
   SQL_blocker="BEGIN; UPDATE lock_tbl SET v = v + 1 WHERE id = 1;"
   SQL_blocked="UPDATE lock_tbl SET v = v + 1 WHERE id = 1;"
   SQL_active="SELECT pg_sleep(86400);"
+  # COPY data comes from the same FIFO, which never sends it: stays in progress
+  SQL_copy="COPY copy_target FROM STDIN;"
   start_one() {  # $1 = name
     local s=$1 f="$fifo_dir/$1" pf="$fifo_dir/$1.pid" sqlv="SQL_$1" appn="" i
     rm -f "$f" "$pf"; mkfifo "$f"
@@ -472,15 +482,15 @@ supervise() {
   }
   alive() {  # backend still there and, for active/blocked, still running its query
     local s=$1 busy=""   # (before 8.4 a kill_* script can only cancel it, leaving it idle)
-    if [[ $s == active || $s == blocked ]]; then
+    if [[ $s == active || $s == blocked || $s == copy ]]; then
       if [[ $n -ge 902 ]]; then busy="AND state = 'active'"; else busy="AND current_query NOT LIKE '<IDLE>%'"; fi
     fi
     [[ -n "${BPID[$s]:-}" ]] && kill -0 "${PSQL[$s]}" 2>/dev/null &&
       [[ -n $(P -d "$ADMIN" -Atc "SELECT 1 FROM pg_stat_activity WHERE $pidcol = ${BPID[$s]} $busy" 2>/dev/null) ]]
   }
-  trap 'for s in blocked blocker idle_tx active; do stop_one $s; done; rm -rf "$fifo_dir"; exit 0' TERM INT
+  trap 'for s in blocked blocker idle_tx active copy; do stop_one $s; done; rm -rf "$fifo_dir"; exit 0' TERM INT
   while :; do
-    for s in idle_tx active; do alive $s || { stop_one $s; start_one $s; echo "$(date +%T) (re)started $s pid ${BPID[$s]}"; }; done
+    for s in idle_tx active copy; do alive $s || { stop_one $s; start_one $s; echo "$(date +%T) (re)started $s pid ${BPID[$s]}"; }; done
     if ! alive blocker || ! alive blocked; then
       stop_one blocked; stop_one blocker
       start_one blocker; start_one blocked
@@ -497,10 +507,10 @@ do_start() {
   local i c=0
   for i in $(seq 1 50); do
     c=$(P -d "$ADMIN" -Atc "SELECT count(*) FROM pg_stat_activity WHERE datname = '$DB' AND $pidcol <> pg_backend_pid()")
-    [[ $c -ge 4 ]] && break; sleep 0.2
+    [[ $c -ge 5 ]] && break; sleep 0.2
   done
-  [[ $c -ge 4 ]] || die "sessions did not come up (see $SLOG)"
-  echo "fixture pg$v: 4 sessions up (supervisor $(cat "$PIDF"))"
+  [[ $c -ge 5 ]] || die "sessions did not come up (see $SLOG)"
+  echo "fixture pg$v: 5 sessions up (supervisor $(cat "$PIDF"))"
 }
 
 # end the backends matching a pg_stat_activity condition; pg_terminate_backend()
