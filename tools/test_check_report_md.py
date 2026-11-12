@@ -111,6 +111,18 @@ class CheckReportMdTest(unittest.TestCase):
         self.assertEqual(rc, 1, out)
         self.assertIn("r.md:2: code block (```) never closed", out)
 
+    def test_fence_closes_only_on_a_bare_run_as_long(self):
+        # two opening fences with an info string, never closed
+        rc, out = self.check("```sql\nSELECT 1;\n```sql\nSELECT 2;\n")
+        self.assertEqual(rc, 1, out)
+        self.assertIn("r.md:1: code block (```) never closed", out)
+        # a four-backtick block holding a three-backtick line is closed
+        rc, out = self.check("````\n```sql\nSELECT 1;\n```\n````\n\n| a |\n|---|\n")
+        self.assertEqual(rc, 0, out)
+        # a longer closing run closes it too
+        rc, out = self.check("```\nx\n`````\n")
+        self.assertEqual(rc, 0, out)
+
     def test_several_files_and_missing_file(self):
         (self.dir / "ok.md").write_text(GOOD)
         p = subprocess.run([sys.executable, str(SCRIPT), str(self.dir / "ok.md"), str(self.dir / "nope.md")],

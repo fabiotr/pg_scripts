@@ -34,6 +34,7 @@ FEEDBACK = re.compile(
     r"^(Timing is (on|off)\.|Time: \d|Expanded display is |Null display is |"
     r"Border style is |Output format is |Tuples only is |Footer is |"
     r"Pager usage is |Title is |Default footer is )")
+FENCE = re.compile(r"^ {0,3}(`{3,})(.*)$")
 SEPARATOR = re.compile(r"^\|(\s*:?-{3,}:?\s*\|)+\s*$")
 
 
@@ -77,15 +78,20 @@ def check(path):
     lines = path.read_text(errors="replace").split("\n")
     if lines and lines[-1] == "":
         lines.pop()
-    fence = None  # line where an open ``` started
+    fence = None  # (line, backtick count) of the open ``` block
     table = None  # (header line number, cells)
     for no, raw in enumerate(lines, 1):
         line = raw.rstrip(" \t\r")
-        if line.startswith("```"):
-            fence = None if fence else no
+        m = FENCE.match(line)
+        if fence is None and m:  # opens: ```, ```sql, ````...
+            fence = (no, len(m.group(1)))
             table = None
             continue
-        if fence:
+        if fence is not None:
+            # closes only on a bare run of at least as many backticks (CommonMark):
+            # ```sql inside a ```` block, or a shorter run, is content
+            if m and not m.group(2).strip() and len(m.group(1)) >= fence[1]:
+                fence = None
             continue  # code blocks keep psql's output as it was
         if FOOTER.match(line):
             problems.append((no, f"psql row-count footer {line!r}: \\pset footer is on"))
@@ -110,8 +116,8 @@ def check(path):
             n = cells(line)
             if n > table[1] or (n < table[1] and line.startswith("|")):
                 problems.append((no, f"table row has {n} columns, its header (line {table[0]}) {table[1]}"))
-    if fence:
-        problems.append((fence, "code block (```) never closed"))
+    if fence is not None:
+        problems.append((fence[0], "code block (```) never closed"))
     return problems
 
 
