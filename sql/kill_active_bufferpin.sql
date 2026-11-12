@@ -1,6 +1,8 @@
 \ir variables.sql
 
-\if :svp_pg_14
+\if :svp_pg_19
+  \ir kill_active_bufferpin_19up.sql
+\elif :svp_pg_14
   \ir kill_active_bufferpin_14up.sql
 \elif :svp_pg_10
   \ir kill_active_bufferpin_10up.sql
