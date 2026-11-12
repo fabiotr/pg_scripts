@@ -10,6 +10,10 @@ WHERE
             c.relkind IN ('S','')
         AND n.nspname NOT IN ('pg_catalog', 'information_schema')
         AND c.relpersistence <> 't'
+        -- only the sequences the user may read (pg_sequence_last_value() fails otherwise);
+        -- CASE so it only runs on a sequence: WHERE has no evaluation order
+        AND has_schema_privilege(n.oid, 'USAGE')
+        AND CASE WHEN c.relkind = 'S' THEN has_sequence_privilege(c.oid, 'SELECT, USAGE') END
 ORDER BY 1;
 
 \t off
