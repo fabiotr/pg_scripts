@@ -40,6 +40,6 @@ WHERE
     t.n_tup_del + t.n_tup_upd > 1000 AND
     t.n_dead_tup >  1000 
     OR c.enabled = FALSE
-ORDER BY c.enabled, CASE t.n_live_tup WHEN 0 THEN 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
-LIMIT 40;
+ORDER BY c.enabled, CASE t.n_live_tup WHEN 0 THEN 0 ELSE (pg_relation_size(t.relid, 'main')::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+LIMIT 20;
 

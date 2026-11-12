@@ -3,9 +3,9 @@ SELECT
     t.relname    AS "Table",
     lpad(to_char((t.n_tup_upd + t.n_tup_del)/(EXTRACT(epoch FROM CURRENT_TIMESTAMP - d.stats_start)::numeric/(60*60*24)), 'FM999G999G999G999'),16) AS "Upd+Del/Day",
     lpad(to_char(t.n_live_tup, 'FM999G999G999G999'),16) AS "Live",
-    lpad(pg_size_pretty(pg_table_size(t.relid)),11)      AS "Size",
+    lpad(pg_size_pretty(pg_relation_size(t.relid, 'main')),11) AS "Size",
     lpad(to_char(t.n_dead_tup, 'FM999G999G999G999'),16) AS "Dead",
-    lpad(CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END, 11) AS "Dead Size",
+    lpad(CASE t.n_live_tup WHEN 0 THEN '0 bytes' ELSE pg_size_pretty(((pg_relation_size(t.relid, 'main')::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup))::bigint) END, 11) AS "Dead Size",
     CASE t.n_live_tup WHEN 0 THEN 0 ELSE trunc(t.n_dead_tup*100::NUMERIC/(t.n_live_tup+t.n_dead_tup)::NUMERIC,3) END AS "D%",
     trunc(to_number(coalesce(t.scale,s.setting),'99.999') * 100,3) AS "S%",
     --CASE WHEN t.last_autovacuum IS NULL THEN 'never AUTO' ELSE to_char(t.last_autovacuum, 'YY-MM-DD HH24:MI:SS') END last_a,
@@ -29,5 +29,5 @@ WHERE
     n_tup_del + n_tup_upd > 1000 AND
     n_dead_tup >  1000
     OR t.enabled = FALSE
-ORDER BY t.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE (pg_table_size(t.relid)::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
+ORDER BY t.enabled, CASE n_live_tup WHEN 0 THEN 0 ELSE (pg_relation_size(t.relid, 'main')::NUMERIC*t.n_dead_tup::NUMERIC)/(t.n_live_tup+t.n_dead_tup)::NUMERIC END DESC
 LIMIT 20;
