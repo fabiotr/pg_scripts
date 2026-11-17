@@ -20,12 +20,18 @@ FROM
     JOIN pg_namespace n  ON n.oid = c.relnamespace
     LEFT JOIN pg_tablespace t ON t.oid = c.reltablespace
     LEFT JOIN (
-        -- Most used index per table. CLUSTER rejects partial indexes, so they are skipped
+        -- Most used index per table that CLUSTER accepts: not partial, valid,
+        -- and of an access method that supports clustering (btree and gist in core)
         SELECT DISTINCT ON (s.relid) s.relid, s.indexrelname, s.idx_scan
             FROM
                 pg_stat_all_indexes s
                 JOIN pg_index x ON x.indexrelid = s.indexrelid
-            WHERE x.indpred IS NULL
+                JOIN pg_class ic ON ic.oid = s.indexrelid
+                JOIN pg_am am ON am.oid = ic.relam
+            WHERE
+                    x.indpred IS NULL
+                AND x.indisvalid
+                AND am.amname IN ('btree', 'gist')
             ORDER BY s.relid, s.idx_scan DESC, s.indexrelname) i ON i.relid = c.oid
     LEFT JOIN LATERAL (SELECT option_value AS fillfactor FROM pg_options_to_table(c.reloptions) WHERE option_name = 'fillfactor') o ON TRUE,
     LATERAL (SELECT * FROM pgstattuple_approx(c.oid)) l
